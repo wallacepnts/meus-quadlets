@@ -12,7 +12,7 @@ PublishPort=8081:8080
 
 # Socket compatível com a API do Docker, exposto pelo podman.socket
 Volume=%t/podman/podman.sock:/var/run/docker.sock:z
-Volume=tsdproxy-data.volume:/data
+Volume=%h/.config/containers/volumes/tsdproxy/data:/data:Z
 Volume=%h/.config/containers/volumes/tsdproxy/config:/config:Z
 
 AddHost=host.docker.internal:host-gateway

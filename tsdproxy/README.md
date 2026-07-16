@@ -4,9 +4,9 @@ Deploy do [tsdproxy](https://github.com/almeidapaulopt/tsdproxy) (v2.3.4)
 via Podman Quadlet — publica containers na sua tailnet automaticamente, um
 nó Tailscale por container, via descoberta por labels. Migrado de um
 `docker-compose.yml` (modo Swarm) original. Testado em Podman rootless +
-systemd `--user` (openSUSE Tumbleweed, uid 1000), mas os arquivos
-`.container`/`.volume` e o conflito de porta são universais pra qualquer
-Linux com Podman rootless + systemd — a seção SELinux só se aplica a
+systemd `--user` (openSUSE Tumbleweed, uid 1000), mas o arquivo
+`.container` e o conflito de porta são universais pra qualquer Linux com
+Podman rootless + systemd — a seção SELinux só se aplica a
 distros com SELinux enforcing por padrão (Fedora, RHEL/CentOS, openSUSE
 Tumbleweed/MicroOS); em AppArmor (Ubuntu/Debian) ou sem MAC esse passo
 específico não é necessário.
@@ -25,8 +25,7 @@ container — TCP/UDP puro, não só HTTP (ver uso real em
 
 ```
 quadlet/
-├── tsdproxy.container    # unit principal
-└── tsdproxy-data.volume  # volume gerenciado pelo Podman — estado do tsnet (datadir)
+└── tsdproxy.container    # unit principal
 
 config/
 └── tsdproxy.yaml         # config do tsdproxy (bind mount) — precisa existir ANTES do primeiro start
@@ -41,12 +40,14 @@ config/
 ## Instalação do zero
 
 ```bash
-# 1. Copiar as units
+# 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd
-cp quadlet/tsdproxy.container quadlet/tsdproxy-data.volume ~/.config/containers/systemd/
+cp quadlet/tsdproxy.container ~/.config/containers/systemd/
 
-# 2. Config — o tsdproxy não gera um padrão sozinho, precisa existir antes do start
-mkdir -p ~/.config/containers/volumes/tsdproxy/config
+# 2. Diretórios de dados — bind mount exige que já existam antes do start.
+#    O tsdproxy não gera um config padrão sozinho, então config/tsdproxy.yaml
+#    também precisa vir de algum lugar antes do primeiro start.
+mkdir -p ~/.config/containers/volumes/tsdproxy/{data,config}
 cp config/tsdproxy.yaml ~/.config/containers/volumes/tsdproxy/config/
 
 # 3. Secret com a authkey do Tailscale
@@ -146,12 +147,11 @@ funcionar). O próprio log avisa: "Restart tsdproxy to auto-recover, or
 manually delete the proxy data directory." Costuma resolver sozinho no
 restart seguinte, já com o socket acessível
 (`systemctl --user restart tsdproxy.service`). Se não resolver, apagar
-`~/.local/share/containers/storage/volumes/tsdproxy-data/_data/default/`
-e reiniciar.
+`~/.config/containers/volumes/tsdproxy/data/default/` e reiniciar.
 
 ## Implantando em outro servidor
 
-**Não copiar** o volume `tsdproxy-data` — guarda o estado/identidade
+**Não copiar** `volumes/tsdproxy/data/` — guarda o estado/identidade
 `tsnet` de cada nó Tailscale criado; copiar faria os nós colidirem entre
 si. Cada servidor precisa da própria authkey (gerada na tailnet de
 destino) e sobe seus nós do zero.
