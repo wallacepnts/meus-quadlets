@@ -2,10 +2,6 @@
 Description=Actual Budget Server
 
 [Container]
-# Tag flutuante de propósito — não existe opção "só patch" pro
-# actual-server (só tags exatas ou latest/edge/nightly), e :latest é a
-# própria recomendação oficial do projeto. Rollback automático real
-# graças ao HealthCmd abaixo.
 Image=docker.io/actualbudget/actual-server:latest
 AutoUpdate=registry
 ContainerName=actual
