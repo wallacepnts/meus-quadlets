@@ -27,7 +27,7 @@ Label=tsdproxy.dash.visible=false
 # homepage — exibição no dashboard (ver ../homepage/)
 Label=homepage.group=Infra
 Label=homepage.name=tsdproxy
-Label=homepage.icon=si-tailscale
+Label=homepage.icon=tailscale.svg
 Label=homepage.href=https://dash.<seu-tailnet>.ts.net
 Label=homepage.description="Publica containers na tailnet automaticamente"
 

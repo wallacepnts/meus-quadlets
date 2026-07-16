@@ -26,6 +26,7 @@ Label=tsdproxy.port.web=443/https:8080/http
 # homepage — exibição no dashboard (ver ../homepage/)
 Label=homepage.group=Self-Hosted
 Label=homepage.name=LubeLogger
+Label=homepage.icon=lubelogger.png
 Label=homepage.href=https://lubelogger.<seu-tailnet>.ts.net
 Label=homepage.description="Controle de manutenção veicular self-hosted"
 

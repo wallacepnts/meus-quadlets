@@ -24,7 +24,7 @@ Label=tsdproxy.port.web=443/https:5006/http
 # homepage — exibição no dashboard (ver ../homepage/)
 Label=homepage.group=Self-Hosted
 Label=homepage.name="Actual Budget"
-Label=homepage.icon=si-actualbudget
+Label=homepage.icon=actual-budget.svg
 Label=homepage.href=https://actual.<seu-tailnet>.ts.net
 Label=homepage.description="Orçamento pessoal self-hosted"
 

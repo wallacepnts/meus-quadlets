@@ -102,10 +102,22 @@ link funcionando de qualquer dispositivo.
 
 `icon` aceita `nome.png`/`.svg` (biblioteca [dashboard-icons](https://github.com/homarr-labs/dashboard-icons)),
 `mdi-nome` (Material Design Icons), `si-nome` (Simple Icons) ou uma URL
-absoluta. Exemplos já em uso neste repo:
+absoluta. Sempre incluir a extensão explicitamente
+(`baikal.svg`, não `baikal`) — sem ela, a Homepage tenta especificamente
+`.png` (não "detecta o melhor formato"), e se só existir `.svg` o ícone
+quebra.
+
+**`si-`/`mdi-` renderizam diferente de `dashboard-icons`.** Prefixados
+(`si-`/`mdi-`) viram uma **máscara CSS de cor única** (gradiente por
+padrão, ou a cor do tema se `iconStyle: theme` estiver em
+`settings.yaml`) — não mostram a imagem original. Ícones "soltos" do
+dashboard-icons (`nome.svg`/`.png`) mostram a arte original, com as
+cores de verdade. Prefira dashboard-icons quando existir equivalente
+(veja se `nome.svg` responde antes de cair pra `si-`/`mdi-`), pra manter
+visual consistente entre os cards. Exemplos já em uso neste repo:
 [`any-sync-bundle.container`](../any-sync-bundle/quadlet/any-sync-bundle.container)
-(`si-anytype`, sem `href` — não é um serviço HTTP navegável) e
-[`tsdproxy.container`](../tsdproxy/quadlet/tsdproxy.container) (`si-tailscale`).
+(`anytype.svg`, sem `href` — não é um serviço HTTP navegável) e
+[`tsdproxy.container`](../tsdproxy/quadlet/tsdproxy.container) (`tailscale.svg`).
 
 Depois de adicionar labels num container existente: `systemctl --user
 daemon-reload && systemctl --user restart <nome>` — Homepage

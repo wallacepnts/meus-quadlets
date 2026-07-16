@@ -26,7 +26,7 @@ Label=tsdproxy.port.quic=33020/udp:33020/udp
 # homepage — exibição no dashboard (ver ../homepage/)
 Label=homepage.group=Self-Hosted
 Label=homepage.name=Any-Sync-Bundle
-Label=homepage.icon=si-anytype
+Label=homepage.icon=anytype.svg
 Label=homepage.description="Backend self-hosted do Anytype"
 
 [Service]

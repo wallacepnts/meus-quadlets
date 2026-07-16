@@ -27,7 +27,7 @@ Label=tsdproxy.port.web=443/https:80/http
 # homepage — exibição no dashboard (ver ../homepage/)
 Label=homepage.group=Self-Hosted
 Label=homepage.name=Vaultwarden
-Label=homepage.icon=si-vaultwarden
+Label=homepage.icon=vaultwarden.svg
 Label=homepage.href=https://vaultwarden.<seu-tailnet>.ts.net
 Label=homepage.description="Cofre de senhas self-hosted (Bitwarden)"
 
