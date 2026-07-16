@@ -59,11 +59,16 @@ podman secret create linkwarden-nextauth-secret ~/.config/containers/secrets/lin
 podman secret create linkwarden-meili-key ~/.config/containers/secrets/linkwarden/meili-master-key.txt
 podman secret create linkwarden-database-url ~/.config/containers/secrets/linkwarden/database-url.txt
 
-# 4. Env não-secreto
+# 4. Env não-secreto — NEXTAUTH_URL precisa bater exatamente com o
+#    endereço usado no navegador (NextAuth valida isso pra cookies/CSRF).
+#    O .container já vem com labels do tsdproxy (nó "linkwarden" na
+#    tailnet), então o padrão aqui é o endereço da tailnet.
 mkdir -p ~/.config/containers/env
 cat > ~/.config/containers/env/linkwarden.env <<'EOF'
-# Trocar pro endereço real de acesso (local ou via tsdproxy/tailnet)
-NEXTAUTH_URL=http://localhost:3001/api/v1/auth
+# Domínio real da tailnet, criado automaticamente pelo tsdproxy.
+# Só acesso local (sem tsdproxy)? Trocar pra:
+#   NEXTAUTH_URL=http://localhost:3001/api/v1/auth
+NEXTAUTH_URL=https://linkwarden.<seu-tailnet>.ts.net/api/v1/auth
 MEILI_HOST=http://meilisearch:7700
 
 # Opcionais — ver lista completa em
@@ -76,10 +81,12 @@ systemctl --user daemon-reload
 systemctl --user start linkwarden.service
 ```
 
-Acessar em `http://localhost:3001` ou, via [tsdproxy](../tsdproxy/)
-(tailnet), `https://linkwarden.<seu-tailnet>.ts.net` — se usar o segundo,
-trocar `NEXTAUTH_URL` no `linkwarden.env` pra bater com o domínio real
-usado (NextAuth valida isso pra cookies/callbacks).
+Acessar via [tsdproxy](../tsdproxy/) (tailnet) em
+`https://linkwarden.<seu-tailnet>.ts.net` — é o padrão deste setup. Pra
+acesso só local em vez disso, usar `http://localhost:3001` **e** trocar o
+`NEXTAUTH_URL` em `linkwarden.env` pra bater (não dá pra usar os dois ao
+mesmo tempo — diferente de `ANY_SYNC_BUNDLE_INIT_EXTERNAL_ADDRS`, o
+NextAuth só aceita uma URL canônica).
 
 ## `Notify=healthy` com imagem que já tem HEALTHCHECK embutido
 
