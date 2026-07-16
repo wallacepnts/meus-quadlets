@@ -223,6 +223,37 @@ podman exec -it <container> sh   # se a imagem tiver shell
 Servidor de verdade: `loginctl enable-linger <usuário>` — sem isso, os
 serviços somem quando a sessão de login encerra.
 
+### Serviço sozinho (a maioria)
+
+Direto: `systemctl --user restart <app>.service`.
+
+### Serviço com dependências (ex.: any-sync-bundle, linkwarden)
+
+- **Subir**: só o principal — `systemctl --user start <app>.service` já
+  sobe as dependências primeiro, via `Requires=`.
+- **Reiniciar tudo**: idem, `restart` no principal recria a cadeia certa.
+- **Reiniciar só uma dependência** (ex.: só o banco, pra aplicar config):
+  também **para** quem a requer (regra 8) — se a dependência cair num
+  crash-loop nessa janela, quem dependia dela não volta sozinho depois.
+  Nesse caso: esperar a dependência ficar `healthy` e só então
+  `systemctl --user start <app>.service` manualmente.
+- **Derrubar tudo de propósito**: parar todos de uma vez, não só o
+  principal —
+  ```bash
+  systemctl --user stop <app>.service <app>-dependencia-1.service <app>-dependencia-2.service
+  ```
+  (é o padrão usado nos passos de backup de cada README de serviço, por
+  este exato motivo — parar só o principal deixa as dependências vivas
+  gravando enquanto o backup roda.)
+
+### Conferir depois
+
+```bash
+systemctl --user is-active <app>.service          # rápido, só o status
+journalctl --user -u <app>.service -f              # logs em tempo real
+podman ps --filter "name=<app>"                    # confirma healthy de verdade
+```
+
 ## Serviços neste repositório
 
 | Pasta | O quê |
