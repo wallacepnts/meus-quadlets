@@ -24,6 +24,13 @@ Label=tsdproxy.enable=true
 Label=tsdproxy.name=dash
 Label=tsdproxy.dash.visible=false
 
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Infra
+Label=homepage.name=tsdproxy
+Label=homepage.icon=si-tailscale
+Label=homepage.href=http://localhost:8080
+Label=homepage.description="Publica containers na tailnet automaticamente"
+
 [Service]
 Restart=always
 

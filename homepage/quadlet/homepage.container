@@ -1,0 +1,28 @@
+[Unit]
+Description=Homepage - dashboard de serviços
+Requires=podman.socket
+After=podman.socket
+
+[Container]
+Image=ghcr.io/gethomepage/homepage:v1.4.5
+ContainerName=homepage
+PublishPort=3000:3000
+
+# Socket compatível com a API do Docker, exposto pelo podman.socket —
+# leitura de labels apenas (ro). Mesmo mecanismo já usado pelo tsdproxy.
+Volume=%t/podman/podman.sock:/var/run/docker.sock:ro,z
+Volume=%h/.config/containers/volumes/homepage/config:/app/config:Z
+EnvironmentFile=%h/.config/containers/env/homepage.env
+
+HealthCmd=CMD-SHELL wget -q --spider http://localhost:3000/ || exit 1
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=5
+HealthStartPeriod=10s
+Notify=healthy
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

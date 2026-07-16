@@ -119,6 +119,15 @@ separado.
 Toda pasta de serviço baseado em outro projeto tem uma seção "Créditos" no
 próprio README, linkando o repositório e o autor originais.
 
+### 12. `Label=`/valores com espaço precisam de aspas
+
+```ini
+Label=homepage.description="Publica containers na tailnet automaticamente"
+```
+
+Sem aspas, o Quadlet corta o valor no primeiro espaço (vira só
+`Publica`) — sem erro, sem aviso.
+
 ## Anatomia de referência
 
 ### `<app>-net.network`
@@ -191,3 +200,4 @@ serviços somem quando a sessão de login encerra.
 | --- | --- |
 | [`any-sync-bundle/`](./any-sync-bundle/) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) |
 | [`tsdproxy/`](./tsdproxy/) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) |
+| [`homepage/`](./homepage/) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) |
