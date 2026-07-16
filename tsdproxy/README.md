@@ -93,14 +93,14 @@ Exemplo real de proxy TCP/UDP puro (não-HTTP) em
 
 **`yaml: unmarshal errors: field dashboard/proxyAccessLog not found`**
 A documentação oficial (https://almeidapaulopt.github.io/tsdproxy/docs/getting-started/)
-descreve o schema da v3 (beta), mas a imagem usada é `tsdproxy:2` (v2.3.4),
-com schema diferente (confirmado lendo o `config.go` da tag `v2.3.4` no
-GitHub do projeto). Na v2.3.4, `adminAllowLocalhost` e `proxyAccessLog`
-são campos de nível raiz do yaml, não aninhados em `dashboard:`/`log:`
-como a doc do site mostra — `config/tsdproxy.yaml` deste repo já segue o
-formato certo pra v2.3.4. Ao atualizar pra v3, provavelmente é preciso
-voltar ao formato aninhado da doc oficial — checar o `config.go` da tag
-correspondente antes de assumir.
+mostra `adminAllowLocalhost` aninhado em `dashboard:` e `proxyAccessLog`
+aninhado em `log:`. Não é uma diferença de schema entre v2 e v3: conferindo
+o `config.go` de `v2.3.4` e também da `v3.0.0-beta.3` (a v3 mais recente
+publicada) no GitHub do projeto, os dois campos estão na **raiz** do yaml
+nas duas versões — a doc do site está desatualizada/errada em relação ao
+código real, em ambas. `config/tsdproxy.yaml` deste repo usa o formato de
+raiz (o que realmente funciona). Ao trocar de versão, testar contra o
+`config.go` da tag correspondente antes de confiar na doc do site.
 
 **`permission denied while trying to connect to the docker API`**
 Só relevante em sistemas com SELinux enforcing. Causa: SELinux, pra
