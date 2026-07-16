@@ -1,0 +1,9 @@
+[Unit]
+Description=Dump do Postgres do Linkwarden (pra backup seguro via Zerobyte)
+Requires=linkwarden-postgres.service
+After=linkwarden-postgres.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman exec linkwarden-postgres pg_dump -U postgres postgres
+StandardOutput=file:%h/.config/containers/volumes/linkwarden/pg-dump/linkwarden.dump

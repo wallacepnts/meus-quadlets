@@ -1,0 +1,60 @@
+[Unit]
+Description=Zerobyte (automação de backup, Restic)
+
+[Container]
+Image=ghcr.io/nicotsx/zerobyte:v0.41.0
+ContainerName=zerobyte
+PublishPort=4096:4096
+
+# Backup precisa ler através de diretórios que já têm rótulo SELinux
+# PRIVADO (:Z) de outros containers (ex.: linkwarden/postgres, exclusivo
+# do container linkwarden-postgres) — um mount comum dá "Permission
+# denied" nesse caso. Desliga a confinação SELinux só pro zerobyte
+# (ele só monta essas fontes como :ro, mas registrar o trade-off aqui).
+SecurityLabelDisable=true
+
+# Dados da própria aplicação (config, chaves, banco)
+Volume=%h/.config/containers/volumes/zerobyte/data:/var/lib/zerobyte:Z
+Volume=/etc/localtime:/etc/localtime:ro
+
+# rclone é só DESTINO aqui (repositório remoto), não fonte — não precisa
+# de SYS_ADMIN/--device /dev/fuse (isso só é exigido quando rclone monta
+# nuvem como volume de origem, que não é o nosso caso). Configurar antes
+# com `rclone config` no host (ver README).
+Volume=%h/.config/rclone:/root/.config/rclone:ro
+
+# Fontes de backup — somente leitura. Tudo que este repositório gerencia.
+Volume=%h/.config/containers/volumes:/sources/volumes:ro
+Volume=%h/.config/containers/secrets:/sources/secrets:ro
+
+# Destino local
+Volume=%h/backups/zerobyte-local:/repositories/local:Z
+
+EnvironmentFile=%h/.config/containers/env/zerobyte.env
+
+# Secret criado via: podman secret create zerobyte-app-secret ~/.config/containers/secrets/zerobyte/app-secret.txt
+Secret=zerobyte-app-secret,type=env,target=APP_SECRET
+
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:4096/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=zerobyte
+Label=tsdproxy.port.web=443/https:4096/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Infra
+Label=homepage.name=Zerobyte
+Label=homepage.href=https://zerobyte.<seu-tailnet>.ts.net
+Label=homepage.description="Automação de backup (Restic)"
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

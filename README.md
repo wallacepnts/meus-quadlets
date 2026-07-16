@@ -157,6 +157,20 @@ variável de ambiente diretamente, não um arquivo em `/run/secrets/`. Segue
 a mesma regra 2 — o secret precisa existir antes via `podman secret
 create`.
 
+### 16. Container que precisa ler volumes de outros containers: `SecurityLabelDisable=true`
+
+```ini
+SecurityLabelDisable=true
+```
+
+Todo volume deste repositório usa `:Z` (rótulo SELinux **privado**,
+exclusivo do container dono). Um container terceiro tentando ler esses
+caminhos — mesmo só com `:ro` — toma `Permission denied`, porque `:Z` é
+exclusivo por design. Ferramentas que precisam enxergar dados de vários
+containers ao mesmo tempo (ex.: backup, ver [zerobyte](./zerobyte/))
+precisam desligar a confinação SELinux pra esse container específico.
+Trade-off consciente, não usar por padrão.
+
 ## Anatomia de referência
 
 ### `<app>-net.network`
@@ -404,3 +418,4 @@ conteúdo), só então `systemctl --user start`.
 | [`vaultwarden/`](./vaultwarden/) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) |
 | [`lubelogger/`](./lubelogger/) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) |
 | [`baikal/`](./baikal/) | Servidor CalDAV/CardDAV self-hosted ([README](./baikal/README.md)) |
+| [`zerobyte/`](./zerobyte/) | Automação de backup (Restic) pros outros serviços ([README](./zerobyte/README.md)) |
