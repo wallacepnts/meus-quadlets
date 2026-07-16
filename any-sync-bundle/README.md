@@ -30,10 +30,10 @@ Três containers na rede `any-sync-bundle-net.network`:
 ```
 quadlet/
 ├── any-sync-bundle-net.network      # rede dedicada
-├── any-sync-mongo.container         # MongoDB 8.0.4, tag fixa (CPUs com AVX — ver Auto-update)
+├── any-sync-mongo.container         # MongoDB 8.0.4 (CPUs com AVX)
 ├── any-sync-mongo-legacy.container  # MongoDB 4.4 (CPUs sem AVX — ver Troubleshooting)
-├── any-sync-bundle-redis.container  # Redis Stack, tag flutuante (auto-update)
-└── any-sync-bundle.container        # servidor any-sync-bundle, tag fixa (ver Auto-update)
+├── any-sync-bundle-redis.container  # Redis Stack 7.4.0-v7
+└── any-sync-bundle.container        # servidor any-sync-bundle 1.4.3-2026-04-21-minimal
 ```
 
 ## Pré-requisitos
@@ -133,58 +133,39 @@ externalAddr:
     - any-sync.<seu-tailnet>.ts.net
 ```
 
-## Auto-update
+## Atualizando as imagens
 
-Só `any-sync-bundle-redis` usa tag flutuante + o mecanismo nativo
-`podman auto-update` (sem ferramenta externa tipo Watchtower):
+As três imagens ficam em tags explícitas, iguais às do `compose.external.yml`
+original — sem `AutoUpdate=`, bump manual quando quiser:
 
-```ini
-# any-sync-bundle-redis.container
-Image=docker.io/redis/redis-stack-server:latest
-AutoUpdate=registry
-```
+| Container | Tag atual |
+| --- | --- |
+| `any-sync-bundle` | `1.4.3-2026-04-21-minimal` |
+| `any-sync-bundle-mongo` | `8.0.4` |
+| `any-sync-bundle-redis` | `7.4.0-v7` |
 
 ```bash
-systemctl --user enable --now podman-auto-update.timer   # roda 1x/dia, checa digest no registry
-podman auto-update --dry-run                              # prévia sem aplicar nada
-```
-
-Se o digest da tag mudou, o Podman puxa a imagem nova e reinicia o
-container. Redis tem `HealthCmd`, então tem **rollback automático**: se não
-ficar `healthy` depois do restart, o Podman reverte sozinho pra imagem
-anterior.
-
-**`any-sync-bundle` e `any-sync-bundle-mongo` ficam de fora do
-auto-update, de propósito** — tag explícita, sem `AutoUpdate=`, bump manual
-quando quiser:
-
-- **any-sync-bundle**: a imagem `-minimal` não tem shell/utilitário nenhum
-  (só o binário estático), então não dá pra configurar `HealthCmd` nela —
-  sem `HealthCmd` não existe rollback automático, e esse é o container que
-  guarda o estado real do backend. A alternativa seria a tag `:latest`
-  ("All-in-one", com MongoDB/Redis embutidos — arquitetura diferente da
-  nossa, 802 MB vs 50 MB), o que não compensa só pra ganhar um shell. Segue
-  também a própria recomendação do projeto ("explicit version tags are
-  recommended" sobre `:latest`/`:minimal`).
-- **any-sync-bundle-mongo**: mesmo uma tag flutuante presa em major.minor
-  (`mongo:8.0`) já quebrou aqui na prática — builds recentes de Mongo 8.0.x
-  (ex. `8.0.26`) se recusam a iniciar em kernel Linux 6.19+ (guard interno
-  do próprio Mongo,
-  [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)), sem
-  relação nenhuma com o any-sync-bundle. Ver Troubleshooting.
-
-**Bump manual do any-sync-bundle:**
-```bash
-# Editar Image= em any-sync-bundle.container pra nova tag, depois:
+# Fazer backup antes (ver seção própria). Editar Image= no .container
+# correspondente pra nova tag, depois:
 systemctl --user daemon-reload
-systemctl --user restart any-sync-bundle.service
+systemctl --user restart <nome>.service
+```
+
+A tag do any-sync-bundle segue o formato
+`v[versão-semver]-[data-de-compatibilidade-any-sync]` (ex.:
+`1.4.3-2026-04-21` — o sufixo de data é a versão de compatibilidade do
+any-sync usada pelos apps do Anytype, não a data do release). Conferir a
+versão rodando (a imagem `-minimal` não tem `--version` executável via
+`podman exec`, sem shell):
+
+```bash
 podman inspect any-sync-bundle --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
 ```
 
-A tag segue o formato `v[versão-semver]-[data-de-compatibilidade-any-sync]`
-(ex.: `1.4.3-2026-04-21` — o sufixo de data é a versão de compatibilidade
-do any-sync usada pelos apps do Anytype, não a data do release). Fazer
-backup antes (ver seção própria).
+Ao trocar a tag do Mongo: builds recentes de Mongo 8.0.x (ex. `8.0.26`) se
+recusam a iniciar em kernel Linux 6.19+ (guard interno do próprio Mongo,
+[SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)) — conferir
+`uname -r` antes de sair de `8.0.4`.
 
 ## Backup & Recuperação
 

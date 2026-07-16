@@ -2,12 +2,7 @@
 Description=Any-Sync-Bundle Redis
 
 [Container]
-# Sem tag flutuante "só patch" disponível pro redis-stack-server no Docker
-# Hub (só existem tags exatas tipo 7.4.0-vN, ou latest sem isolamento de
-# versão). Usando latest — risco baixo aqui pois o any-sync-bundle só usa
-# comandos genéricos de Redis + o módulo RedisBloom, presente em toda tag.
-Image=docker.io/redis/redis-stack-server:latest
-AutoUpdate=registry
+Image=docker.io/redis/redis-stack-server:7.4.0-v7
 ContainerName=any-sync-bundle-redis
 Network=any-sync-bundle-net.network
 NetworkAlias=redis
