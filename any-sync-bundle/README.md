@@ -75,7 +75,7 @@ cat > ~/.config/containers/env/any-sync-bundle.env <<'EOF'
 # Advertise address(es) clients devem usar (separado por vírgula). Só é lido
 # na primeira inicialização — depois disso, editar externalAddr em
 # volumes/any-sync-bundle/bundle/bundle-config.yml (ver Solução de problemas).
-ANY_SYNC_BUNDLE_INIT_EXTERNAL_ADDRS=SEU_IP_OU_HOSTNAME
+ANY_SYNC_BUNDLE_INIT_EXTERNAL_ADDRS=any-sync.<seu-tailnet>.ts.net
 ANY_SYNC_BUNDLE_INIT_MONGO_URI=mongodb://mongo:27017/?replicaSet=rs0
 ANY_SYNC_BUNDLE_INIT_REDIS_URI=redis://redis:6379/
 
@@ -204,12 +204,11 @@ teria evitado downtime.
 **Backup automatizado via [Zerobyte](../zerobyte/):** copiar os arquivos
 do Mongo (`.wt`) ou do badger (`storage/`) crus enquanto os processos
 estão escrevendo é a receita clássica pra um backup corrompido/não
-restaurável — foi exatamente o que aconteceu no incidente acima. O
-webhook em `backup-webhook/` para o stack inteiro (`any-sync-bundle` +
-`any-sync-mongo` + `any-sync-bundle-redis`) antes do Restic rodar de
-verdade e religa depois — como o único cliente do Mongo/Redis é o
-próprio bundle, isso vira um backup a frio completo, sem precisar de
-dump lógico. Detalhes e instalação em
+restaurável. O webhook em `backup-webhook/` para o stack inteiro
+(`any-sync-bundle` + `any-sync-mongo` + `any-sync-bundle-redis`) antes do
+Restic rodar de verdade e religa depois — como o único cliente do
+Mongo/Redis é o próprio bundle, isso vira um backup a frio completo, sem
+precisar de dump lógico. Detalhes e instalação em
 [zerobyte/README.md](../zerobyte/README.md#criando-os-jobs-de-backup).
 
 ## Implantando em outro servidor / outra tailnet
