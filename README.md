@@ -254,6 +254,46 @@ journalctl --user -u <app>.service -f              # logs em tempo real
 podman ps --filter "name=<app>"                    # confirma healthy de verdade
 ```
 
+### Remover a unit (mantém os dados)
+
+```bash
+systemctl --user stop <app>.service [<dependencias>.service]
+rm ~/.config/containers/systemd/<app>.container   # e .network/.volume se tiver
+systemctl --user daemon-reload
+systemctl --user reset-failed   # limpa estado de falha residual, se tiver
+```
+
+Depois do `daemon-reload` a unit some do `systemctl --user status`. Os
+dados continuam em `volumes/<app>/` — dá pra reinstalar depois sem perder
+nada.
+
+### Apagar tudo (destrutivo — dados, segredos, config)
+
+```bash
+# 1. Confirmar que a unit já foi removida (passo acima)
+
+# 2. Dados — IRREVERSÍVEL sem backup
+rm -rf ~/.config/containers/volumes/<app>/
+
+# 3. Env
+rm -f ~/.config/containers/env/<app>.env
+
+# 4. Secrets, se o serviço usava (vaultwarden, linkwarden, tsdproxy)
+podman secret rm <app>-nome-do-secret
+rm -rf ~/.config/containers/secrets/<app>/
+```
+
+Duas pegadinhas específicas deste repositório:
+
+- **tsdproxy não desregistra o nó da tailnet sozinho** — apagar o
+  container não remove o dispositivo do admin do Tailscale (é assim que
+  surgiram os duplicados `dash`/`dash-1` mencionados antes). Pra tirar de
+  vez, remover manualmente em
+  https://login.tailscale.com/admin/machines.
+- **Homepage não precisa de limpeza** — só lê labels de containers vivos
+  via socket; some da lista sozinha assim que o container deixa de
+  existir.
+
 ## Auto-update
 
 Desligado por padrão em todo o repositório (regra 9) — ativar é opt-in,
