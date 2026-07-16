@@ -74,7 +74,13 @@ usuário/calendário depois de criados).
 ## Auto-update
 
 Sem `AutoUpdate=` — tag explícita (`0.10.1-nginx-php8.2`), bump manual
-(regra 9 do README raiz). Imagem Debian com `curl`, healthcheck real.
+(regra 9 do README raiz). A imagem tem `curl`/healthcheck real (daria pra
+habilitar com rollback de verdade), mas o banco é **SQLite embutido**
+(calendários/contatos) — o healthcheck só confere se o nginx responde
+HTTP, não se uma migração de schema rodou certo numa troca de versão.
+Rollback automático desfaz o container, não desfaz uma migração já
+aplicada no volume. Mesmo raciocínio do vaultwarden: revisão manual antes
+de atualizar é o padrão aqui de propósito, não uma limitação técnica.
 
 ## Backup & Recuperação
 

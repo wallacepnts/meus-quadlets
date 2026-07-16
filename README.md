@@ -504,6 +504,8 @@ cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
   checagem TCP crua (regra 13), então nem entra na conversa de
   auto-update com rollback de verdade sem trocar a estratégia de
   healthcheck primeiro.
-- **baikal, tsdproxy** — sem motivo técnico específico, só não foram
-  avaliados/ligados ainda (`tsdproxy` já usa uma tag de major flutuante,
-  `:2`, mas sem `AutoUpdate=` isso não dispara sozinho).
+- **baikal** — mesmo raciocínio do vaultwarden: banco SQLite embutido
+  (calendários/contatos), healthcheck não cobre migração de schema.
+- **tsdproxy** — sem motivo técnico específico, só não foi avaliado/ligado
+  ainda (já usa uma tag de major flutuante, `:2`, mas sem `AutoUpdate=`
+  isso não dispara sozinho).
