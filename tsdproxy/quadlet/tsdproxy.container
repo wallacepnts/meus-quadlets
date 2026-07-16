@@ -7,8 +7,7 @@ After=podman.socket
 Image=docker.io/almeidapaulopt/tsdproxy:2
 ContainerName=tsdproxy
 
-# Porta (8080 já está em uso pelo nginx neste host)
-PublishPort=8081:8080
+PublishPort=8080:8080
 
 # Socket compatível com a API do Docker, exposto pelo podman.socket
 Volume=%t/podman/podman.sock:/var/run/docker.sock:z

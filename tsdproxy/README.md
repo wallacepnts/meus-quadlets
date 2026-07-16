@@ -91,12 +91,6 @@ Exemplo real de proxy TCP/UDP puro (não-HTTP) em
 
 ## Troubleshooting
 
-**Porta 8080 em uso**
-Nginx (ou outro serviço) já publicando `8080`. Resolvido usando
-`PublishPort=8081:8080` no `tsdproxy.container` — específico desta
-máquina, ajustar conforme as portas já ocupadas no seu host
-(`ss -tlnp | grep <porta>` pra checar).
-
 **`yaml: unmarshal errors: field dashboard/proxyAccessLog not found`**
 A documentação oficial (https://almeidapaulopt.github.io/tsdproxy/docs/getting-started/)
 descreve o schema da v3 (beta), mas a imagem usada é `tsdproxy:2` (v2.3.4),
