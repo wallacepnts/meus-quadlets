@@ -212,3 +212,4 @@ serviços somem quando a sessão de login encerra.
 | [`any-sync-bundle/`](./any-sync-bundle/) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) |
 | [`tsdproxy/`](./tsdproxy/) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) |
 | [`homepage/`](./homepage/) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) |
+| [`actual-budget/`](./actual-budget/) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) |

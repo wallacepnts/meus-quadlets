@@ -1,0 +1,34 @@
+[Unit]
+Description=Actual Budget Server
+
+[Container]
+Image=docker.io/actualbudget/actual-server:26.1.0
+ContainerName=actual
+PublishPort=5006:5006
+EnvironmentFile=%h/.config/containers/env/actual.env
+Volume=%h/.config/containers/volumes/actual/data:/data:Z
+
+HealthCmd=CMD-SHELL node /app/src/scripts/health-check.js
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=20s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=actual
+Label=tsdproxy.port.web=443/https:5006/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name="Actual Budget"
+Label=homepage.icon=si-actualbudget
+Label=homepage.href=https://actual.<seu-tailnet>.ts.net
+Label=homepage.description="Orçamento pessoal self-hosted"
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
