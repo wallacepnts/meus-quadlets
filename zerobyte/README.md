@@ -160,8 +160,7 @@ Restic rodar e religar depois, em vez de gerar dumps. Como o único
 cliente do Mongo/Redis é o próprio any-sync-bundle, parar os três juntos
 vira um backup a frio completo — sem risco de corrupção em nenhum dos
 três (ver seção *Backup & Recuperação* do
-[README do any-sync-bundle](../any-sync-bundle/README.md) pro incidente
-que motivou isso).
+[README do any-sync-bundle](../any-sync-bundle/README.md)).
 
 Diferente do linkwarden (timer de horário fixo, sem garantia de
 sincronismo com o job), aqui dá pra usar o
