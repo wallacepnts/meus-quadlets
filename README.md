@@ -444,14 +444,14 @@ conteúdo), só então `systemctl --user start`.
 
 | Pasta | O quê | AutoUpdate |
 | --- | --- | --- |
-| [`any-sync-bundle/`](./any-sync-bundle/) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) | ❌ |
-| [`tsdproxy/`](./tsdproxy/) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) | ❌ |
-| [`homepage/`](./homepage/) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) | ✅ |
 | [`actual-budget/`](./actual-budget/) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) | ✅ |
-| [`linkwarden/`](./linkwarden/) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) | ❌ |
-| [`vaultwarden/`](./vaultwarden/) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) | ❌ |
-| [`lubelogger/`](./lubelogger/) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) | ❌ |
+| [`any-sync-bundle/`](./any-sync-bundle/) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) | ❌ |
 | [`baikal/`](./baikal/) | Servidor CalDAV/CardDAV self-hosted ([README](./baikal/README.md)) | ❌ |
+| [`homepage/`](./homepage/) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) | ✅ |
+| [`linkwarden/`](./linkwarden/) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) | ❌ |
+| [`lubelogger/`](./lubelogger/) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) | ❌ |
+| [`tsdproxy/`](./tsdproxy/) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) | ❌ |
+| [`vaultwarden/`](./vaultwarden/) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) | ❌ |
 | [`zerobyte/`](./zerobyte/) | Automação de backup (Restic) pros outros serviços ([README](./zerobyte/README.md)) | ❌ |
 
 ### O que o AutoUpdate precisa pra funcionar direito
