@@ -44,14 +44,16 @@ python3 - <<'PYEOF'
 from argon2 import PasswordHasher
 from argon2.low_level import Type
 import secrets
+import os
 
+secrets_dir = os.path.expanduser("~/.config/containers/secrets/vaultwarden")
 ph = PasswordHasher(time_cost=3, memory_cost=65540, parallelism=4, hash_len=32, salt_len=16, type=Type.ID)
 raw_secret = secrets.token_urlsafe(32)
 phc = ph.hash(raw_secret)
 
-with open("~/.config/containers/secrets/vaultwarden/admin-token-raw.txt", "w") as f:
+with open(f"{secrets_dir}/admin-token-raw.txt", "w") as f:
     f.write(raw_secret)
-with open("~/.config/containers/secrets/vaultwarden/admin-token-hash.txt", "w") as f:
+with open(f"{secrets_dir}/admin-token-hash.txt", "w") as f:
     f.write(phc)
 
 print("Token admin (guardar em local seguro, é a SENHA do painel /admin):")
