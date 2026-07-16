@@ -1,0 +1,6 @@
+[Unit]
+Description=Para any-sync-bundle antes do job de backup do bundle no Zerobyte
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl --user stop any-sync-bundle.service

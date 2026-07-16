@@ -1,0 +1,13 @@
+[Unit]
+Description=Agenda a religada do any-sync-bundle depois do job de backup no Zerobyte
+
+[Timer]
+OnCalendar=*-*-* 22:45:00
+# Persistent=true de propósito: garante que, se o host esteve desligado ou
+# suspenso durante esse horário, o serviço volta assim que possível — rede
+# de segurança pra não deixar o any-sync-bundle parado indefinidamente por
+# acidente. Contraste com o timer de pause (Persistent=false).
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -43,6 +43,12 @@ quadlet/
 ../linkwarden/pgdump/
 ├── linkwarden-pgdump.service  # dump do Postgres do linkwarden (systemd comum, não Quadlet)
 └── linkwarden-pgdump.timer    # roda diariamente antes do job do Zerobyte
+
+../any-sync-bundle/backup-pause/
+├── any-sync-bundle-backup-pause.service   # para o any-sync-bundle (systemd comum, não Quadlet)
+├── any-sync-bundle-backup-pause.timer     # dispara a parada antes do job do Zerobyte
+├── any-sync-bundle-backup-resume.service  # religa o any-sync-bundle
+└── any-sync-bundle-backup-resume.timer    # dispara a religada depois do job do Zerobyte
 ```
 
 ## Pré-requisitos
@@ -143,10 +149,35 @@ systemctl --user start linkwarden-pgdump
 ls -la ~/.config/containers/volumes/linkwarden/pg-dump/
 ```
 
-O any-sync-bundle (Mongo/Redis) tem o mesmo tipo de risco em menor grau —
-não montei uma solução pra ele ainda; se for backupear esse serviço
-também, vale o mesmo raciocínio (`mongodump`/`redis BGSAVE` antes,
-excluir os data dirs crus).
+**Mongo/Redis do any-sync-bundle** têm o mesmo tipo de risco — ainda não
+montei uma solução pra eles; se for backupear esse serviço também, vale o
+mesmo raciocínio (`mongodump`/`redis BGSAVE` antes, excluir os data dirs
+crus).
+
+**`bundle/` do any-sync-bundle** (badger storage + `bundle-config.yml`,
+a identidade do nó) tem um problema parecido, mas sem saída de
+`pg_dump`: a imagem do any-sync-bundle é minimal, sem shell, então não dá
+pra rodar um hook de pré-backup dentro do container. A solução aqui foi
+diferente — parar o container inteiro por uma janela curta em vez de
+gerar um dump:
+
+```bash
+cp ../any-sync-bundle/backup-pause/any-sync-bundle-backup-{pause,resume}.{service,timer} \
+  ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now any-sync-bundle-backup-pause.timer any-sync-bundle-backup-resume.timer
+```
+
+`any-sync-bundle-backup-pause.timer` para o container (`22:00` por
+padrão) e `any-sync-bundle-backup-resume.timer` religa (`22:45`) — só o
+`any-sync-bundle` em si, Mongo e Redis continuam rodando (não têm
+`PartOf=` apontando pra ele). Igual ao aviso do linkwarden acima: **os
+horários não são sincronizados automaticamente com o job do Zerobyte** —
+o job do any-sync-bundle na UI precisa rodar dentro dessa janela, com
+margem sobrando pro tamanho real do `storage-file` (pode chegar a alguns
+GB; ajustar `OnCalendar=` dos dois timers conforme a duração observada do
+job). Mongo e Redis continuam expostos durante a janela — não afeta
+esses dois, só o bundle.
 
 ## Auto-update
 

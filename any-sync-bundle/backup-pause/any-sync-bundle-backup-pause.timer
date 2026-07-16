@@ -1,0 +1,13 @@
+[Unit]
+Description=Agenda a parada do any-sync-bundle antes do job de backup no Zerobyte
+
+[Timer]
+OnCalendar=*-*-* 22:00:00
+# Persistent=false de propósito: se o host esteve desligado nesse horário,
+# não faz sentido "recuperar" uma parada atrasada — melhor pular e esperar
+# a próxima janela agendada. Contraste com o timer de resume, que usa
+# Persistent=true (ver any-sync-bundle-backup-resume.timer).
+Persistent=false
+
+[Install]
+WantedBy=timers.target

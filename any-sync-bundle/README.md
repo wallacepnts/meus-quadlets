@@ -201,6 +201,16 @@ tag do bundle manualmente) — é a mesma recomendação do projeto original, e
 o incidente do Mongo documentado acima é exatamente o cenário em que isso
 teria evitado downtime.
 
+**Backup automatizado via [Zerobyte](../zerobyte/):** copiar os arquivos
+do Mongo (`.wt`) ou do badger (`storage/`) crus enquanto os processos
+estão escrevendo é a receita clássica pra um backup corrompido/não
+restaurável — foi exatamente o que aconteceu no incidente acima. Os
+timers em `backup-pause/` param só o `any-sync-bundle` (badger +
+`bundle-config.yml`) numa janela curta antes do job do Zerobyte rodar;
+Mongo/Redis ainda não têm proteção equivalente (dump lógico antes do
+backup, nos moldes do `pg_dump` do linkwarden). Detalhes e instalação em
+[zerobyte/README.md](../zerobyte/README.md#criando-os-jobs-de-backup).
+
 ## Implantando em outro servidor / outra tailnet
 
 Os arquivos `.container`/`.network` são portáveis e podem ser copiados
