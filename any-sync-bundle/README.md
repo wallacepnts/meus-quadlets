@@ -204,12 +204,12 @@ teria evitado downtime.
 **Backup automatizado via [Zerobyte](../zerobyte/):** copiar os arquivos
 do Mongo (`.wt`) ou do badger (`storage/`) crus enquanto os processos
 estão escrevendo é a receita clássica pra um backup corrompido/não
-restaurável — foi exatamente o que aconteceu no incidente acima. Os
-timers em `backup-pause/` param o stack inteiro (`any-sync-bundle` +
-`any-sync-mongo` + `any-sync-bundle-redis`) numa janela curta antes do
-job do Zerobyte rodar e religam depois — como o único cliente do
-Mongo/Redis é o próprio bundle, isso vira um backup a frio completo, sem
-precisar de dump lógico. Detalhes e instalação em
+restaurável — foi exatamente o que aconteceu no incidente acima. O
+webhook em `backup-webhook/` para o stack inteiro (`any-sync-bundle` +
+`any-sync-mongo` + `any-sync-bundle-redis`) antes do Restic rodar de
+verdade e religa depois — como o único cliente do Mongo/Redis é o
+próprio bundle, isso vira um backup a frio completo, sem precisar de
+dump lógico. Detalhes e instalação em
 [zerobyte/README.md](../zerobyte/README.md#criando-os-jobs-de-backup).
 
 ## Implantando em outro servidor / outra tailnet

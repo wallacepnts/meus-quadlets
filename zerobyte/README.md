@@ -44,11 +44,9 @@ quadlet/
 ├── linkwarden-pgdump.service  # dump do Postgres do linkwarden (systemd comum, não Quadlet)
 └── linkwarden-pgdump.timer    # roda diariamente antes do job do Zerobyte
 
-../any-sync-bundle/backup-pause/
-├── any-sync-bundle-backup-pause.service   # para o any-sync-bundle (systemd comum, não Quadlet)
-├── any-sync-bundle-backup-pause.timer     # dispara a parada antes do job do Zerobyte
-├── any-sync-bundle-backup-resume.service  # religa o any-sync-bundle
-└── any-sync-bundle-backup-resume.timer    # dispara a religada depois do job do Zerobyte
+../any-sync-bundle/backup-webhook/
+├── any-sync-bundle-webhook.py       # recebe os webhooks pre/post-backup do Zerobyte
+└── any-sync-bundle-webhook.service  # roda o script acima (systemd comum, não Quadlet)
 ```
 
 ## Pré-requisitos
@@ -89,6 +87,10 @@ BASE_URL=https://zerobyte.<seu-tailnet>.ts.net
 TZ=America/Sao_Paulo
 PORT=4096
 RESTIC_HOSTNAME=<nome-deste-host>
+# Necessário só se for usar webhooks de pre/post-backup (ver seção
+# "Criando os jobs de backup" — cada origem usada nos jobs precisa estar
+# nessa lista, senão o Zerobyte recusa salvar a URL do webhook)
+WEBHOOK_ALLOWED_ORIGINS=http://host.containers.internal:8765
 EOF
 
 # 6. Subir
@@ -153,31 +155,68 @@ ls -la ~/.config/containers/volumes/linkwarden/pg-dump/
 mesmo tipo de risco que o linkwarden, mas sem saída de `pg_dump`/`BGSAVE`
 via hook: a imagem do any-sync-bundle é minimal, sem shell, então não dá
 pra rodar um comando de pré-backup dentro do container. A solução aqui
-foi diferente — parar o stack inteiro (bundle + mongo + redis) por uma
-janela curta antes do job do Zerobyte, em vez de gerar dumps. Como o
-único cliente do Mongo/Redis é o próprio any-sync-bundle, parar os três
-juntos vira um backup a frio completo — sem risco de corrupção em nenhum
-dos três (ver seção *Backup & Recuperação* do
+foi diferente — parar o stack inteiro (bundle + mongo + redis) antes do
+Restic rodar e religar depois, em vez de gerar dumps. Como o único
+cliente do Mongo/Redis é o próprio any-sync-bundle, parar os três juntos
+vira um backup a frio completo — sem risco de corrupção em nenhum dos
+três (ver seção *Backup & Recuperação* do
 [README do any-sync-bundle](../any-sync-bundle/README.md) pro incidente
-que motivou isso):
+que motivou isso).
+
+Diferente do linkwarden (timer de horário fixo, sem garantia de
+sincronismo com o job), aqui dá pra usar o
+[webhook de pre/post-backup do Zerobyte](https://zerobyte.app/docs/guides/backup-webhooks)
+de verdade: o pré-backup é bloqueante (o Restic só roda depois de um 2xx,
+e aborta se o webhook falhar/der timeout), então não existe janela
+adivinhada — o stack só some enquanto o backup está de fato rodando.
 
 ```bash
-cp ../any-sync-bundle/backup-pause/any-sync-bundle-backup-{pause,resume}.{service,timer} \
-  ~/.config/systemd/user/
+# 1. Token compartilhado (o mesmo header nos dois hooks do job)
+mkdir -p ~/.config/any-sync-bundle-webhook
+openssl rand -hex 32 | tr -d '\n' > ~/.config/any-sync-bundle-webhook/token
+chmod 600 ~/.config/any-sync-bundle-webhook/token
+
+# 2. Script + unit (stdlib só, sem dependência pra instalar)
+mkdir -p ~/.local/bin
+cp ../any-sync-bundle/backup-webhook/any-sync-bundle-webhook.py ~/.local/bin/
+chmod 700 ~/.local/bin/any-sync-bundle-webhook.py
+cp ../any-sync-bundle/backup-webhook/any-sync-bundle-webhook.service ~/.config/systemd/user/
 systemctl --user daemon-reload
-systemctl --user enable --now any-sync-bundle-backup-pause.timer any-sync-bundle-backup-resume.timer
+systemctl --user enable --now any-sync-bundle-webhook.service
+
+# 3. WEBHOOK_ALLOWED_ORIGINS=http://host.containers.internal:8765 já
+#    precisa estar em zerobyte.env (passo 5 da instalação acima) antes
+#    de reiniciar o zerobyte
+systemctl --user restart zerobyte
 ```
 
-`any-sync-bundle-backup-pause.timer` para `any-sync-bundle`,
-`any-sync-mongo` e `any-sync-bundle-redis` juntos (`22:00` por padrão) e
-`any-sync-bundle-backup-resume.timer` religa os três (`22:45`). Com o
-stack parado, dá pra marcar as três pastas (`bundle`, `mongo`, `redis`)
-no job do Zerobyte sem exclusões nem dump lógico. Igual ao aviso do
-linkwarden acima: **os horários não são sincronizados automaticamente
-com o job do Zerobyte** — o job do any-sync-bundle na UI precisa rodar
-dentro dessa janela, com margem sobrando pro tamanho real dos dados
-(`storage-file` do bundle pode chegar a alguns GB; ajustar `OnCalendar=`
-dos dois timers conforme a duração observada do job).
+Na UI do Zerobyte, seção **Advanced** do job do any-sync-bundle:
+
+| Hook | URL | Header |
+| --- | --- | --- |
+| Pre-backup | `http://host.containers.internal:8765/hooks/any-sync-bundle/pre-backup` | `X-Zerobyte-Hook-Secret: <conteúdo do token>` |
+| Post-backup | `http://host.containers.internal:8765/hooks/any-sync-bundle/post-backup` | `X-Zerobyte-Hook-Secret: <conteúdo do token>` |
+
+`host.containers.internal` é o hostname especial do Podman rootless (via
+pasta) pra alcançar o host de dentro do container — não precisa estar na
+mesma rede do zerobyte nem ter porta publicada.
+
+**Trade-off consciente:** pra `host.containers.internal` alcançar o
+serviço, ele precisa escutar em `0.0.0.0` (não dá pra restringir a uma
+interface só — testado na prática, esse endereço especial do Podman não
+existe como IP real do lado do host, só via a NAT da rede). Isso deixa a
+porta 8765 tecnicamente alcançável pela LAN/tailnet também, não só pelo
+container — a única barreira é o token no header (`hmac.compare_digest`,
+comparação em tempo constante). Sem esse token, qualquer um que alcance a
+porta consegue parar o stack. Se quiser uma camada a mais, restringir a
+porta 8765 no firewall do host pra só aceitar da sub-rede do Podman.
+
+O pós-backup dispara o `systemctl --user start` em background e responde
+na hora — mongo/redis usam `Notify=healthy` (o `start` só retorna depois
+do healthcheck passar), o que pode passar dos 60s padrão do
+`WEBHOOK_TIMEOUT`; como falha no pós-backup só vira warning no Zerobyte
+(não desfaz o backup que já rodou), preferível responder logo a arriscar
+estourar o timeout com o stack ainda parado.
 
 ## Auto-update
 
