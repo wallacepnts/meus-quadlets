@@ -13,8 +13,11 @@ PublishPort=4096:4096
 # (ele só monta essas fontes como :ro, mas registrar o trade-off aqui).
 SecurityLabelDisable=true
 
-# Dados da própria aplicação (config, chaves, banco)
-Volume=%h/.config/containers/volumes/zerobyte/data:/var/lib/zerobyte:Z
+# Dados da própria aplicação (config, chaves, banco). O Zerobyte já cria
+# sua própria subpasta "data/" dentro de /var/lib/zerobyte — montar aqui
+# em cima de "zerobyte/" (não "zerobyte/data/") evita duplicar o nível
+# ("zerobyte/data/data/").
+Volume=%h/.config/containers/volumes/zerobyte:/var/lib/zerobyte:Z
 Volume=/etc/localtime:/etc/localtime:ro
 
 # rclone é só DESTINO aqui (repositório remoto), não fonte — não precisa
