@@ -33,120 +33,86 @@ pronta pra copiar para `~/.config/containers/systemd/<app>/`.
 
 ## Convenções
 
-Checklist verificado na prática (Podman 5.8.3) — vale como regra padrão
-para qualquer serviço novo neste repositório.
+Regras a seguir em qualquer serviço novo neste repositório (Podman 5.8.3).
 
-### 1. Nome de arquivo único no repo inteiro, não só na pasta
+### 1. Nome de arquivo único em todo o repositório
 
-O Quadlet nomeia a unit gerada pelo *basename* do arquivo — **dois
-arquivos com o mesmo nome em subpastas diferentes de
-`~/.config/containers/systemd/` colidem silenciosamente** (um sobrescreve
-o outro no `daemon-reload`, sem aviso). Confirmado na prática: um
-`any-sync.network` genérico colidiu com outro deploy no mesmo host.
+O Quadlet nomeia a unit gerada pelo *basename* do arquivo, mesmo entre
+subpastas diferentes de `~/.config/containers/systemd/`. Prefixar todo
+arquivo com o nome do app: `any-sync-bundle-net.network`.
 
-→ Prefixar todo arquivo com o nome do app, mesmo dentro da própria
-subpasta: `any-sync-bundle-net.network`, não `network.network`.
+### 2. Secrets são imperativos
 
-### 2. Secrets são imperativos, não declarativos
-
-**Não existe unit `.secret` no Quadlet.** O gerador só reconhece as
-extensões `.container .volume .network .build .pod .kube .artifact
-.image` (confirmado em `man podman-systemd.unit`, testado empiricamente:
-um arquivo `.secret` é ignorado sem erro, sem log, sem nada). O fluxo
-correto:
+Extensões reconhecidas pelo Quadlet: `.container .volume .network .build
+.pod .kube .artifact .image`. Fluxo de secret:
 
 ```bash
-# 1. Arquivo-fonte (nunca commitar)
 mkdir -p ~/.config/containers/secrets/<app>
 echo -n "valor-secreto" > ~/.config/containers/secrets/<app>/senha.txt
 chmod 600 ~/.config/containers/secrets/<app>/senha.txt
-
-# 2. Cria o secret no Podman — comando único, uma vez, documentado no
-#    README do app como pré-requisito de instalação
 podman secret create <app>-senha ~/.config/containers/secrets/<app>/senha.txt
 ```
 
 ```ini
-# 3. Referencia no .container
 Secret=<app>-senha,target=/run/secrets/senha
 ```
 
-### 3. `.network`: a chave é `NetworkName=`, não `Name=`
+### 3. `.network`: a chave é `NetworkName=`
 
 ```ini
 [Network]
 NetworkName=<app>-net
 ```
 
-`Name=` no grupo `[Network]` dá erro ("unsupported key") — testado.
 `Driver=bridge` é o default do Podman, só declarar se quiser deixar
 explícito.
 
-### 4. Unit gerada por Quadlet nunca usa `enable`/`disable`
+### 4. Units geradas por Quadlet: só `start`/`stop`/`restart`/`status`
 
-O `[Install]` é aplicado **na hora da geração** — equivale a rodar
-`systemctl enable` automaticamente a cada `daemon-reload` (confirmado no
-man page: "the generator manually applies the [Install] section... in the
-same way systemctl enable does"). `systemctl --user enable app.service` dá
-erro ("Unit is transient or generated"). Só usar:
+O `[Install]` já é aplicado na hora da geração.
 
 ```bash
 systemctl --user daemon-reload
 systemctl --user start|stop|restart|status <nome>.service
 ```
 
-### 5. Referenciar `.network`/`.volume` de outro arquivo já injeta a dependência
+### 5. `Network=`/`Volume=` apontando pra outro arquivo Quadlet já injeta a dependência
 
 ```ini
 Network=meu-app.network
 ```
 
-já adiciona `Requires=meu-app-network.service` + `After=` automaticamente
-no service gerado (confirmado no dry-run) — não precisa declarar isso
-manualmente em `[Unit]`.
+adiciona `Requires=meu-app-network.service` + `After=` automaticamente no
+service gerado — não declarar de novo em `[Unit]`.
 
-### 6. Bind mount exige que o diretório do host já exista
+### 6. Diretórios de bind mount precisam existir antes do primeiro start
 
-Diferente do Docker Compose, o Podman **não cria** o diretório do bind
-mount sozinho — sem ele, o container entra em crash-loop com
-`statfs: no such file or directory`. Sempre `mkdir -p` os caminhos de
-`Volume=` antes do primeiro `start`.
+`mkdir -p` todo caminho usado em `Volume=` antes de subir o serviço.
 
-### 7. `$` em `HealthCmd` precisa de escape duplo
+### 7. `$` em `HealthCmd` usa escape duplo
 
-Systemd expande `$VAR` em linhas `Exec=` (igual o docker-compose faz com
-`$$`). Um `HealthCmd` com subshell (`` $(...) ``) precisa escrever
-`$$(...)` no arquivo Quadlet pra sobrar um `$` literal na hora de rodar de
-fato.
+```ini
+HealthCmd=CMD-SHELL test $$(comando) -eq 1
+```
 
-### 8. `Requires=` propaga parada, não só falha
+### 8. `Requires=` propaga parada
 
-Reiniciar/parar uma dependência (`systemctl restart mongo.service`)
-também para quem a requer (`Requires=mongo.service`) — e se a dependência
-falhar nessa janela, quem dependia dela **não volta sozinho**
-(`Restart=always` só cobre processo que já rodou e morreu, não job que
-falhou por dependência não satisfeita). Depois de corrigir a causa raiz,
-subir manualmente.
+Parar/reiniciar uma dependência também para quem a requer. Se a
+dependência falhar nessa janela, quem dependia dela não volta sozinho —
+subir manualmente depois.
 
-### 9. Tag flutuante só vale a pena com `HealthCmd` real
+### 9. Tag flutuante exige `HealthCmd` real
 
-`AutoUpdate=registry` + `podman-auto-update.timer` só faz rollback
-automático se o container tiver `HealthCmd` configurado — e isso exige
-shell/utilitário *dentro da imagem*. Imagens minimal/scratch (sem shell)
-não suportam `HealthCmd` nenhum, então auto-update nelas roda sem rede de
-segurança nenhuma. Mesmo tags "conservadoras" (major.minor) já quebraram
-na prática por motivo alheio ao app (ex.: MongoDB 8.0.26 recusando iniciar
-em kernel Linux novo — [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)).
-
-**Padrão deste repositório: tag explícita + bump manual por default;
+`AutoUpdate=registry` só tem rollback automático em containers com
+`HealthCmd` — que por sua vez exige shell/utilitário dentro da imagem.
+Padrão deste repositório: tag explícita + bump manual por default;
 auto-update é opt-in, só pra imagens com `HealthCmd` de verdade e sem
-estado crítico de usuário.**
+estado crítico de usuário.
 
 ### 10. `PublishPort=` não abre firewall
 
-Só expõe a porta pro host — se o host tiver `firewalld`/`ufw`/`iptables`
-ativo, a porta ainda precisa ser liberada separadamente pra acesso
-externo.
+Porta liberada no firewall do host (`firewalld`/`ufw`/`iptables`) é passo
+separado.
 
 ## Anatomia de referência
 
