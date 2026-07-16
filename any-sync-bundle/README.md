@@ -33,7 +33,7 @@ quadlet/
 ├── any-sync-mongo.container         # MongoDB 8.0.4, tag fixa (CPUs com AVX — ver Auto-update)
 ├── any-sync-mongo-legacy.container  # MongoDB 4.4 (CPUs sem AVX — ver Troubleshooting)
 ├── any-sync-bundle-redis.container  # Redis Stack, tag flutuante (auto-update)
-└── any-sync-bundle.container        # servidor any-sync-bundle, tag flutuante (auto-update)
+└── any-sync-bundle.container        # servidor any-sync-bundle, tag fixa (ver Auto-update)
 
 watchdog/
 ├── any-sync-bundle-watchdog.service # checagem TCP na porta 33010
@@ -139,15 +139,10 @@ externalAddr:
 
 ## Auto-update
 
-`any-sync-bundle` e `any-sync-bundle-redis` usam tags flutuantes + o
-mecanismo nativo `podman auto-update` (sem ferramenta externa tipo
-Watchtower):
+Só `any-sync-bundle-redis` usa tag flutuante + o mecanismo nativo
+`podman auto-update` (sem ferramenta externa tipo Watchtower):
 
 ```ini
-# any-sync-bundle.container
-Image=ghcr.io/grishy/any-sync-bundle:minimal
-AutoUpdate=registry
-
 # any-sync-bundle-redis.container
 Image=docker.io/redis/redis-stack-server:latest
 AutoUpdate=registry
@@ -159,52 +154,54 @@ podman auto-update --dry-run                              # prévia sem aplicar 
 ```
 
 Se o digest da tag mudou, o Podman puxa a imagem nova e reinicia o
-container. **Rollback automático** (reverter sozinho pra imagem anterior)
-só existe pra containers com `HealthCmd` — funciona pro Redis, mas **não**
-pro `any-sync-bundle`: a imagem `-minimal` não tem shell nem utilitário
-nenhum (só o binário estático, sem subcomando de health-check), então não
-dá pra configurar um `HealthCmd` nela. A alternativa seria a tag `:latest`
-("All-in-one", com MongoDB/Redis embutidos — arquitetura diferente da nossa,
-802 MB vs 50 MB), o que não faz sentido só pra ganhar um shell.
+container. Redis tem `HealthCmd`, então tem **rollback automático**: se não
+ficar `healthy` depois do restart, o Podman reverte sozinho pra imagem
+anterior.
 
-Mitigação: `watchdog/any-sync-bundle-watchdog.{service,timer}` — testa a
-porta 33010 a cada 5 minutos (`/dev/tcp` do bash, sem dependência externa) e
-aparece como unit `failed` no `systemctl --user status` /
-`journalctl --user -u any-sync-bundle-watchdog` se a porta parar de
-responder. Não é automático — se disparar, reverter na mão:
+**`any-sync-bundle` e `any-sync-bundle-mongo` ficam de fora do
+auto-update, de propósito** — tag explícita, sem `AutoUpdate=`, bump manual
+quando quiser:
 
+- **any-sync-bundle**: a imagem `-minimal` não tem shell/utilitário nenhum
+  (só o binário estático), então não dá pra configurar `HealthCmd` nela —
+  sem `HealthCmd` não existe rollback automático, e esse é o container que
+  guarda o estado real do backend. A alternativa seria a tag `:latest`
+  ("All-in-one", com MongoDB/Redis embutidos — arquitetura diferente da
+  nossa, 802 MB vs 50 MB), o que não compensa só pra ganhar um shell. Segue
+  também a própria recomendação do projeto ("explicit version tags are
+  recommended" sobre `:latest`/`:minimal`).
+- **any-sync-bundle-mongo**: mesmo uma tag flutuante presa em major.minor
+  (`mongo:8.0`) já quebrou aqui na prática — builds recentes de Mongo 8.0.x
+  (ex. `8.0.26`) se recusam a iniciar em kernel Linux 6.19+ (guard interno
+  do próprio Mongo,
+  [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)), sem
+  relação nenhuma com o any-sync-bundle. Ver Troubleshooting.
+
+**Bump manual do any-sync-bundle:**
 ```bash
-podman auto-update --rollback any-sync-bundle
+# Editar Image= em any-sync-bundle.container pra nova tag, depois:
+systemctl --user daemon-reload
+systemctl --user restart any-sync-bundle.service
+podman inspect any-sync-bundle --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
 ```
 
-Instalar o watchdog:
+A tag segue o formato `v[versão-semver]-[data-de-compatibilidade-any-sync]`
+(ex.: `1.4.3-2026-04-21` — o sufixo de data é a versão de compatibilidade
+do any-sync usada pelos apps do Anytype, não a data do release). Fazer
+backup antes (ver seção própria).
+
+**Watchdog** (`watchdog/any-sync-bundle-watchdog.{service,timer}`) — testa
+a porta 33010 a cada 5 minutos (`/dev/tcp` do bash, sem dependência
+externa) e aparece como unit `failed` no `systemctl --user status` /
+`journalctl --user -u any-sync-bundle-watchdog` se parar de responder. Só
+alerta, não reverte nada sozinho — mas com `any-sync-bundle` em bump manual
+serve mais como monitoramento geral de liveness do que rede de segurança
+de auto-update:
+
 ```bash
 cp watchdog/any-sync-bundle-watchdog.service watchdog/any-sync-bundle-watchdog.timer ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user enable --now any-sync-bundle-watchdog.timer
-```
-
-**MongoDB fica de fora do auto-update, de propósito.** Mesmo uma tag
-flutuante presa em major.minor (`mongo:8.0`) não é segura: builds recentes
-de Mongo 8.0.x (ex. `8.0.26`) se recusam a iniciar em kernel Linux 6.19+
-(guard interno do próprio Mongo,
-[SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)), sem
-relação nenhuma com o any-sync-bundle. `any-sync-mongo.container` fica
-travado em `mongo:8.0.4` (confirmada funcionando) sem `AutoUpdate=`. Ver
-Troubleshooting antes de mudar isso.
-
-**Sobre a versão do any-sync-bundle em si:** a tag segue o formato
-`v[versão-semver]-[data-de-compatibilidade-any-sync]` (ex.: `1.4.3-2026-04-21`
-— o sufixo de data é a versão de compatibilidade do any-sync usada pelos
-apps do Anytype, não a data do release). O projeto upstream declara que
-upgrades dentro do `1.x` seguem SemVer e não quebram compatibilidade, o que
-reduz (mas não zera) o risco de deixar `any-sync-bundle` em auto-update. Pra
-conferir a versão rodando depois de um update — a imagem `-minimal` não tem
-`--version` executável via `podman exec` (sem shell) — usar o label da
-imagem:
-
-```bash
-podman inspect any-sync-bundle --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
 ```
 
 ## Backup & Recuperação

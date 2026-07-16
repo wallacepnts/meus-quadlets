@@ -4,12 +4,12 @@ After=any-sync-mongo.service any-sync-bundle-redis.service
 Requires=any-sync-mongo.service any-sync-bundle-redis.service
 
 [Container]
-# Tag flutuante — segue os releases "Minimal (external MongoDB/Redis)".
-# Sem HealthCmd possível: esta imagem não tem shell/utilitários (é minimal de
-# propósito), então o rollback automático do Podman não se aplica aqui. Se um
-# update quebrar, reverter na mão com: podman auto-update --rollback any-sync-bundle
-Image=ghcr.io/grishy/any-sync-bundle:minimal
-AutoUpdate=registry
+# Tag explícita (recomendação do próprio projeto) — sem auto-update: esta
+# imagem não tem shell/utilitários (é minimal de propósito), então não dá
+# pra configurar HealthCmd nela, e sem HealthCmd não existe rollback
+# automático do Podman. Bump manual: trocar a versão aqui, daemon-reload,
+# restart. Ver Auto-update no README antes de mudar isso.
+Image=ghcr.io/grishy/any-sync-bundle:1.4.3-2026-04-21-minimal
 ContainerName=any-sync-bundle
 Network=any-sync-bundle-net.network
 PublishPort=33010:33010
