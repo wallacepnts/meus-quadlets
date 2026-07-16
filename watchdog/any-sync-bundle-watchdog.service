@@ -1,0 +1,7 @@
+[Unit]
+Description=Any-Sync-Bundle TCP liveness check (33010)
+After=any-sync-bundle.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'timeout 3 bash -c "echo > /dev/tcp/127.0.0.1/33010"'

@@ -1,0 +1,28 @@
+[Unit]
+Description=Any-Sync-Bundle Redis
+
+[Container]
+# Sem tag flutuante "só patch" disponível pro redis-stack-server no Docker
+# Hub (só existem tags exatas tipo 7.4.0-vN, ou latest sem isolamento de
+# versão). Usando latest — risco baixo aqui pois o any-sync-bundle só usa
+# comandos genéricos de Redis + o módulo RedisBloom, presente em toda tag.
+Image=docker.io/redis/redis-stack-server:latest
+AutoUpdate=registry
+ContainerName=any-sync-bundle-redis
+Network=any-sync-bundle-net.network
+NetworkAlias=redis
+Exec=redis-server --port 6379 --dir /data/ --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction --protected-mode no --loadmodule /opt/redis-stack/lib/redisbloom.so
+Volume=%h/.config/containers/volumes/any-sync-bundle/redis:/data:Z
+HealthCmd=CMD-SHELL redis-cli -h localhost -p 6379 ping
+HealthInterval=5s
+HealthTimeout=5s
+HealthRetries=12
+HealthStartPeriod=5s
+Notify=healthy
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

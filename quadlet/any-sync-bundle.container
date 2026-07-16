@@ -1,0 +1,30 @@
+[Unit]
+Description=Any-Sync-Bundle server
+After=any-sync-mongo.service any-sync-bundle-redis.service
+Requires=any-sync-mongo.service any-sync-bundle-redis.service
+
+[Container]
+# Tag flutuante — segue os releases "Minimal (external MongoDB/Redis)".
+# Sem HealthCmd possível: esta imagem não tem shell/utilitários (é minimal de
+# propósito), então o rollback automático do Podman não se aplica aqui. Se um
+# update quebrar, reverter na mão com: podman auto-update --rollback any-sync-bundle
+Image=ghcr.io/grishy/any-sync-bundle:minimal
+AutoUpdate=registry
+ContainerName=any-sync-bundle
+Network=any-sync-bundle-net.network
+PublishPort=33010:33010
+PublishPort=33020:33020/udp
+Volume=%h/.config/containers/volumes/any-sync-bundle/bundle:/data:Z
+EnvironmentFile=%h/.config/containers/env/any-sync-bundle.env
+
+# tsdproxy discovery — expõe o bundle na tailnet (TCP + QUIC/UDP)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=any-sync
+Label=tsdproxy.port.sync=33010/tcp:33010/tcp
+Label=tsdproxy.port.quic=33020/udp:33020/udp
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
