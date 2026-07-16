@@ -205,10 +205,11 @@ teria evitado downtime.
 do Mongo (`.wt`) ou do badger (`storage/`) crus enquanto os processos
 estão escrevendo é a receita clássica pra um backup corrompido/não
 restaurável — foi exatamente o que aconteceu no incidente acima. Os
-timers em `backup-pause/` param só o `any-sync-bundle` (badger +
-`bundle-config.yml`) numa janela curta antes do job do Zerobyte rodar;
-Mongo/Redis ainda não têm proteção equivalente (dump lógico antes do
-backup, nos moldes do `pg_dump` do linkwarden). Detalhes e instalação em
+timers em `backup-pause/` param o stack inteiro (`any-sync-bundle` +
+`any-sync-mongo` + `any-sync-bundle-redis`) numa janela curta antes do
+job do Zerobyte rodar e religam depois — como o único cliente do
+Mongo/Redis é o próprio bundle, isso vira um backup a frio completo, sem
+precisar de dump lógico. Detalhes e instalação em
 [zerobyte/README.md](../zerobyte/README.md#criando-os-jobs-de-backup).
 
 ## Implantando em outro servidor / outra tailnet

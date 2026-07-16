@@ -1,6 +1,6 @@
 [Unit]
-Description=Religa any-sync-bundle depois do job de backup do bundle no Zerobyte
+Description=Religa o stack any-sync-bundle (bundle+mongo+redis) depois do job de backup no Zerobyte
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/systemctl --user start any-sync-bundle.service
+ExecStart=/usr/bin/systemctl --user start any-sync-mongo.service any-sync-bundle-redis.service any-sync-bundle.service

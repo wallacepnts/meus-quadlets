@@ -149,17 +149,17 @@ systemctl --user start linkwarden-pgdump
 ls -la ~/.config/containers/volumes/linkwarden/pg-dump/
 ```
 
-**Mongo/Redis do any-sync-bundle** têm o mesmo tipo de risco — ainda não
-montei uma solução pra eles; se for backupear esse serviço também, vale o
-mesmo raciocínio (`mongodump`/`redis BGSAVE` antes, excluir os data dirs
-crus).
-
-**`bundle/` do any-sync-bundle** (badger storage + `bundle-config.yml`,
-a identidade do nó) tem um problema parecido, mas sem saída de
-`pg_dump`: a imagem do any-sync-bundle é minimal, sem shell, então não dá
-pra rodar um hook de pré-backup dentro do container. A solução aqui foi
-diferente — parar o container inteiro por uma janela curta em vez de
-gerar um dump:
+**any-sync-bundle** (badger storage do bundle + Mongo + Redis) tem o
+mesmo tipo de risco que o linkwarden, mas sem saída de `pg_dump`/`BGSAVE`
+via hook: a imagem do any-sync-bundle é minimal, sem shell, então não dá
+pra rodar um comando de pré-backup dentro do container. A solução aqui
+foi diferente — parar o stack inteiro (bundle + mongo + redis) por uma
+janela curta antes do job do Zerobyte, em vez de gerar dumps. Como o
+único cliente do Mongo/Redis é o próprio any-sync-bundle, parar os três
+juntos vira um backup a frio completo — sem risco de corrupção em nenhum
+dos três (ver seção *Backup & Recuperação* do
+[README do any-sync-bundle](../any-sync-bundle/README.md) pro incidente
+que motivou isso):
 
 ```bash
 cp ../any-sync-bundle/backup-pause/any-sync-bundle-backup-{pause,resume}.{service,timer} \
@@ -168,16 +168,16 @@ systemctl --user daemon-reload
 systemctl --user enable --now any-sync-bundle-backup-pause.timer any-sync-bundle-backup-resume.timer
 ```
 
-`any-sync-bundle-backup-pause.timer` para o container (`22:00` por
-padrão) e `any-sync-bundle-backup-resume.timer` religa (`22:45`) — só o
-`any-sync-bundle` em si, Mongo e Redis continuam rodando (não têm
-`PartOf=` apontando pra ele). Igual ao aviso do linkwarden acima: **os
-horários não são sincronizados automaticamente com o job do Zerobyte** —
-o job do any-sync-bundle na UI precisa rodar dentro dessa janela, com
-margem sobrando pro tamanho real do `storage-file` (pode chegar a alguns
-GB; ajustar `OnCalendar=` dos dois timers conforme a duração observada do
-job). Mongo e Redis continuam expostos durante a janela — não afeta
-esses dois, só o bundle.
+`any-sync-bundle-backup-pause.timer` para `any-sync-bundle`,
+`any-sync-mongo` e `any-sync-bundle-redis` juntos (`22:00` por padrão) e
+`any-sync-bundle-backup-resume.timer` religa os três (`22:45`). Com o
+stack parado, dá pra marcar as três pastas (`bundle`, `mongo`, `redis`)
+no job do Zerobyte sem exclusões nem dump lógico. Igual ao aviso do
+linkwarden acima: **os horários não são sincronizados automaticamente
+com o job do Zerobyte** — o job do any-sync-bundle na UI precisa rodar
+dentro dessa janela, com margem sobrando pro tamanho real dos dados
+(`storage-file` do bundle pode chegar a alguns GB; ajustar `OnCalendar=`
+dos dois timers conforme a duração observada do job).
 
 ## Auto-update
 

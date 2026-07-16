@@ -1,5 +1,5 @@
 [Unit]
-Description=Agenda a parada do any-sync-bundle antes do job de backup no Zerobyte
+Description=Agenda a parada do stack any-sync-bundle antes do job de backup no Zerobyte
 
 [Timer]
 OnCalendar=*-*-* 22:00:00

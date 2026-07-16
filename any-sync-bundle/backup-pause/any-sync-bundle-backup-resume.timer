@@ -1,5 +1,5 @@
 [Unit]
-Description=Agenda a religada do any-sync-bundle depois do job de backup no Zerobyte
+Description=Agenda a religada do stack any-sync-bundle depois do job de backup no Zerobyte
 
 [Timer]
 OnCalendar=*-*-* 22:45:00
