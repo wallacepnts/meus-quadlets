@@ -34,10 +34,6 @@ quadlet/
 ├── any-sync-mongo-legacy.container  # MongoDB 4.4 (CPUs sem AVX — ver Troubleshooting)
 ├── any-sync-bundle-redis.container  # Redis Stack, tag flutuante (auto-update)
 └── any-sync-bundle.container        # servidor any-sync-bundle, tag fixa (ver Auto-update)
-
-watchdog/
-├── any-sync-bundle-watchdog.service # checagem TCP na porta 33010
-└── any-sync-bundle-watchdog.timer   # roda a cada 5min (ver Auto-update)
 ```
 
 ## Pré-requisitos
@@ -189,20 +185,6 @@ A tag segue o formato `v[versão-semver]-[data-de-compatibilidade-any-sync]`
 (ex.: `1.4.3-2026-04-21` — o sufixo de data é a versão de compatibilidade
 do any-sync usada pelos apps do Anytype, não a data do release). Fazer
 backup antes (ver seção própria).
-
-**Watchdog** (`watchdog/any-sync-bundle-watchdog.{service,timer}`) — testa
-a porta 33010 a cada 5 minutos (`/dev/tcp` do bash, sem dependência
-externa) e aparece como unit `failed` no `systemctl --user status` /
-`journalctl --user -u any-sync-bundle-watchdog` se parar de responder. Só
-alerta, não reverte nada sozinho — mas com `any-sync-bundle` em bump manual
-serve mais como monitoramento geral de liveness do que rede de segurança
-de auto-update:
-
-```bash
-cp watchdog/any-sync-bundle-watchdog.service watchdog/any-sync-bundle-watchdog.timer ~/.config/systemd/user/
-systemctl --user daemon-reload
-systemctl --user enable --now any-sync-bundle-watchdog.timer
-```
 
 ## Backup & Recuperação
 
