@@ -254,6 +254,59 @@ journalctl --user -u <app>.service -f              # logs em tempo real
 podman ps --filter "name=<app>"                    # confirma healthy de verdade
 ```
 
+## Auto-update
+
+Desligado por padrão em todo o repositório (regra 9) — ativar é opt-in,
+serviço por serviço, só quando as condições da regra 9 se cumprem
+(`HealthCmd` real na imagem + sem dado crítico de terceiros em jogo, ou
+disposição consciente de aceitar o risco). [`actual-budget`](./actual-budget/)
+é o único exemplo ativo hoje — usar o README dele como referência.
+
+### 1. Ligar o timer (uma vez só, vale pra todo o host)
+
+```bash
+systemctl --user enable --now podman-auto-update.timer
+```
+
+Ele roda 1x/dia, checando todo container com o label
+`io.containers.autoupdate` — não precisa religar por serviço, só essa vez.
+
+### 2. Checar se o serviço é candidato (regra 9)
+
+- Tem `HealthCmd` configurado no `.container`? Sem isso não existe
+  rollback automático — o Podman aplica a atualização às cegas.
+- Existe uma tag flutuante que faça sentido? Numa tag exata (`1.2.3`) o
+  digest nunca muda, `AutoUpdate=` fica sem efeito nenhum. Checar se o
+  projeto oferece algo tipo major.minor preso (ex.: `8.0`) antes de virar
+  logo pra `:latest` — mas desconfiar mesmo assim (ver o incidente do
+  Mongo, regra 9).
+- O dado ali é sensível/crítico o bastante pra preferir revisão manual
+  antes de cada bump? (cofre de senhas, backend com estado real —
+  provavelmente não vale a pena.)
+
+### 3. Ativar no `.container`
+
+```ini
+Image=<registro>/<imagem>:<tag-flutuante>
+AutoUpdate=registry
+```
+
+```bash
+systemctl --user daemon-reload
+systemctl --user restart <app>.service
+```
+
+### 4. Conferir e, se precisar, reverter
+
+```bash
+podman auto-update --dry-run              # prévia, sem aplicar nada
+podman auto-update --rollback <container> # reverter manualmente
+```
+
+Fazer backup antes de qualquer bump de versão relevante — o rollback
+automático só cobre "não ficou `healthy`", não cobre "ficou healthy mas
+com um bug silencioso nos dados" (ver seção Backup de cada serviço).
+
 ## Serviços neste repositório
 
 | Pasta | O quê |
