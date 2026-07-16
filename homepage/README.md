@@ -57,7 +57,7 @@ systemctl --user enable --now podman.socket
 
 # 5. Subir
 systemctl --user daemon-reload
-systemctl --user start homepage.service
+systemctl --user start homepage
 ```
 
 Acessar em `http://localhost:3000` ou, via tailnet,
@@ -108,7 +108,7 @@ absoluta. Exemplos já em uso neste repo:
 [`tsdproxy.container`](../tsdproxy/quadlet/tsdproxy.container) (`si-tailscale`).
 
 Depois de adicionar labels num container existente: `systemctl --user
-daemon-reload && systemctl --user restart <nome>.service` — Homepage
+daemon-reload && systemctl --user restart <nome>` — Homepage
 percebe o container atualizado sozinha, não precisa reiniciar a Homepage.
 
 ## Auto-update
@@ -123,7 +123,7 @@ podman-auto-update.timer`.
 ## Comandos úteis
 
 ```bash
-systemctl --user status homepage.service
+systemctl --user status homepage
 podman logs -f homepage
 ```
 

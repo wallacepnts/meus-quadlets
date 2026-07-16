@@ -51,7 +51,7 @@ EOF
 
 # 4. Subir
 systemctl --user daemon-reload
-systemctl --user start lubelogger.service
+systemctl --user start lubelogger
 ```
 
 Acessar via [tsdproxy](../tsdproxy/) (tailnet) em
@@ -90,16 +90,16 @@ cliente HTTP).
 ## Backup & Recuperação
 
 ```bash
-systemctl --user stop lubelogger.service
+systemctl --user stop lubelogger
 tar -czf lubelogger-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
   -C ~/.config/containers/volumes lubelogger
-systemctl --user start lubelogger.service
+systemctl --user start lubelogger
 ```
 
 ## Comandos úteis
 
 ```bash
-systemctl --user status lubelogger.service
+systemctl --user status lubelogger
 podman logs -f lubelogger
 ```
 

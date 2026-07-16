@@ -86,7 +86,7 @@ EOF
 
 # 4. Subir
 systemctl --user daemon-reload
-systemctl --user start any-sync-bundle.service   # sobe mongo e redis primeiro via Requires=
+systemctl --user start any-sync-bundle   # sobe mongo e redis primeiro via Requires=
 loginctl enable-linger $(whoami)
 
 # 5. Conferir
@@ -98,7 +98,7 @@ Depois do primeiro run, o cliente Anytype importa
 `~/.config/containers/volumes/any-sync-bundle/bundle/client-config.yml`.
 
 > Unit `.container` do Quadlet gera o service com o **mesmo nome do arquivo**
-> (`any-sync-mongo.container` → `any-sync-mongo.service`), sem sufixo extra —
+> (`any-sync-mongo.container` → `any-sync-mongo`), sem sufixo extra —
 > diferente de `.network`/`.volume`, que ganham `-network`/`-volume` no nome
 > do service gerado. `enable`/`disable` não funcionam em units geradas por
 > Quadlet ("Unit is transient or generated") — o `[Install]` já é processado
@@ -148,7 +148,7 @@ original — sem `AutoUpdate=`, bump manual quando quiser:
 # Fazer backup antes (ver seção própria). Editar Image= no .container
 # correspondente pra nova tag, depois:
 systemctl --user daemon-reload
-systemctl --user restart <nome>.service
+systemctl --user restart <nome>
 ```
 
 A tag do any-sync-bundle segue o formato
@@ -244,7 +244,7 @@ antes de subir. Se já entrou em crash-loop e bateu o rate limit do systemd:
 Essa env var só é lida na primeira inicialização (quando `bundle-config.yml`
 ainda não existe). Depois disso, editar direto
 `volumes/any-sync-bundle/bundle/externalAddr:` (lista YAML, aceita múltiplos
-endereços) e `systemctl --user restart any-sync-bundle.service` — isso
+endereços) e `systemctl --user restart any-sync-bundle` — isso
 regenera o `client-config.yml`.
 
 **MongoDB morre com "illegal instruction" (SIGILL/AIO)**
@@ -274,13 +274,13 @@ repo) em vez de qualquer tag `8.0`/`8`/`latest`. Não incluir Mongo no
 auto-update enquanto esse issue não for resolvido upstream.
 
 **Reiniciei mongo/redis e o `any-sync-bundle` ficou parado ("Dependency failed")**
-`Requires=` propaga parada: reiniciar `any-sync-mongo.service` ou
-`any-sync-bundle-redis.service` diretamente também para o
-`any-sync-bundle.service` (que os requer), e se um dos dois falhar nessa
+`Requires=` propaga parada: reiniciar `any-sync-mongo` ou
+`any-sync-bundle-redis` diretamente também para o
+`any-sync-bundle` (que os requer), e se um dos dois falhar nessa
 janela (ex.: crash-loop batendo `start-limit-hit`), o bundle não sobe de
 volta sozinho — `Restart=always` só cobre processo que já rodou e morreu,
 não job que falhou por dependência não satisfeita. Depois de corrigir a
-causa raiz, subir manualmente: `systemctl --user start any-sync-bundle.service`.
+causa raiz, subir manualmente: `systemctl --user start any-sync-bundle`.
 
 **Cliente não conecta**
 - Conferir se `ANY_SYNC_BUNDLE_INIT_EXTERNAL_ADDRS` (ou o `externalAddr` já

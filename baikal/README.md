@@ -16,13 +16,15 @@ Dois volumes, como no compose oficial:
   (`baikal.yaml`, gerado no primeiro acesso — ver Instalação)
 - `/var/www/baikal/Specific` — dados (calendários, contatos, banco)
 
-## Nome na tailnet: `baikal-dav`, não `baikal`
+## Se você já tem outro `baikal` na tailnet
 
-Se você já tem outro dispositivo/serviço chamado `baikal` na sua tailnet
-(ex.: um servidor físico rodando Baikal fora deste repositório), usar
-`tsdproxy.name=baikal` colidiria — mesmo problema documentado no
-[tsdproxy](../tsdproxy/) com nós duplicados (`dash`/`dash-1`). Por isso
-esta unit usa `baikal-dav` como nome do nó. Ajustar se não for o seu caso.
+Se já existir outro dispositivo/serviço chamado `baikal` (ex.: um
+servidor físico rodando Baikal fora deste repositório), usar
+`tsdproxy.name=baikal` aqui colide — mesmo problema documentado no
+[tsdproxy](../tsdproxy/) com nós duplicados (`dash`/`dash-1`): mesmo um
+dispositivo antigo *offline* ainda reserva o nome, e o novo acaba saindo
+como `baikal-1`. Nesse caso, trocar `tsdproxy.name=` (e o `homepage.href`
+correspondente) pra algo tipo `baikal-dav` antes de subir.
 
 ## Arquivos
 
@@ -48,16 +50,16 @@ mkdir -p ~/.config/containers/volumes/baikal/{config,data}
 # 3. Env não-secreto
 mkdir -p ~/.config/containers/env
 cat > ~/.config/containers/env/baikal.env <<'EOF'
-BAIKAL_SERVERNAME=baikal-dav.<seu-tailnet>.ts.net
+BAIKAL_SERVERNAME=baikal.<seu-tailnet>.ts.net
 EOF
 
 # 4. Subir
 systemctl --user daemon-reload
-systemctl --user start baikal.service
+systemctl --user start baikal
 ```
 
 Acessar via [tsdproxy](../tsdproxy/) (tailnet) em
-`https://baikal-dav.<seu-tailnet>.ts.net`, ou local em
+`https://baikal.<seu-tailnet>.ts.net`, ou local em
 `http://localhost:8084`.
 
 **Primeiro acesso**: a raiz redireciona pro assistente de instalação
@@ -77,16 +79,16 @@ Sem `AutoUpdate=` — tag explícita (`0.10.1-nginx-php8.2`), bump manual
 ## Backup & Recuperação
 
 ```bash
-systemctl --user stop baikal.service
+systemctl --user stop baikal
 tar -czf baikal-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
   -C ~/.config/containers/volumes baikal
-systemctl --user start baikal.service
+systemctl --user start baikal
 ```
 
 ## Comandos úteis
 
 ```bash
-systemctl --user status baikal.service
+systemctl --user status baikal
 podman logs -f baikal
 ```
 

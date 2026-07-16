@@ -42,7 +42,7 @@ EOF
 
 # 4. Subir
 systemctl --user daemon-reload
-systemctl --user start actual.service
+systemctl --user start actual
 ```
 
 Acessar em `http://localhost:5006` ou, via
@@ -95,16 +95,16 @@ Todo o estado (orçamento, `server-files`, `user-files`) fica em
 `volumes/actual/data/`. Parar o serviço antes de copiar:
 
 ```bash
-systemctl --user stop actual.service
+systemctl --user stop actual
 tar -czf actual-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
   -C ~/.config/containers/volumes actual
-systemctl --user start actual.service
+systemctl --user start actual
 ```
 
 ## Comandos úteis
 
 ```bash
-systemctl --user status actual.service
+systemctl --user status actual
 podman logs -f actual
 podman exec actual node /app/src/scripts/health-check.js
 ```

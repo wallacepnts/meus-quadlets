@@ -77,7 +77,7 @@ EOF
 
 # 5. Subir
 systemctl --user daemon-reload
-systemctl --user start vaultwarden.service
+systemctl --user start vaultwarden
 ```
 
 Acessar via [tsdproxy](../tsdproxy/) (tailnet) em
@@ -94,7 +94,7 @@ pra recuperar a senha original a partir dele.
 ## Segurança
 
 - **Desabilitar cadastro depois da primeira conta**: `SIGNUPS_ALLOWED=false`
-  em `vaultwarden.env`, `systemctl --user restart vaultwarden.service`.
+  em `vaultwarden.env`, `systemctl --user restart vaultwarden`.
   Sem isso, qualquer um que alcançar a URL consegue criar conta própria.
 - **`ADMIN_TOKEN` como hash, não texto puro** — já é o padrão deste setup
   (ver passo 3). Um `ADMIN_TOKEN` em texto puro no arquivo de secret, se
@@ -118,10 +118,10 @@ cache). É o dado mais sensível deste repositório inteiro — parar antes de
 copiar:
 
 ```bash
-systemctl --user stop vaultwarden.service
+systemctl --user stop vaultwarden
 tar -czf vaultwarden-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
   -C ~/.config/containers/volumes vaultwarden
-systemctl --user start vaultwarden.service
+systemctl --user start vaultwarden
 ```
 
 O `admin-token-raw.txt` (a senha do painel admin) também precisa de
@@ -131,7 +131,7 @@ backup separado — não tem como recuperar se perder, só resetar criando um
 ## Comandos úteis
 
 ```bash
-systemctl --user status vaultwarden.service
+systemctl --user status vaultwarden
 podman logs -f vaultwarden
 curl http://127.0.0.1:8082/alive
 ```

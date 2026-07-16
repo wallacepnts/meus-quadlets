@@ -18,14 +18,14 @@ Notify=healthy
 
 # tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
 Label=tsdproxy.enable=true
-Label=tsdproxy.name=baikal-dav
+Label=tsdproxy.name=baikal
 Label=tsdproxy.port.web=443/https:80/http
 
 # homepage — exibição no dashboard (ver ../homepage/)
 Label=homepage.group=Self-Hosted
 Label=homepage.name=Baikal
 Label=homepage.icon=baikal.svg
-Label=homepage.href=https://baikal-dav.<seu-tailnet>.ts.net
+Label=homepage.href=https://baikal.<seu-tailnet>.ts.net
 Label=homepage.description="Servidor CalDAV/CardDAV self-hosted"
 
 [Service]

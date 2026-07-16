@@ -78,7 +78,7 @@ EOF
 
 # 5. Subir (postgres e meilisearch sobem primeiro via Requires=)
 systemctl --user daemon-reload
-systemctl --user start linkwarden.service
+systemctl --user start linkwarden
 ```
 
 Acessar via [tsdproxy](../tsdproxy/) (tailnet) em
@@ -111,10 +111,10 @@ Três volumes; o mais crítico é o Postgres (dados de verdade — links,
 usuários, tags). Parar tudo antes:
 
 ```bash
-systemctl --user stop linkwarden.service linkwarden-postgres.service linkwarden-meilisearch.service
+systemctl --user stop linkwarden linkwarden-postgres linkwarden-meilisearch
 tar -czf linkwarden-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
   -C ~/.config/containers/volumes linkwarden
-systemctl --user start linkwarden.service
+systemctl --user start linkwarden
 ```
 
 Os segredos (`~/.config/containers/secrets/linkwarden/`) também precisam

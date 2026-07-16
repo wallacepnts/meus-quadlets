@@ -61,10 +61,10 @@ systemctl --user enable --now podman.socket
 
 # 5. Subir
 systemctl --user daemon-reload
-systemctl --user start tsdproxy.service
+systemctl --user start tsdproxy
 ```
 
-> **Ordem de start:** o Quadlet não sabe nativamente que `tsdproxy.service`
+> **Ordem de start:** o Quadlet não sabe nativamente que `tsdproxy`
 > depende do `podman.socket` — sem declarar isso, num reboot nada garante
 > que o socket já exista quando `default.target` sobe o container (corrida
 > silenciosa, não determinística). Por isso o `[Unit]` do
@@ -140,7 +140,7 @@ anterior (containers subindo e morrendo repetidamente antes do socket
 funcionar). O próprio log avisa: "Restart tsdproxy to auto-recover, or
 manually delete the proxy data directory." Costuma resolver sozinho no
 restart seguinte, já com o socket acessível
-(`systemctl --user restart tsdproxy.service`). Se não resolver, apagar
+(`systemctl --user restart tsdproxy`). Se não resolver, apagar
 `~/.config/containers/volumes/tsdproxy/data/default/` e reiniciar.
 
 ## Implantando em outro servidor
@@ -153,7 +153,7 @@ destino) e sobe seus nós do zero.
 ## Comandos úteis
 
 ```bash
-systemctl --user status tsdproxy.service
+systemctl --user status tsdproxy
 podman logs -f tsdproxy
 podman secret ls
 semodule -l | grep tsdproxy   # só em SELinux enforcing

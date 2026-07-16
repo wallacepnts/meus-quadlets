@@ -87,7 +87,7 @@ EOF
 
 # 6. Subir
 systemctl --user daemon-reload
-systemctl --user start zerobyte.service
+systemctl --user start zerobyte
 ```
 
 Acessar via [tsdproxy](../tsdproxy/) (tailnet) em
@@ -139,7 +139,7 @@ systemctl --user daemon-reload
 systemctl --user enable --now linkwarden-pgdump.timer
 
 # Testar manualmente
-systemctl --user start linkwarden-pgdump.service
+systemctl --user start linkwarden-pgdump
 ls -la ~/.config/containers/volumes/linkwarden/pg-dump/
 ```
 
@@ -159,7 +159,7 @@ revisão manual.
 ## Comandos úteis
 
 ```bash
-systemctl --user status zerobyte.service
+systemctl --user status zerobyte
 podman logs -f zerobyte
 podman exec zerobyte sh -c "ls /sources/volumes"   # conferir o que está visível
 ```
