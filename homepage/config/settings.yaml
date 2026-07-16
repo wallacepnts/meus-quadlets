@@ -4,8 +4,6 @@
 
 statusStyle: "dot"
 language: "pt"
-showStats: true
-disableUpdateCheck: true
 
 providers:
   openweathermap: openweathermapapikey
