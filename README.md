@@ -347,6 +347,51 @@ Fazer backup antes de qualquer bump de versão relevante — o rollback
 automático só cobre "não ficou `healthy`", não cobre "ficou healthy mas
 com um bug silencioso nos dados" (ver seção Backup de cada serviço).
 
+## Migrando de outro servidor
+
+Trazer um backup de um servidor diferente (não uma instalação nova do
+zero — pra isso, ver "Implantando em outro servidor" de cada serviço) pra
+este host.
+
+### 1. No servidor antigo
+
+Parar o serviço e gerar o backup como já documentado na seção Backup de
+cada README — `tar` de `volumes/<app>/` — incluindo também
+`~/.config/containers/secrets/<app>/` se o serviço usar secrets
+(linkwarden, vaultwarden, tsdproxy): sem eles os dados restaurados não
+autenticam/decodificam.
+
+### 2. Transferir
+
+Os dois hosts já estão na mesma tailnet — `scp`/`rsync` direto entre eles
+pela tailnet é o caminho mais simples: já é criptografado, sem storage
+intermediário, sem configuração extra.
+
+### 3. Neste servidor
+
+Instalar o Quadlet normalmente, mas **sem dar o primeiro `start`** —
+extrair o backup em `volumes/<app>/` antes disso, recriar os secrets a
+partir dos arquivos copiados (`podman secret create` com o mesmo
+conteúdo), só então `systemctl --user start`.
+
+### O que checar antes de considerar migrado
+
+- **Identidade criptográfica**: any-sync-bundle e tsdproxy geram
+  identidade própria no primeiro run (`peerId`/`peerKey`; estado
+  `tsnet`). Trazer esses dados faz o servidor novo *ser* a continuação do
+  antigo (mesmo nó, clientes existentes reconhecem). Não trazer gera uma
+  instância nova e independente — o oposto do que "Implantando em outro
+  servidor" de cada serviço recomenda pra instalação do zero.
+- **Endereços gravados nos dados**: `externalAddr` (any-sync-bundle),
+  `DOMAIN` (vaultwarden), `NEXTAUTH_URL`/cookies (linkwarden) referenciam
+  o hostname do servidor antigo — ajustar pro endereço da tailnet deste
+  host depois de restaurar.
+- **Compatibilidade de versão**: se o servidor antigo estava numa versão
+  bem atrás da tag pinada aqui, checar o changelog antes — principalmente
+  linkwarden (migrations do Postgres) e vaultwarden (schema do SQLite).
+- **Não apagar o servidor antigo até confirmar** que o novo está saudável
+  e acessível — se algo der errado na migração, ainda dá pra voltar.
+
 ## Serviços neste repositório
 
 | Pasta | O quê |
