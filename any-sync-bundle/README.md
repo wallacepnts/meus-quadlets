@@ -31,7 +31,7 @@ Três containers na rede `any-sync-bundle-net.network`:
 quadlet/
 ├── any-sync-bundle-net.network      # rede dedicada
 ├── any-sync-mongo.container         # MongoDB 8.0.4 (CPUs com AVX)
-├── any-sync-mongo-legacy.container  # MongoDB 4.4 (CPUs sem AVX — ver Troubleshooting)
+├── any-sync-mongo-legacy.container  # MongoDB 4.4 (CPUs sem AVX — ver Solução de problemas)
 ├── any-sync-bundle-redis.container  # Redis Stack 7.4.0-v7
 └── any-sync-bundle.container        # servidor any-sync-bundle 1.4.3-2026-04-21-minimal
 ```
@@ -43,7 +43,7 @@ quadlet/
   serviços somem quando a sessão de login encerra
 - Checar suporte a AVX na CPU (Mongo 5.0+ exige): `grep -m1 avx /proc/cpuinfo`
   — se não tiver, usar a variante `any-sync-mongo-legacy.container` (veja
-  Troubleshooting)
+  Solução de problemas)
 - Firewall liberando TCP 33010 e UDP 33020 (`firewall-cmd`, `ufw`, `iptables`
   conforme a distro) — sem isso, clientes fora do host não conseguem
   conectar mesmo com o container rodando certo
@@ -74,7 +74,7 @@ mkdir -p ~/.config/containers/env
 cat > ~/.config/containers/env/any-sync-bundle.env <<'EOF'
 # Advertise address(es) clients devem usar (separado por vírgula). Só é lido
 # na primeira inicialização — depois disso, editar externalAddr em
-# volumes/any-sync-bundle/bundle/bundle-config.yml (ver Troubleshooting).
+# volumes/any-sync-bundle/bundle/bundle-config.yml (ver Solução de problemas).
 ANY_SYNC_BUNDLE_INIT_EXTERNAL_ADDRS=SEU_IP_OU_HOSTNAME
 ANY_SYNC_BUNDLE_INIT_MONGO_URI=mongodb://mongo:27017/?replicaSet=rs0
 ANY_SYNC_BUNDLE_INIT_REDIS_URI=redis://redis:6379/
@@ -124,7 +124,7 @@ host (`PublishPort=` já presente nas units) — não precisa estar na mesma red
 Podman.
 
 Depois que o node aparecer na tailnet (`tailscale status | grep any-sync`),
-adicionar o hostname MagicDNS ao `externalAddr` (ver Troubleshooting) para
+adicionar o hostname MagicDNS ao `externalAddr` (ver Solução de problemas) para
 que o `client-config.yml` inclua um endereço alcançável de qualquer rede:
 
 ```yaml
@@ -231,7 +231,7 @@ O que muda por servidor/tailnet:
   então só um dos dois pode estar em `~/.config/containers/systemd/` por vez
   — copiar a legacy renomeada para `any-sync-mongo.container`.
 
-## Troubleshooting
+## Solução de problemas
 
 **Containers em crash-loop com `statfs: ... no such file or directory`**
 Bind mount do Podman exige que o diretório already exista no host — diferente

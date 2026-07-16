@@ -89,7 +89,7 @@ Label=tsdproxy.port.web=443/https:8080/http
 Exemplo real de proxy TCP/UDP puro (não-HTTP) em
 [`any-sync-bundle.container`](../any-sync-bundle/quadlet/any-sync-bundle.container).
 
-## Troubleshooting
+## Solução de problemas
 
 **`yaml: unmarshal errors: field dashboard/proxyAccessLog not found`**
 A documentação oficial (https://almeidapaulopt.github.io/tsdproxy/docs/getting-started/)
