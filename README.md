@@ -171,6 +171,27 @@ containers ao mesmo tempo (ex.: backup, ver [zerobyte](./zerobyte/))
 precisam desligar a confinação SELinux pra esse container específico.
 Trade-off consciente, não usar por padrão.
 
+### 17. Mexer manualmente em arquivo criado por container: `podman unshare`, não `sudo`
+
+Rootless Podman mapeia os uids internos do container pra uma faixa de
+uids "fantasma" no host (via user namespace, configurado em
+`/etc/subuid`/`/etc/subgid`). Um arquivo criado pelo container num bind
+mount pertence a esse uid mapeado (ex.: `100100`), não ao seu usuário
+(`1000`) — `cp`/`mv`/`rm` direto dá `Permission denied`, porque pro
+sistema de arquivos vocês são usuários completamente diferentes.
+`sudo` não resolve (troca pra root real, que também não é dono). O
+comando certo roda dentro do mesmo namespace que o Podman usa:
+
+```bash
+podman unshare mv origem destino
+podman unshare chown -R 100100:100100 caminho/
+podman unshare ls -la caminho/
+```
+
+Qualquer comando de manipulação de arquivo (`mv`, `cp`, `chown`, `rm`...)
+pode ser prefixado com `podman unshare` quando o alvo está dentro de
+`volumes/` e pertence ao container, não a você.
+
 ## Anatomia de referência
 
 ### `<app>-net.network`
