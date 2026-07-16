@@ -28,7 +28,7 @@ Label=tsdproxy.dash.visible=false
 Label=homepage.group=Infra
 Label=homepage.name=tsdproxy
 Label=homepage.icon=si-tailscale
-Label=homepage.href=http://localhost:8080
+Label=homepage.href=https://dash.<seu-tailnet>.ts.net
 Label=homepage.description="Publica containers na tailnet automaticamente"
 
 [Service]
