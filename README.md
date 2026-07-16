@@ -442,14 +442,68 @@ conteúdo), só então `systemctl --user start`.
 
 ## Serviços neste repositório
 
-| Pasta | O quê |
-| --- | --- |
-| [`any-sync-bundle/`](./any-sync-bundle/) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) |
-| [`tsdproxy/`](./tsdproxy/) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) |
-| [`homepage/`](./homepage/) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) |
-| [`actual-budget/`](./actual-budget/) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) |
-| [`linkwarden/`](./linkwarden/) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) |
-| [`vaultwarden/`](./vaultwarden/) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) |
-| [`lubelogger/`](./lubelogger/) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) |
-| [`baikal/`](./baikal/) | Servidor CalDAV/CardDAV self-hosted ([README](./baikal/README.md)) |
-| [`zerobyte/`](./zerobyte/) | Automação de backup (Restic) pros outros serviços ([README](./zerobyte/README.md)) |
+| Pasta | O quê | AutoUpdate |
+| --- | --- | --- |
+| [`any-sync-bundle/`](./any-sync-bundle/) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) | ❌ |
+| [`tsdproxy/`](./tsdproxy/) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) | ❌ |
+| [`homepage/`](./homepage/) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) | ✅ |
+| [`actual-budget/`](./actual-budget/) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) | ✅ |
+| [`linkwarden/`](./linkwarden/) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) | ❌ |
+| [`vaultwarden/`](./vaultwarden/) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) | ❌ |
+| [`lubelogger/`](./lubelogger/) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) | ❌ |
+| [`baikal/`](./baikal/) | Servidor CalDAV/CardDAV self-hosted ([README](./baikal/README.md)) | ❌ |
+| [`zerobyte/`](./zerobyte/) | Automação de backup (Restic) pros outros serviços ([README](./zerobyte/README.md)) | ❌ |
+
+### O que o AutoUpdate precisa pra funcionar direito
+
+Três peças, as três obrigatórias:
+
+1. **Tag flutuante** (`:latest`, `:2`, etc.) — `AutoUpdate=registry` compara
+   o digest da tag contra o registry; numa tag pinada (`:v1.4.5`) o digest
+   nunca muda, então nunca há nada pra atualizar.
+2. **`AutoUpdate=registry`** no `.container` — sem essa linha o Podman
+   nunca verifica, mesmo com tag flutuante.
+3. **`podman-auto-update.timer` ativo** (`systemctl --user enable --now
+   podman-auto-update.timer`) — é ele quem dispara a checagem
+   periodicamente (diária, por padrão do systemd). Um timer só,
+   compartilhado por todos os containers com `AutoUpdate=` deste usuário.
+
+**A parte que faz isso ser seguro, não só automático: `HealthCmd` real.**
+Rollback automático (voltar pra imagem anterior se a atualização quebrar)
+só existe se o container tiver um healthcheck de verdade — o que por sua
+vez exige shell/cliente HTTP dentro da imagem (`wget`/`curl`, ou uma
+checagem TCP crua tipo a do lubelogger). Sem isso, `AutoUpdate=registry`
+ainda troca a imagem e reinicia sozinho, só que **sem rede de segurança**:
+se a build nova estiver quebrada, fica quebrada até alguém notar e
+arrumar manualmente. Ver regra 9, no início deste README.
+
+Checar candidatos antes de confiar cegamente: `podman auto-update
+--dry-run`.
+
+### Por que a maioria está desligado
+
+Padrão deste repositório: tag explícita + bump manual por default,
+auto-update é opt-in. Motivos específicos, documentados no README de
+cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
+
+- **any-sync-bundle** — a imagem principal é minimal, sem shell (sem
+  `HealthCmd` real possível); o Mongo além disso tem uma regressão
+  upstream conhecida (kernel 6.19+) que pede revisão manual antes de
+  trocar de tag, healthcheck ou não.
+- **linkwarden** — a versão do Meilisearch é a que o `docker-compose.yml`
+  oficial recomenda; trocar sem checar compatibilidade pode quebrar a
+  busca. Migrations do Postgres também pedem revisão antes de subir de
+  versão (um healthcheck "ok" não significa "a migration rodou certo").
+- **vaultwarden** — a imagem tem `wget`/`curl` (daria pra habilitar com
+  rollback de verdade), mas é um cofre de senhas: revisão manual antes de
+  atualizar é o padrão aqui de propósito, não uma limitação técnica.
+- **zerobyte** — mesmo raciocínio do vaultwarden: guarda a senha de
+  acesso a todos os outros backups, prefiro revisão manual mesmo tendo
+  `HealthCmd` real.
+- **lubelogger** — imagem Ubuntu sem `curl`/`wget`; o `HealthCmd` usa uma
+  checagem TCP crua (regra 13), então nem entra na conversa de
+  auto-update com rollback de verdade sem trocar a estratégia de
+  healthcheck primeiro.
+- **baikal, tsdproxy** — sem motivo técnico específico, só não foram
+  avaliados/ligados ainda (`tsdproxy` já usa uma tag de major flutuante,
+  `:2`, mas sem `AutoUpdate=` isso não dispara sozinho).
