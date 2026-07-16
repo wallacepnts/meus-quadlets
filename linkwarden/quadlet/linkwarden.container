@@ -1,0 +1,48 @@
+[Unit]
+Description=Linkwarden
+After=linkwarden-postgres.service linkwarden-meilisearch.service
+Requires=linkwarden-postgres.service linkwarden-meilisearch.service
+
+[Container]
+# A imagem já tem HEALTHCHECK embutido (curl http://127.0.0.1:3000/), mas
+# isso sozinho não basta: Notify=healthy exige HealthCmd declarado aqui
+# também — sem isso o Podman recusa subir ("sdnotify policy healthy
+# requires a healthcheck to be set"), mesmo com o healthcheck da imagem.
+Image=ghcr.io/linkwarden/linkwarden:v2.9.3
+ContainerName=linkwarden
+Network=linkwarden-net.network
+PublishPort=3001:3000
+Volume=%h/.config/containers/volumes/linkwarden/data:/data/data:Z
+EnvironmentFile=%h/.config/containers/env/linkwarden.env
+
+# Secrets criados via:
+#   podman secret create linkwarden-nextauth-secret ~/.config/containers/secrets/linkwarden/nextauth-secret.txt
+#   podman secret create linkwarden-database-url ~/.config/containers/secrets/linkwarden/database-url.txt
+# database-url.txt = postgresql://postgres:<mesma senha do linkwarden-postgres-password>@postgres:5432/postgres
+Secret=linkwarden-nextauth-secret,type=env,target=NEXTAUTH_SECRET
+Secret=linkwarden-database-url,type=env,target=DATABASE_URL
+
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:3000/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=linkwarden
+Label=tsdproxy.port.web=443/https:3000/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Linkwarden
+Label=homepage.href=https://linkwarden.<seu-tailnet>.ts.net
+Label=homepage.description="Gerenciador de links self-hosted"
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,26 @@
+[Unit]
+Description=Linkwarden PostgreSQL
+
+[Container]
+Image=docker.io/library/postgres:16-alpine
+ContainerName=linkwarden-postgres
+Network=linkwarden-net.network
+NetworkAlias=postgres
+
+# Secret criado via: podman secret create linkwarden-postgres-password ~/.config/containers/secrets/linkwarden/postgres-password.txt
+Secret=linkwarden-postgres-password,type=env,target=POSTGRES_PASSWORD
+Volume=%h/.config/containers/volumes/linkwarden/postgres:/var/lib/postgresql/data:Z
+
+HealthCmd=CMD-SHELL pg_isready -U postgres
+HealthInterval=5s
+HealthTimeout=5s
+HealthRetries=12
+HealthStartPeriod=10s
+Notify=healthy
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

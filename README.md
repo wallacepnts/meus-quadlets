@@ -139,6 +139,24 @@ com o serviço no ar — testar com o IP explícito evita o problema.
 HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:3000/ || exit 1
 ```
 
+### 14. `Notify=healthy` exige `HealthCmd` no Quadlet, mesmo com HEALTHCHECK na imagem
+
+Uma imagem já ter `HEALTHCHECK` embutido no Dockerfile não basta —
+`Notify=healthy` sem `HealthCmd=` declarado no `.container` falha sempre
+com `sdnotify policy "healthy" requires a healthcheck to be set`. Repetir
+o mesmo comando da imagem em `HealthCmd=` resolve.
+
+### 15. `Secret=nome,type=env,target=VAR` — segredo como env var, não arquivo
+
+```ini
+Secret=minha-app-senha,type=env,target=POSTGRES_PASSWORD
+```
+
+Alternativa ao `target=/caminho` (monta arquivo) quando o app espera a
+variável de ambiente diretamente, não um arquivo em `/run/secrets/`. Segue
+a mesma regra 2 — o secret precisa existir antes via `podman secret
+create`.
+
 ## Anatomia de referência
 
 ### `<app>-net.network`
@@ -213,3 +231,4 @@ serviços somem quando a sessão de login encerra.
 | [`tsdproxy/`](./tsdproxy/) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) |
 | [`homepage/`](./homepage/) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) |
 | [`actual-budget/`](./actual-budget/) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) |
+| [`linkwarden/`](./linkwarden/) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) |

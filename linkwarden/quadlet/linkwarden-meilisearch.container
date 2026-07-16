@@ -1,0 +1,28 @@
+[Unit]
+Description=Linkwarden Meilisearch
+
+[Container]
+# Tag presa na versão recomendada pelo compose oficial do Linkwarden —
+# não trocar sem checar compatibilidade primeiro.
+Image=docker.io/getmeili/meilisearch:v1.12.8
+ContainerName=linkwarden-meilisearch
+Network=linkwarden-net.network
+NetworkAlias=meilisearch
+
+# Secret criado via: podman secret create linkwarden-meili-key ~/.config/containers/secrets/linkwarden/meili-master-key.txt
+Secret=linkwarden-meili-key,type=env,target=MEILI_MASTER_KEY
+Volume=%h/.config/containers/volumes/linkwarden/meili_data:/meili_data:Z
+
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:7700/health || exit 1
+HealthInterval=5s
+HealthTimeout=5s
+HealthRetries=12
+HealthStartPeriod=10s
+Notify=healthy
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target
