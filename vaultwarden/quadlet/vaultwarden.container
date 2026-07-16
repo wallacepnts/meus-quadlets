@@ -1,0 +1,38 @@
+[Unit]
+Description=Vaultwarden
+
+[Container]
+Image=docker.io/vaultwarden/server:1.36.0-alpine
+ContainerName=vaultwarden
+PublishPort=8082:80
+Volume=%h/.config/containers/volumes/vaultwarden/data:/data:Z
+EnvironmentFile=%h/.config/containers/env/vaultwarden.env
+
+# Secret criado via geração de hash Argon2id (ver README) e:
+#   podman secret create vaultwarden-admin-token ~/.config/containers/secrets/vaultwarden/admin-token-hash.txt
+Secret=vaultwarden-admin-token,type=env,target=ADMIN_TOKEN
+
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:80/alive || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=vaultwarden
+Label=tsdproxy.port.web=443/https:80/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Vaultwarden
+Label=homepage.icon=si-vaultwarden
+Label=homepage.href=https://vaultwarden.<seu-tailnet>.ts.net
+Label=homepage.description="Cofre de senhas self-hosted (Bitwarden)"
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

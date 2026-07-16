@@ -232,3 +232,4 @@ serviços somem quando a sessão de login encerra.
 | [`homepage/`](./homepage/) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) |
 | [`actual-budget/`](./actual-budget/) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) |
 | [`linkwarden/`](./linkwarden/) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) |
+| [`vaultwarden/`](./vaultwarden/) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) |
