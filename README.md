@@ -190,3 +190,4 @@ serviços somem quando a sessão de login encerra.
 | Pasta | O quê |
 | --- | --- |
 | [`any-sync-bundle/`](./any-sync-bundle/) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) |
+| [`tsdproxy/`](./tsdproxy/) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) |

@@ -1,0 +1,32 @@
+[Unit]
+Description=tsdproxy - Tailscale reverse proxy manager
+Requires=podman.socket
+After=podman.socket
+
+[Container]
+Image=docker.io/almeidapaulopt/tsdproxy:2
+ContainerName=tsdproxy
+
+# Porta (8080 já está em uso pelo nginx neste host)
+PublishPort=8081:8080
+
+# Socket compatível com a API do Docker, exposto pelo podman.socket
+Volume=%t/podman/podman.sock:/var/run/docker.sock:z
+Volume=tsdproxy-data.volume:/data
+Volume=%h/.config/containers/volumes/tsdproxy/config:/config:Z
+
+AddHost=host.docker.internal:host-gateway
+
+# Secret criado via: podman secret create authkey ~/.config/containers/secrets/tsdproxy/authkey.txt
+Secret=authkey
+
+# Auto-descoberta do próprio dashboard (ver docs do tsdproxy)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=dash
+Label=tsdproxy.dash.visible=false
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
