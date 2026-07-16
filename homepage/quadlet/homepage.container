@@ -4,7 +4,8 @@ Requires=podman.socket
 After=podman.socket
 
 [Container]
-Image=ghcr.io/gethomepage/homepage:v1.4.5
+Image=ghcr.io/gethomepage/homepage:latest
+AutoUpdate=registry
 ContainerName=homepage
 PublishPort=3000:3000
 
@@ -12,6 +13,9 @@ PublishPort=3000:3000
 # leitura de labels apenas (ro). Mesmo mecanismo já usado pelo tsdproxy.
 Volume=%t/podman/podman.sock:/var/run/docker.sock:ro,z
 Volume=%h/.config/containers/volumes/homepage/config:/app/config:Z
+# Ícones customizados (não presentes no dashboard-icons nem como URL) —
+# referenciar em Label=homepage.icon=/icons/<arquivo> pra usar.
+Volume=%h/.config/containers/volumes/homepage/icons:/app/public/icons:Z
 EnvironmentFile=%h/.config/containers/env/homepage.env
 
 HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:3000/ || exit 1

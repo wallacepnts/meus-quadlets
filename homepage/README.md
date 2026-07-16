@@ -42,6 +42,10 @@ cp quadlet/homepage.container ~/.config/containers/systemd/
 mkdir -p ~/.config/containers/volumes/homepage/config
 cp config/docker.yaml config/settings.yaml ~/.config/containers/volumes/homepage/config/
 
+# 2b. Ícones customizados (opcional) — só precisa existir se for usar,
+#     ver seção "Marcando um serviço" abaixo
+mkdir -p ~/.config/containers/volumes/homepage/icons
+
 # 3. Env — HOMEPAGE_ALLOWED_HOSTS é obrigatório (allowlist de Host header,
 #    formato host:porta; aceita vários separados por vírgula). O
 #    .container já vem com labels tsdproxy (nó "homepage" na tailnet),
@@ -58,6 +62,10 @@ systemctl --user enable --now podman.socket
 # 5. Subir
 systemctl --user daemon-reload
 systemctl --user start homepage
+
+# 6. Auto-update (ver seção própria abaixo) — timer diário, compartilhado
+#    com qualquer outro serviço deste host que também use AutoUpdate=
+systemctl --user enable --now podman-auto-update.timer
 ```
 
 Acessar em `http://localhost:3000` ou, via tailnet,
@@ -119,6 +127,14 @@ visual consistente entre os cards. Exemplos já em uso neste repo:
 (`anytype.svg`, sem `href` — não é um serviço HTTP navegável) e
 [`tsdproxy.container`](../tsdproxy/quadlet/tsdproxy.container) (`tailscale.svg`).
 
+**Ícone customizado, sem equivalente em dashboard-icons/`si-`/`mdi-`:**
+colocar o arquivo em `~/.config/containers/volumes/homepage/icons/` e
+referenciar como `Label=homepage.icon=/icons/<arquivo>` (ex.:
+`/icons/meu-servico.png`). Precisa reiniciar a própria Homepage depois de
+adicionar um ícone novo — limitação do servidor estático do Next.js, não
+detecta arquivo novo sozinho (diferente de labels de container, que são
+detectadas ao vivo).
+
 Depois de adicionar labels num container existente: `systemctl --user
 daemon-reload && systemctl --user restart <nome>` — Homepage
 percebe o container atualizado sozinha, não precisa reiniciar a Homepage.
@@ -126,11 +142,12 @@ percebe o container atualizado sozinha, não precisa reiniciar a Homepage.
 ## Auto-update
 
 Ao contrário do any-sync-bundle, a imagem é Alpine com `wget` disponível
-— `HealthCmd` real é possível, então `AutoUpdate=registry` teria rollback
-automático de verdade (ver regra 9 do README raiz). Não vem ligado por
-padrão; pra habilitar, adicionar `AutoUpdate=registry` no `.container` e
-trocar a tag pra uma flutuante, depois `systemctl --user enable --now
-podman-auto-update.timer`.
+— `HealthCmd` real, então `AutoUpdate=registry` tem rollback automático
+de verdade (ver regra 9 do README raiz). **Ligado por padrão** neste
+repo: `Image=...:latest` + `AutoUpdate=registry` no `.container`,
+`podman-auto-update.timer` (diário) cuida do resto — mesmo padrão do
+[actual-budget](../actual-budget/). Conferir candidatos antes de confiar
+cegamente: `podman auto-update --dry-run`.
 
 ## Comandos úteis
 
