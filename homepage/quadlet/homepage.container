@@ -14,12 +14,17 @@ Volume=%t/podman/podman.sock:/var/run/docker.sock:ro,z
 Volume=%h/.config/containers/volumes/homepage/config:/app/config:Z
 EnvironmentFile=%h/.config/containers/env/homepage.env
 
-HealthCmd=CMD-SHELL wget -q --spider http://localhost:3000/ || exit 1
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:3000/ || exit 1
 HealthInterval=10s
 HealthTimeout=5s
 HealthRetries=5
 HealthStartPeriod=10s
 Notify=healthy
+
+# tsdproxy discovery — expõe o dashboard na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=homepage
+Label=tsdproxy.port.web=443/https:3000/http
 
 [Service]
 Restart=always

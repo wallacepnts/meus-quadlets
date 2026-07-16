@@ -43,10 +43,13 @@ mkdir -p ~/.config/containers/volumes/homepage/config
 cp config/docker.yaml ~/.config/containers/volumes/homepage/config/
 
 # 3. Env — HOMEPAGE_ALLOWED_HOSTS é obrigatório (allowlist de Host header,
-#    formato host:porta; aceita vários separados por vírgula)
+#    formato host:porta; aceita vários separados por vírgula). O
+#    .container já vem com labels tsdproxy (nó "homepage" na tailnet),
+#    então incluir o hostname MagicDNS aqui também, senão a Homepage
+#    rejeita as requisições vindas do tsdproxy com "Host not allowed".
 mkdir -p ~/.config/containers/env
 cat > ~/.config/containers/env/homepage.env <<'EOF'
-HOMEPAGE_ALLOWED_HOSTS=localhost:3000
+HOMEPAGE_ALLOWED_HOSTS=localhost:3000,homepage.<seu-tailnet>.ts.net
 EOF
 
 # 4. Socket do Podman
@@ -57,10 +60,10 @@ systemctl --user daemon-reload
 systemctl --user start homepage.service
 ```
 
-Acessar em `http://localhost:3000`. Se for expor via
-[tsdproxy](../tsdproxy/) (tailnet), adicionar o hostname MagicDNS em
-`HOMEPAGE_ALLOWED_HOSTS` também (`homepage.env`) — sem isso a Homepage
-rejeita a requisição com "Host not allowed".
+Acessar em `http://localhost:3000` ou, via tailnet,
+`https://homepage.<seu-tailnet>.ts.net` (o `.container` já vem com as
+labels do [tsdproxy](../tsdproxy/) — nó próprio criado automaticamente,
+igual ao any-sync-bundle).
 
 ## Marcando um serviço pra aparecer no dashboard
 

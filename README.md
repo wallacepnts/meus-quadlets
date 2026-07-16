@@ -128,6 +128,17 @@ Label=homepage.description="Publica containers na tailnet automaticamente"
 Sem aspas, o Quadlet corta o valor no primeiro espaço (vira só
 `Publica`) — sem erro, sem aviso.
 
+### 13. `HealthCmd` com `localhost`: usar `127.0.0.1`
+
+Em `/etc/hosts` do container, `localhost` resolve pra IPv4 (`127.0.0.1`)
+**e** IPv6 (`::1`). Se o processo só escutar em IPv4, um cliente que
+prefira IPv6 (`wget`, `curl` sem `-4`) recebe "Connection refused" mesmo
+com o serviço no ar — testar com o IP explícito evita o problema.
+
+```ini
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:3000/ || exit 1
+```
+
 ## Anatomia de referência
 
 ### `<app>-net.network`
