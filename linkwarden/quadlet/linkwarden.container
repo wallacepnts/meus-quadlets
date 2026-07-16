@@ -8,7 +8,7 @@ Requires=linkwarden-postgres.service linkwarden-meilisearch.service
 # isso sozinho não basta: Notify=healthy exige HealthCmd declarado aqui
 # também — sem isso o Podman recusa subir ("sdnotify policy healthy
 # requires a healthcheck to be set"), mesmo com o healthcheck da imagem.
-Image=ghcr.io/linkwarden/linkwarden:v2.9.3
+Image=ghcr.io/linkwarden/linkwarden:v2.15.1
 ContainerName=linkwarden
 Network=linkwarden-net.network
 PublishPort=3001:3000
