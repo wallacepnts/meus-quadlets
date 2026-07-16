@@ -317,3 +317,8 @@ journalctl --user -u any-sync-bundle -f
 podman logs -f any-sync-bundle
 podman exec any-sync-bundle-mongo mongosh --eval 'rs.status()'
 ```
+
+## Créditos
+
+Deploy Quadlet baseado no [any-sync-bundle](https://github.com/grishy/any-sync-bundle),
+de [Sergei G. (@grishy)](https://github.com/grishy). Licença original: MIT.

@@ -114,6 +114,11 @@ estado crítico de usuário.
 Porta liberada no firewall do host (`firewalld`/`ufw`/`iptables`) é passo
 separado.
 
+### 11. Créditos ao projeto original
+
+Toda pasta de serviço baseado em outro projeto tem uma seção "Créditos" no
+próprio README, linkando o repositório e o autor originais.
+
 ## Anatomia de referência
 
 ### `<app>-net.network`
