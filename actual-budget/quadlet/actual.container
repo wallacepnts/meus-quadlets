@@ -2,7 +2,12 @@
 Description=Actual Budget Server
 
 [Container]
-Image=docker.io/actualbudget/actual-server:26.1.0
+# Tag flutuante de propósito — não existe opção "só patch" pro
+# actual-server (só tags exatas ou latest/edge/nightly), e :latest é a
+# própria recomendação oficial do projeto. Rollback automático real
+# graças ao HealthCmd abaixo.
+Image=docker.io/actualbudget/actual-server:latest
+AutoUpdate=registry
 ContainerName=actual
 PublishPort=5006:5006
 EnvironmentFile=%h/.config/containers/env/actual.env

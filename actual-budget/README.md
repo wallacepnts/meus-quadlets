@@ -60,14 +60,34 @@ health check funciona de verdade (diferente do any-sync-bundle).
 
 ## Auto-update
 
-Não vem ligado por padrão (tag explícita `26.1.0`, sem `AutoUpdate=`) —
-mesma política do resto do repo (regra 9 do README raiz). Como a imagem
-tem `HealthCmd` real, teria rollback automático de verdade se você
-decidir habilitar (`AutoUpdate=registry` + tag flutuante + `podman-auto-update.timer`).
+**Ligado**, ao contrário da política padrão do resto do repo (regra 9 do
+README raiz) — exceção deliberada, porque aqui as duas condições da regra
+9 realmente se cumprem: `HealthCmd` real (o script oficial) dá rollback
+automático de verdade, e não há dado de terceiros em jogo.
 
-Tag pinada mais recente disponível no Docker Hub no momento deste README:
-`26.7.0` (rodando `26.1.0`) — checar
-`https://hub.docker.com/r/actualbudget/actual-server/tags` antes de trocar.
+```ini
+Image=docker.io/actualbudget/actual-server:latest
+AutoUpdate=registry
+```
+
+Não existe tag "só patch" pro `actual-server` (só tags exatas tipo
+`26.7.0`, que nunca mudam de digest, ou `latest`/`edge`/`nightly`, que
+flutuam por qualquer versão) — usar `:latest` é a própria recomendação
+oficial do projeto pra maioria dos usuários, então foi essa a escolhida.
+
+```bash
+podman auto-update --dry-run              # prévia, sem aplicar nada
+podman auto-update --rollback actual      # reverter manualmente se precisar
+```
+
+`podman-auto-update.timer` precisa estar ativo pra isso rodar sozinho
+1x/dia — `systemctl --user enable --now podman-auto-update.timer` (é
+compartilhado entre todos os serviços deste repo, só precisa ligar uma
+vez).
+
+**Fazer backup antes de qualquer atualização importante** (ver seção
+abaixo) — o rollback automático cobre "não ficou `healthy`", não cobre
+"ficou healthy mas com um bug silencioso nos dados".
 
 ## Backup & Recuperação
 
