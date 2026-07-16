@@ -83,6 +83,23 @@ Valores com espaço precisam de aspas (`Label=chave="valor com espaço"`) —
 sem elas o Quadlet corta no primeiro espaço, sem erro nem aviso (regra 12
 do README raiz).
 
+**`href`: `localhost` só funciona vendo o dashboard localmente.** Se a
+Homepage também for acessada de outro dispositivo (via tsdproxy/tailnet,
+ver acima), `http://localhost:porta` aponta pro próprio dispositivo de
+quem está olhando, não pro servidor — o link simplesmente não abre nada.
+Se o serviço também estiver exposto na tailnet, usar o endereço dela em
+vez de (ou além de) `localhost`:
+
+```ini
+Label=homepage.href=https://<nome-do-serviço>.<seu-tailnet>.ts.net
+```
+
+Exemplo: `tsdproxy.container` deste repo usa
+`homepage.href=http://localhost:8080`, que funciona só localmente. O
+próprio tsdproxy já cria um nó `dash` na tailnet pro seu dashboard —
+trocar pra `homepage.href=https://dash.<seu-tailnet>.ts.net` deixaria o
+link funcionando de qualquer dispositivo.
+
 `icon` aceita `nome.png`/`.svg` (biblioteca [dashboard-icons](https://github.com/homarr-labs/dashboard-icons)),
 `mdi-nome` (Material Design Icons), `si-nome` (Simple Icons) ou uma URL
 absoluta. Exemplos já em uso neste repo:
