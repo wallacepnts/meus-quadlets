@@ -73,7 +73,7 @@ O `[Install]` já é aplicado na hora da geração.
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user start|stop|restart|status <nome>.service
+systemctl --user start|stop|restart|status <nome>   # .service é opcional aqui
 ```
 
 ### 5. `Network=`/`Volume=` apontando pra outro arquivo Quadlet já injeta a dependência
@@ -214,9 +214,9 @@ sockets como `%t/podman/podman.sock`).
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user start <app>.service
-systemctl --user status <app>.service
-journalctl --user -u <app>.service -f
+systemctl --user start <app>
+systemctl --user status <app>
+journalctl --user -u <app> -f
 podman exec -it <container> sh   # se a imagem tiver shell
 ```
 
@@ -225,22 +225,22 @@ serviços somem quando a sessão de login encerra.
 
 ### Serviço sozinho (a maioria)
 
-Direto: `systemctl --user restart <app>.service`.
+Direto: `systemctl --user restart <app>`.
 
 ### Serviço com dependências (ex.: any-sync-bundle, linkwarden)
 
-- **Subir**: só o principal — `systemctl --user start <app>.service` já
-  sobe as dependências primeiro, via `Requires=`.
+- **Subir**: só o principal — `systemctl --user start <app>` já sobe as
+  dependências primeiro, via `Requires=`.
 - **Reiniciar tudo**: idem, `restart` no principal recria a cadeia certa.
 - **Reiniciar só uma dependência** (ex.: só o banco, pra aplicar config):
   também **para** quem a requer (regra 8) — se a dependência cair num
   crash-loop nessa janela, quem dependia dela não volta sozinho depois.
   Nesse caso: esperar a dependência ficar `healthy` e só então
-  `systemctl --user start <app>.service` manualmente.
+  `systemctl --user start <app>` manualmente.
 - **Derrubar tudo de propósito**: parar todos de uma vez, não só o
   principal —
   ```bash
-  systemctl --user stop <app>.service <app>-dependencia-1.service <app>-dependencia-2.service
+  systemctl --user stop <app> <app>-dependencia-1 <app>-dependencia-2
   ```
   (é o padrão usado nos passos de backup de cada README de serviço, por
   este exato motivo — parar só o principal deixa as dependências vivas
@@ -249,15 +249,15 @@ Direto: `systemctl --user restart <app>.service`.
 ### Conferir depois
 
 ```bash
-systemctl --user is-active <app>.service          # rápido, só o status
-journalctl --user -u <app>.service -f              # logs em tempo real
-podman ps --filter "name=<app>"                    # confirma healthy de verdade
+systemctl --user is-active <app>          # rápido, só o status
+journalctl --user -u <app> -f              # logs em tempo real
+podman ps --filter "name=<app>"            # confirma healthy de verdade
 ```
 
 ### Remover a unit (mantém os dados)
 
 ```bash
-systemctl --user stop <app>.service [<dependencias>.service]
+systemctl --user stop <app> [<dependencias>]
 rm ~/.config/containers/systemd/<app>.container   # e .network/.volume se tiver
 systemctl --user daemon-reload
 systemctl --user reset-failed   # limpa estado de falha residual, se tiver
@@ -333,7 +333,7 @@ AutoUpdate=registry
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user restart <app>.service
+systemctl --user restart <app>
 ```
 
 ### 4. Conferir e, se precisar, reverter
