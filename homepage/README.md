@@ -20,7 +20,8 @@ quadlet/
 └── homepage.container   # unit principal
 
 config/
-└── docker.yaml          # define a fonte de descoberta (o socket do Podman)
+├── docker.yaml           # define a fonte de descoberta (o socket do Podman)
+└── settings.yaml         # statusStyle: dot (bolinha de status em vez de texto)
 ```
 
 ## Pré-requisitos
@@ -36,11 +37,10 @@ config/
 mkdir -p ~/.config/containers/systemd
 cp quadlet/homepage.container ~/.config/containers/systemd/
 
-# 2. Config — precisa existir antes do start; docker.yaml define a fonte
-#    de descoberta, o resto (settings.yaml etc.) a própria Homepage gera
-#    na primeira vez se a pasta estiver vazia
+# 2. Config — precisa existir antes do start; se a pasta estiver vazia a
+#    própria Homepage gera o resto na primeira vez (bookmarks.yaml etc.)
 mkdir -p ~/.config/containers/volumes/homepage/config
-cp config/docker.yaml ~/.config/containers/volumes/homepage/config/
+cp config/docker.yaml config/settings.yaml ~/.config/containers/volumes/homepage/config/
 
 # 3. Env — HOMEPAGE_ALLOWED_HOSTS é obrigatório (allowlist de Host header,
 #    formato host:porta; aceita vários separados por vírgula). O
