@@ -184,13 +184,26 @@ comando certo roda dentro do mesmo namespace que o Podman usa:
 
 ```bash
 podman unshare mv origem destino
-podman unshare chown -R 100100:100100 caminho/
+podman unshare rm caminho/arquivo
 podman unshare ls -la caminho/
 ```
 
 Qualquer comando de manipulação de arquivo (`mv`, `cp`, `chown`, `rm`...)
 pode ser prefixado com `podman unshare` quando o alvo está dentro de
 `volumes/` e pertence ao container, não a você.
+
+**Copiar um arquivo novo *pra dentro*** (não só mover o que já existe)
+precisa de um passo a mais — testado na prática: `podman unshare cp`
+copia certo (dá acesso de escrita na pasta), mas o arquivo novo fica com
+o **seu** uid, diferente dos vizinhos. Ajustar o dono depois, usando
+`--reference` pra não precisar adivinhar o número do uid mapeado (varia
+por serviço):
+
+```bash
+podman unshare cp /origem/arquivo.txt ~/.config/containers/volumes/<app>/<pasta>/
+podman unshare chown --reference="$HOME/.config/containers/volumes/<app>/<pasta>/algum-arquivo-existente" \
+  ~/.config/containers/volumes/<app>/<pasta>/arquivo.txt
+```
 
 ## Anatomia de referência
 
