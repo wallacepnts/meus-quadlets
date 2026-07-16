@@ -6,6 +6,11 @@ oficial (MongoDB + Redis externos). Testado em Podman rootless + systemd
 --user (openSUSE Tumbleweed, uid 1000), mas os arquivos `.container`/`.network`
 são portáveis para qualquer Linux com Podman rootless + systemd.
 
+Fora de escopo aqui (existem no projeto original, não portados): storage S3
+(`compose.s3.yml`, MinIO) e reverse proxy via Traefik (`compose.traefik.yml`)
+— este setup expõe via Tailscale/tsdproxy em vez de Traefik (ver seção
+própria).
+
 ## Arquitetura
 
 Três containers na rede `any-sync-bundle-net.network`:
@@ -43,6 +48,9 @@ watchdog/
 - Checar suporte a AVX na CPU (Mongo 5.0+ exige): `grep -m1 avx /proc/cpuinfo`
   — se não tiver, usar a variante `any-sync-mongo-legacy.container` (veja
   Troubleshooting)
+- Firewall liberando TCP 33010 e UDP 33020 (`firewall-cmd`, `ufw`, `iptables`
+  conforme a distro) — sem isso, clientes fora do host não conseguem
+  conectar mesmo com o container rodando certo
 
 ## Instalação do zero
 
@@ -185,6 +193,54 @@ relação nenhuma com o any-sync-bundle. `any-sync-mongo.container` fica
 travado em `mongo:8.0.4` (confirmada funcionando) sem `AutoUpdate=`. Ver
 Troubleshooting antes de mudar isso.
 
+**Sobre a versão do any-sync-bundle em si:** a tag segue o formato
+`v[versão-semver]-[data-de-compatibilidade-any-sync]` (ex.: `1.4.3-2026-04-21`
+— o sufixo de data é a versão de compatibilidade do any-sync usada pelos
+apps do Anytype, não a data do release). O projeto upstream declara que
+upgrades dentro do `1.x` seguem SemVer e não quebram compatibilidade, o que
+reduz (mas não zera) o risco de deixar `any-sync-bundle` em auto-update. Pra
+conferir a versão rodando depois de um update — a imagem `-minimal` não tem
+`--version` executável via `podman exec` (sem shell) — usar o label da
+imagem:
+
+```bash
+podman inspect any-sync-bundle --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
+```
+
+## Backup & Recuperação
+
+Diferente do `./data/` único do projeto original, aqui os dados ficam
+separados em três volumes. Para um backup completo, os três precisam ser
+incluídos — principalmente `bundle-config.yml`, que guarda as chaves
+privadas do nó (`peerId`/`peerKey`/`signingKey`); perder esse arquivo sem
+backup significa que o servidor não pode ser restaurado como o mesmo nó,
+só recriado do zero. Já `client-config.yml` é regenerado a cada start e não
+precisa de backup.
+
+```bash
+# Parar tudo antes do backup (evita capturar o Mongo/Redis em escrita)
+systemctl --user stop any-sync-bundle any-sync-mongo any-sync-bundle-redis
+
+tar -czf any-sync-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
+  -C ~/.config/containers/volumes any-sync-bundle
+
+systemctl --user start any-sync-bundle   # sobe mongo e redis via Requires=
+```
+
+**Restaurar:**
+
+```bash
+systemctl --user stop any-sync-bundle any-sync-mongo any-sync-bundle-redis
+rm -rf ~/.config/containers/volumes/any-sync-bundle
+tar -xzf any-sync-backup-YYYYMMDD-HHMMSS.tar.gz -C ~/.config/containers/volumes
+systemctl --user start any-sync-bundle
+```
+
+Fazer backup antes de qualquer upgrade manual (Mongo, Redis, ou trocar a
+tag do bundle manualmente) — é a mesma recomendação do projeto original, e
+o incidente do Mongo documentado acima é exatamente o cenário em que isso
+teria evitado downtime.
+
 ## Implantando em outro servidor / outra tailnet
 
 Os arquivos `.container`/`.network` são portáveis e podem ser copiados
@@ -265,6 +321,14 @@ janela (ex.: crash-loop batendo `start-limit-hit`), o bundle não sobe de
 volta sozinho — `Restart=always` só cobre processo que já rodou e morreu,
 não job que falhou por dependência não satisfeita. Depois de corrigir a
 causa raiz, subir manualmente: `systemctl --user start any-sync-bundle.service`.
+
+**Cliente não conecta**
+- Conferir se `ANY_SYNC_BUNDLE_INIT_EXTERNAL_ADDRS` (ou o `externalAddr` já
+  persistido em `bundle-config.yml`) bate com um endereço realmente
+  alcançável a partir do cliente
+- Conferir firewall do host: TCP 33010 e UDP 33020 precisam estar abertos
+  (`PublishPort=` no Quadlet só expõe a porta pro host — não abre firewall
+  sozinho)
 
 ## Comandos úteis
 
