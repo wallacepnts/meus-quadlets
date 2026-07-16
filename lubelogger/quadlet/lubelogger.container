@@ -1,0 +1,36 @@
+[Unit]
+Description=LubeLogger
+
+[Container]
+Image=ghcr.io/hargata/lubelogger:v1.7.0
+ContainerName=lubelogger
+PublishPort=8083:8080
+Volume=%h/.config/containers/volumes/lubelogger/data:/App/data:Z
+Volume=%h/.config/containers/volumes/lubelogger/keys:/root/.aspnet/DataProtection-Keys:Z
+EnvironmentFile=%h/.config/containers/env/lubelogger.env
+
+# Imagem Ubuntu sem wget/curl — checagem TCP crua via bash (ver regra 13
+# do README raiz sobre 127.0.0.1 em vez de localhost).
+HealthCmd=CMD-SHELL timeout 3 bash -c "echo > /dev/tcp/127.0.0.1/8080" || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=lubelogger
+Label=tsdproxy.port.web=443/https:8080/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=LubeLogger
+Label=homepage.href=https://lubelogger.<seu-tailnet>.ts.net
+Label=homepage.description="Controle de manutenção veicular self-hosted"
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

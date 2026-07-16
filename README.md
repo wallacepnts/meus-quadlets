@@ -233,3 +233,4 @@ serviços somem quando a sessão de login encerra.
 | [`actual-budget/`](./actual-budget/) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) |
 | [`linkwarden/`](./linkwarden/) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) |
 | [`vaultwarden/`](./vaultwarden/) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) |
+| [`lubelogger/`](./lubelogger/) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) |
