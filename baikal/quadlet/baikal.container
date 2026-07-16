@@ -1,0 +1,35 @@
+[Unit]
+Description=Baikal (CalDAV/CardDAV)
+
+[Container]
+Image=docker.io/ckulka/baikal:0.10.1-nginx-php8.2
+ContainerName=baikal
+PublishPort=8084:80
+Volume=%h/.config/containers/volumes/baikal/config:/var/www/baikal/config:Z
+Volume=%h/.config/containers/volumes/baikal/data:/var/www/baikal/Specific:Z
+EnvironmentFile=%h/.config/containers/env/baikal.env
+
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:80/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=baikal-dav
+Label=tsdproxy.port.web=443/https:80/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Baikal
+Label=homepage.icon=baikal.svg
+Label=homepage.href=https://baikal-dav.<seu-tailnet>.ts.net
+Label=homepage.description="Servidor CalDAV/CardDAV self-hosted"
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
