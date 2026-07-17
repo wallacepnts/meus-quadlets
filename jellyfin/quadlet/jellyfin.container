@@ -17,9 +17,12 @@ Volume=%h/.config/containers/volumes/jellyfin/config:/config:Z
 Volume=%h/.config/containers/volumes/jellyfin/cache:/cache:Z
 # Raiz de mídia compartilhada com o resto da stack (ver ../media-stack/)
 # — somente leitura aqui, os outros montam a mesma pasta com escrita.
-# Precisa de %h/data criado ou symlinkado antes do primeiro start (ver
-# README, seção Instalação).
-Volume=%h/data:/data:ro,Z
+# MEDIA_DATA_DIR vem de ~/.config/environment.d/ (systemd, não Quadlet —
+# ver README, seção Instalação), não de um EnvironmentFile= comum: essa
+# variável precisa existir no ambiente do *manager* systemd --user pra
+# ser expandida dentro de Volume=, e EnvironmentFile= só injeta env var
+# dentro do container em si, tarde demais pra isso.
+Volume=${MEDIA_DATA_DIR}:/data:ro,Z
 
 # Transcodificação por hardware (opcional) — ver README pra Intel/AMD
 # (AddDevice=/dev/dri:/dev/dri) ou NVIDIA (AddDevice=nvidia.com/gpu=all,

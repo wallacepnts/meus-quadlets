@@ -1,0 +1,50 @@
+[Unit]
+Description=Gluetun (túnel VPN pro Deluge)
+
+[Container]
+Image=docker.io/qmcgaw/gluetun:latest
+ContainerName=gluetun
+AddDevice=/dev/net/tun:/dev/net/tun
+# --privileged testado na prática neste host: NET_ADMIN sozinho (sem
+# --privileged) barra no setup do firewall interno do Gluetun —
+# "iptables ... conntrack ... RULE_APPEND failed" — rootless não
+# consegue mexer no netfilter/conntrack real do host mesmo com a
+# capability concedida, só dentro do próprio namespace remapeado. Com
+# --privileged (ainda confinado ao user namespace rootless, não é root
+# real do host) o firewall interno sobe normal. Alternativa sem
+# --privileged: FIREWALL=off no gluetun.env — funciona, mas perde o
+# kill switch (se a VPN cair, o tráfego do Deluge não fica bloqueado
+# automaticamente).
+PodmanArgs=--privileged
+EnvironmentFile=%h/.config/containers/env/gluetun.env
+
+# Portas do Deluge, publicadas AQUI: ele entra com
+# Network=container:gluetun (compartilha a stack de rede inteira deste
+# container) — quem usa "container:" não pode declarar PublishPort=
+# próprio, tem que estar em quem é dono do namespace.
+PublishPort=8112:8112
+PublishPort=6881:6881
+PublishPort=6881:6881/udp
+
+# Servidor de health interno do próprio Gluetun (HEALTH_SERVER_ADDRESS,
+# padrão 127.0.0.1:9999) — só fica "healthy" de verdade depois que a VPN
+# conectar com credenciais reais no gluetun.env.
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:9999/ || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=5
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — a porta do Deluge é publicada aqui (ver acima),
+# então o label de descoberta também fica aqui, não no deluge.container.
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=deluge
+Label=tsdproxy.port.web=443/https:8112/http
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

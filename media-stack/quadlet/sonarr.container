@@ -7,9 +7,10 @@ ContainerName=sonarr
 PublishPort=8989:8989
 
 Volume=%h/.config/containers/volumes/media-stack/sonarr/config:/config:Z
-# Raiz de mídia/downloads compartilhada com o resto da stack (ver README
-# — precisa de %h/data criado ou symlinkado antes do primeiro start).
-Volume=%h/data:/data:Z
+# Raiz de mídia/downloads compartilhada com o resto da stack — precisa
+# de MEDIA_DATA_DIR configurado em ~/.config/environment.d/ antes do
+# primeiro start (ver README, seção Instalação).
+Volume=${MEDIA_DATA_DIR}:/data:Z
 EnvironmentFile=%h/.config/containers/env/media-stack.env
 
 HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:8989/ || exit 1

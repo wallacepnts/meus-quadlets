@@ -9,7 +9,7 @@ PublishPort=6767:6767
 Volume=%h/.config/containers/volumes/media-stack/bazarr/config:/config:Z
 # Mesma raiz do Sonarr/Radarr — Bazarr precisa enxergar os mesmos arquivos
 # de mídia deles pra conseguir gravar as legendas ao lado.
-Volume=%h/data:/data:Z
+Volume=${MEDIA_DATA_DIR}:/data:Z
 EnvironmentFile=%h/.config/containers/env/media-stack.env
 
 HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:6767/ || exit 1

@@ -5,14 +5,15 @@ via Podman Quadlet, baseado no [guia oficial pra Podman](https://jellyfin.org/do
 
 ## Decisões deste deploy
 
-- **Path da mídia é `%h/data`, fixo, não fica sob `volumes/jellyfin/`**
-  — de propósito, e compartilhado com o [media-stack](../media-stack/)
-  (Sonarr/Radarr/Lidarr/Bazarr/Prowlarr/Deluge/SABnzbd): todo mundo
-  precisa enxergar exatamente o mesmo path pra hardlink/move atômico
-  funcionar entre download → biblioteca. Em vez de cada serviço apontar
-  pra um path arbitrário diferente, a escolha fica **num lugar só**:
-  `~/data` (ou um symlink pra onde sua mídia realmente mora — disco
-  separado, outro mount etc.). Ver Instalação.
+- **Path da mídia vem de `MEDIA_DATA_DIR`, não fica sob
+  `volumes/jellyfin/`** — de propósito, e compartilhado com o
+  [media-stack](../media-stack/) (Sonarr/Radarr/Lidarr/Bazarr/Prowlarr/Deluge/SABnzbd):
+  todo mundo precisa enxergar exatamente o mesmo path pra hardlink/move
+  atômico funcionar entre download → biblioteca. Em vez de cada serviço
+  apontar pra um path arbitrário diferente (ou depender de symlink), a
+  escolha fica **numa variável só**, via `~/.config/environment.d/`
+  (mecanismo do systemd, não do Quadlet — ver Instalação). Aponta pra
+  onde sua mídia realmente mora, sem symlink nem cópia.
 - **Transcodificação por hardware documentada por fabricante, não
   configurada por padrão** — Intel/AMD (`/dev/dri`, simples) e NVIDIA
   (NVIDIA Container Toolkit + CDI, mais trabalhoso) têm caminhos bem
@@ -59,14 +60,19 @@ cp quadlet/jellyfin.container ~/.config/containers/systemd/
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/jellyfin/{config,cache}
 
-# 3. Raiz de mídia compartilhada — criar ~/data, OU, se a mídia já mora
-#    em outro lugar (outro disco, outro mount), symlinkar em vez de criar
-#    pasta nova. Essa é a ÚNICA decisão de path — vale pra este serviço
-#    e pra todos os do media-stack, nenhum outro arquivo precisa editar.
-mkdir -p ~/data
-# ou, por exemplo: ln -s /caminho/pro/disco/de/midia ~/data
+# 3. Raiz de mídia compartilhada — a ÚNICA decisão de path, vale pra
+#    este serviço e pra todos os do media-stack, nenhum outro arquivo
+#    precisa editar. Se já tiver sido configurada por causa do
+#    media-stack, pular este passo.
+mkdir -p ~/.config/environment.d
+cat > ~/.config/environment.d/media-stack.conf <<EOF
+MEDIA_DATA_DIR=$HOME/data
+EOF
+mkdir -p "$HOME/data"
+# Se a mídia já mora em outro disco/mount, usar o path real ali em cima.
 
-# 4. Subir
+# 4. Subir (precisa de daemon-reload pra pegar a env.d nova, não só
+#    reiniciar — é o systemd --user que precisa reler o ambiente)
 systemctl --user daemon-reload
 systemctl --user start jellyfin
 ```

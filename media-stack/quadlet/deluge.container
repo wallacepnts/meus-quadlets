@@ -1,15 +1,21 @@
 [Unit]
 Description=Deluge (cliente torrent)
+After=gluetun.service
+Requires=gluetun.service
 
 [Container]
 Image=lscr.io/linuxserver/deluge:2.2.0
 ContainerName=deluge
-PublishPort=8112:8112
-PublishPort=6881:6881
-PublishPort=6881:6881/udp
+
+# Todo o tráfego (torrent e web UI) sai pela stack de rede do Gluetun —
+# sem isso, o Deluge usaria a rede normal do host, sem VPN. Container
+# que entra via "container:" não declara PublishPort= próprio (ver
+# gluetun.container, onde 8112/6881 são publicados de verdade) nem
+# Network=<nome>.network — os dois são mutuamente exclusivos com isso.
+Network=container:gluetun
 
 Volume=%h/.config/containers/volumes/media-stack/deluge/config:/config:Z
-Volume=%h/data:/data:Z
+Volume=${MEDIA_DATA_DIR}:/data:Z
 EnvironmentFile=%h/.config/containers/env/media-stack.env
 
 HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:8112/ || exit 1
@@ -19,17 +25,14 @@ HealthRetries=3
 HealthStartPeriod=30s
 Notify=healthy
 
-# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
-Label=tsdproxy.enable=true
-Label=tsdproxy.name=deluge
-Label=tsdproxy.port.web=443/https:8112/http
-
-# homepage — exibição no dashboard (ver ../homepage/)
+# homepage — exibição no dashboard (ver ../homepage/). Descoberta do
+# tsdproxy fica no gluetun.container (dono da porta publicada), não
+# aqui — ver comentário lá.
 Label=homepage.group=Mídia
 Label=homepage.name=Deluge
 Label=homepage.icon=deluge.svg
 Label=homepage.href=https://deluge.<seu-tailnet>.ts.net
-Label=homepage.description="Cliente torrent"
+Label=homepage.description="Cliente torrent (via Gluetun/VPN)"
 
 [Service]
 Restart=always

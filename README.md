@@ -218,6 +218,41 @@ em volta do valor. Reescrever sem barra invertida: `[0-9]` no lugar de
 `\d`, `.` sem escapar (aceitável em regex de filtro, não crítica).
 Caso real em [`wud/`](./wud/#wudtagincludewudtagtransform-nada-de--no-valor).
 
+### 19. Uma variável só, pra várias units: `~/.config/environment.d/*.conf`
+
+Quando vários `.container` diferentes precisam apontar pro **mesmo**
+path variável (ex.: uma raiz de mídia compartilhada entre vários
+serviços — ver [media-stack](./media-stack/)), dá pra evitar editar
+cada arquivo com o path hardcoded usando uma variável de ambiente do
+systemd, não um `EnvironmentFile=` comum: `EnvironmentFile=` só injeta
+env var *dentro do container*, tarde demais pra afetar como o Quadlet
+resolve `Volume=`. O mecanismo certo é o `environment.d(5)` do próprio
+systemd — `~/.config/environment.d/*.conf` define variáveis pro
+ambiente do *manager* `systemd --user` inteiro, e essas variáveis ficam
+disponíveis pra expansão `${VAR}` em `Volume=`/`Environment=` de
+qualquer unit desse usuário:
+
+```bash
+mkdir -p ~/.config/environment.d
+cat > ~/.config/environment.d/minha-app.conf <<EOF
+MEU_PATH=/caminho/real
+EOF
+systemctl --user daemon-reload   # obrigatório — sem isso a variável
+                                  # nova não existe pro manager ainda
+```
+
+```ini
+Volume=${MEU_PATH}:/algo:Z
+```
+
+Testado na prática: `systemctl cat` mostra `${MEU_PATH}` literal (é só
+o texto do arquivo, sem substituição) — o que confunde, parece que não
+funcionou — mas `podman inspect` do container já reflete o path
+resolvido de verdade, porque a expansão acontece no `ExecStart=` gerado,
+na hora que o systemd de fato inicia o processo, não na hora de gerar o
+arquivo. Testar com `podman inspect <container> --format
+'{{json .Mounts}}'`, não confiar só no `systemctl cat`.
+
 ## Anatomia de referência
 
 ### `<app>-net.network`
@@ -466,7 +501,7 @@ conteúdo), só então `systemctl --user start`.
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyfin.svg" width="20" height="20" alt=""> | [Jellyfin](./jellyfin) | Servidor de mídia self-hosted ([README](./jellyfin/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png" width="20" height="20" alt=""> | [Linkwarden](./linkwarden) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/lubelogger.png" width="20" height="20" alt=""> | [LubeLogger](./lubelogger) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) | ❌ |
-|  | [Media Stack](./media-stack) | Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Deluge, SABnzbd — automação de mídia, mesma raiz de dados do Jellyfin ([README](./media-stack/README.md)) | ❌ |
+|  | [Media Stack](./media-stack) | Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Seerr, Gluetun, Deluge, SABnzbd — automação de mídia, mesma raiz de dados do Jellyfin ([README](./media-stack/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="20" height="20" alt=""> | [tsdproxy](./tsdproxy) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg" width="20" height="20" alt=""> | [Vaultwarden](./vaultwarden) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/getwud/wud@main/ui/public/img/icons/android-chrome-512x512.png" width="20" height="20" alt=""> | [WUD (What's Up Docker)](./wud) | Monitora atualizações de imagem sem aplicar sozinho ([README](./wud/README.md)) | ❌ |

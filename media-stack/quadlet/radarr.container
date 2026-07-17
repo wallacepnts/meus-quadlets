@@ -7,7 +7,7 @@ ContainerName=radarr
 PublishPort=7878:7878
 
 Volume=%h/.config/containers/volumes/media-stack/radarr/config:/config:Z
-Volume=%h/data:/data:Z
+Volume=${MEDIA_DATA_DIR}:/data:Z
 EnvironmentFile=%h/.config/containers/env/media-stack.env
 
 HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:7878/ || exit 1
