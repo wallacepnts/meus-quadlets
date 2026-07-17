@@ -1,0 +1,43 @@
+[Unit]
+Description=What's Up Docker - monitor de atualizações de imagem
+Requires=podman.socket
+After=podman.socket
+
+[Container]
+Image=docker.io/getwud/wud:8.3.0
+ContainerName=wud
+PublishPort=8085:3000
+
+# Socket compatível com a API do Docker, exposto pelo podman.socket —
+# leitura de labels/imagens apenas (ro). Mesmo mecanismo já usado pelo
+# tsdproxy e pela Homepage. WUD só observa, nunca aplica update sozinho
+# (diferente do podman-auto-update) — não precisa de acesso de escrita.
+Volume=%t/podman/podman.sock:/var/run/docker.sock:ro,z
+Volume=%h/.config/containers/volumes/wud/store:/store:Z
+EnvironmentFile=%h/.config/containers/env/wud.env
+
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:3000/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=wud
+Label=tsdproxy.port.web=443/https:3000/http
+
+# homepage — exibição no dashboard (ver ../homepage/). Sem entrada no
+# dashboard-icons — URL absoluta pro ícone oficial do próprio projeto.
+Label=homepage.group=Infra
+Label=homepage.name="What's Up Docker"
+Label=homepage.icon=https://cdn.jsdelivr.net/gh/getwud/wud@main/ui/public/img/icons/android-chrome-512x512.png
+Label=homepage.href=https://wud.<seu-tailnet>.ts.net
+Label=homepage.description="Monitor de atualizações de imagem (sem aplicar sozinho)"
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

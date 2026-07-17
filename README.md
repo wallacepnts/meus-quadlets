@@ -452,6 +452,7 @@ conteúdo), só então `systemctl --user start`.
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/lubelogger.png" width="20" height="20" alt=""> [`lubelogger`](./lubelogger) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="20" height="20" alt=""> [`tsdproxy`](./tsdproxy) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg" width="20" height="20" alt=""> [`vaultwarden`](./vaultwarden) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/getwud/wud@main/ui/public/img/icons/android-chrome-512x512.png" width="20" height="20" alt=""> [`wud`](./wud) | Monitora atualizações de imagem sem aplicar sozinho ([README](./wud/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/zerobyte.png" width="20" height="20" alt=""> [`zerobyte`](./zerobyte) | Automação de backup (Restic) pros outros serviços ([README](./zerobyte/README.md)) | ❌ |
 
 ### O que o AutoUpdate precisa pra funcionar direito
