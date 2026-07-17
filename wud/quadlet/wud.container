@@ -36,6 +36,8 @@ Label=homepage.icon=https://cdn.jsdelivr.net/gh/getwud/wud@main/ui/public/img/ic
 Label=homepage.href=https://wud.<seu-tailnet>.ts.net
 Label=homepage.description="Monitor de atualizações de imagem (sem aplicar sozinho)"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 

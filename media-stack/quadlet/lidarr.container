@@ -29,6 +29,8 @@ Label=homepage.icon=lidarr.svg
 Label=homepage.href=https://lidarr.<seu-tailnet>.ts.net
 Label=homepage.description="Automação de música"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 TimeoutStartSec=60

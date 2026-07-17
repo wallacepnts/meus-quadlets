@@ -29,6 +29,8 @@ Label=homepage.icon=radarr.svg
 Label=homepage.href=https://radarr.<seu-tailnet>.ts.net
 Label=homepage.description="Automação de filmes"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 TimeoutStartSec=60

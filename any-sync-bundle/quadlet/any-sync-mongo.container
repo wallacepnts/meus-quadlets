@@ -25,6 +25,13 @@ HealthRetries=12
 HealthStartPeriod=10s
 Notify=healthy
 
+# WUD só observa (nunca aplica) — mesmo com a imagem travada em 8.0.4
+# por causa do bug de kernel 6.19+ documentado acima, é útil saber
+# quando existe uma tag mais nova disponível antes de decidir atualizar
+# manualmente.
+Label=wud.watch=true
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+$
+
 [Service]
 Restart=always
 TimeoutStartSec=120

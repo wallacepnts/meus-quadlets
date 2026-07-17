@@ -34,6 +34,8 @@ Label=homepage.description="Cliente torrent"
 # Sem VPN por padrão — ver seção "VPN opcional no Deluge, via Gluetun"
 # no README pra rotear o tráfego por um túnel, se quiser.
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 TimeoutStartSec=60

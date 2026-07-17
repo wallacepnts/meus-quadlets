@@ -35,6 +35,8 @@ Label=homepage.icon=seerr.svg
 Label=homepage.href=https://seerr.<seu-tailnet>.ts.net
 Label=homepage.description="Pedidos de filme/série (integra com Sonarr/Radarr/Jellyfin)"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 TimeoutStartSec=60

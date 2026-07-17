@@ -31,6 +31,11 @@ Label=homepage.icon=sabnzbd.svg
 Label=homepage.href=https://sabnzbd.<seu-tailnet>.ts.net
 Label=homepage.description="Cliente usenet"
 
+# Tag usa o prefixo "version-" (padrão desta imagem específica da
+# LinuxServer.io) — restringe candidatos a esse mesmo formato.
+Label=wud.watch=true
+Label=wud.tag.include=^version-[0-9]+.[0-9]+.[0-9]+$
+
 [Service]
 Restart=always
 TimeoutStartSec=60

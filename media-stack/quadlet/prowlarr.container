@@ -30,6 +30,8 @@ Label=homepage.icon=prowlarr.svg
 Label=homepage.href=https://prowlarr.<seu-tailnet>.ts.net
 Label=homepage.description="Gerenciador de indexers"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 TimeoutStartSec=60

@@ -31,6 +31,8 @@ Label=homepage.icon=bazarr.svg
 Label=homepage.href=https://bazarr.<seu-tailnet>.ts.net
 Label=homepage.description="Legendas automáticas"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 TimeoutStartSec=60

@@ -20,6 +20,8 @@ HealthRetries=12
 HealthStartPeriod=10s
 Notify=healthy
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 TimeoutStartSec=120

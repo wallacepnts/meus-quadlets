@@ -32,6 +32,8 @@ Label=homepage.icon=sonarr.svg
 Label=homepage.href=https://sonarr.<seu-tailnet>.ts.net
 Label=homepage.description="Automação de séries"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 TimeoutStartSec=60

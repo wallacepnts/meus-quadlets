@@ -23,6 +23,12 @@ HealthRetries=12
 HealthStartPeriod=10s
 Notify=healthy
 
+# Restringe a candidatos dentro da própria linha 4.4.x — a 5.0+ exige
+# AVX (motivo de usar esta imagem legacy), então uma tag 5.x/6.x não
+# seria aplicável aqui de qualquer forma.
+Label=wud.watch=true
+Label=wud.tag.include=^4.4.[0-9]+$
+
 [Service]
 Restart=always
 TimeoutStartSec=120
