@@ -42,6 +42,8 @@ Label=homepage.icon=jellyfin.svg
 Label=homepage.href=https://jellyfin.<seu-tailnet>.ts.net
 Label=homepage.description="Servidor de mídia self-hosted"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 TimeoutStartSec=60
