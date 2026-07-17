@@ -79,16 +79,23 @@ Acessar via [tsdproxy](../tsdproxy/) (tailnet) em
 `http://localhost:8123` — a raiz redireciona pro assistente de
 instalação na primeira vez (criar conta, nome do local, unidades etc.).
 
-**Trusted proxies**: acessando via tsdproxy (reverse proxy), a HA pode
-reclamar de "Invalid host header" ou pedir configuração de proxy
-confiável. Se acontecer, adicionar em
-`~/.config/containers/volumes/home-assistant/config/configuration.yaml`:
+**Trusted proxies — precisa mesmo, não é "se acontecer".** Acessando via
+tsdproxy (reverse proxy), a HA recusa a conexão com `400: Bad Request` e
+loga `A request from a reverse proxy was received from 169.254.1.2, but
+your HTTP integration is not set-up for reverse proxies`. `169.254.1.2`
+é o gateway interno do Podman rootless (via pasta — mesmo endereço por
+trás do `host.containers.internal`, ver [zerobyte](../zerobyte/) pra
+outro caso onde ele aparece), é por ele que o tráfego do tsdproxy chega.
+Adicionar em
+`~/.config/containers/volumes/home-assistant/config/configuration.yaml`
+**antes** de tentar acessar pela tailnet, depois `systemctl --user
+restart home-assistant`:
 
 ```yaml
 http:
   use_x_forwarded_for: true
   trusted_proxies:
-    - 0.0.0.0/0  # trocar pela sub-rede real do tsdproxy se quiser restringir
+    - 169.254.1.2
 ```
 
 ## Adicionando um dispositivo USB (Zigbee/Z-Wave) depois
