@@ -18,13 +18,6 @@ HealthRetries=12
 HealthStartPeriod=10s
 Notify=healthy
 
-# A imagem também publica tags sem sufixo (ex.: 16, 16.4) — o WUD trata
-# isso como semver "sem prerelease", que semver considera "maior" que a
-# tag com sufixo -alpine, gerando falso positivo (mesmo motivo do
-# vaultwarden, ver README raiz). Restringe a candidatos -alpine.
-Label=wud.watch=true
-Label=wud.tag.include=^[0-9]+-alpine$
-
 [Service]
 Restart=always
 TimeoutStartSec=120
