@@ -63,11 +63,9 @@ cp quadlet/home-assistant.container ~/.config/containers/systemd/
 # 2. Diretório de dados — bind mount exige que já exista antes do start
 mkdir -p ~/.config/containers/volumes/home-assistant/config
 
-# 3. Env não-secreto
+# 3. Env — copiar o exemplo
 mkdir -p ~/.config/containers/env
-cat > ~/.config/containers/env/home-assistant.env <<'EOF'
-TZ=America/Sao_Paulo
-EOF
+cp .env.example ~/.config/containers/env/home-assistant.env
 
 # 4. Subir
 systemctl --user daemon-reload

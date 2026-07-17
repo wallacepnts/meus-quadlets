@@ -25,20 +25,10 @@ cp quadlet/actual.container ~/.config/containers/systemd/
 #    O próprio Actual cria server-files/ e user-files/ dentro dele.
 mkdir -p ~/.config/containers/volumes/actual/data
 
-# 3. Env — TZ obrigatório aqui; o resto é opcional (ver
+# 3. Env — copiar o exemplo (TZ obrigatório, resto é opcional — ver
 #    https://actualbudget.org/docs/config/)
 mkdir -p ~/.config/containers/env
-cat > ~/.config/containers/env/actual.env <<'EOF'
-TZ=America/Sao_Paulo
-
-# Opcionais — descomentar conforme necessário
-# ACTUAL_HTTPS_KEY=/data/selfhost.key
-# ACTUAL_HTTPS_CERT=/data/selfhost.crt
-# ACTUAL_PORT=5006
-# ACTUAL_UPLOAD_FILE_SYNC_SIZE_LIMIT_MB=20
-# ACTUAL_UPLOAD_SYNC_ENCRYPTED_FILE_SYNC_SIZE_LIMIT_MB=50
-# ACTUAL_UPLOAD_FILE_SIZE_LIMIT_MB=20
-EOF
+cp .env.example ~/.config/containers/env/actual.env
 
 # 4. Subir
 systemctl --user daemon-reload

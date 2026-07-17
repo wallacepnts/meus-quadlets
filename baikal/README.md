@@ -47,11 +47,10 @@ cp quadlet/baikal.container ~/.config/containers/systemd/
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/baikal/{config,data}
 
-# 3. Env não-secreto
+# 3. Env não-secreto — copiar o exemplo e editar com seu domínio real
 mkdir -p ~/.config/containers/env
-cat > ~/.config/containers/env/baikal.env <<'EOF'
-BAIKAL_SERVERNAME=baikal.<seu-tailnet>.ts.net
-EOF
+cp .env.example ~/.config/containers/env/baikal.env
+# editar ~/.config/containers/env/baikal.env: BAIKAL_SERVERNAME
 
 # 4. Subir
 systemctl --user daemon-reload

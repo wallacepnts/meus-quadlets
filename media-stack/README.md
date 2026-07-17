@@ -135,15 +135,13 @@ mkdir -p "$HOME/data"
 mkdir -p ~/.config/containers/volumes/jellyfin/{config,cache}
 mkdir -p ~/.config/containers/volumes/media-stack/{prowlarr,sonarr,radarr,lidarr,bazarr,seerr,deluge,sabnzbd}/config
 
-# 4. Env compartilhado (LinuxServer.io) — PUID/PGID do usuário que roda
-#    o Podman (mesmo dono de MEDIA_DATA_DIR, senão os apps não
-#    conseguem escrever nela)
+# 4. Env compartilhado (LinuxServer.io) — copiar o exemplo e ajustar
+#    PUID/PGID pro usuário que roda o Podman (mesmo dono de
+#    MEDIA_DATA_DIR, senão os apps não conseguem escrever nela)
 mkdir -p ~/.config/containers/env
-cat > ~/.config/containers/env/media-stack.env <<EOF
-PUID=$(id -u)
-PGID=$(id -g)
-TZ=America/Sao_Paulo
-EOF
+cp .env.example ~/.config/containers/env/media-stack.env
+sed -i "s/^PUID=.*/PUID=$(id -u)/;s/^PGID=.*/PGID=$(id -g)/" \
+  ~/.config/containers/env/media-stack.env
 
 # 5. Aplicar a env.d nova (precisa de daemon-reload, não só reiniciar
 #    o serviço — é o systemd --user que precisa reler o ambiente)
@@ -286,15 +284,12 @@ peers como no torrent):
 nele, healthcheck, `--privileged` — ver justificativa abaixo). Só falta:
 
 ```bash
-# 1. Credenciais do provedor de VPN (ver lista de provedores suportados:
+# 1. Credenciais do provedor de VPN — copiar o exemplo e editar (ver
+#    lista de provedores suportados:
 #    https://github.com/qdm12/gluetun-wiki/tree/main/setup/providers)
-cat > ~/.config/containers/env/gluetun.env <<EOF
-VPN_SERVICE_PROVIDER=trocar_pelo_seu
-VPN_TYPE=wireguard
-WIREGUARD_PRIVATE_KEY=trocar_pela_sua_chave
-WIREGUARD_ADDRESSES=trocar_pelo_seu_ip_interno
-SERVER_COUNTRIES=trocar_pelo_pais_desejado
-EOF
+cp gluetun.env.example ~/.config/containers/env/gluetun.env
+# editar ~/.config/containers/env/gluetun.env: VPN_SERVICE_PROVIDER,
+# WIREGUARD_PRIVATE_KEY, WIREGUARD_ADDRESSES, SERVER_COUNTRIES
 chmod 600 ~/.config/containers/env/gluetun.env
 
 # 2. Editar deluge.container: trocar as três linhas de PublishPort= por

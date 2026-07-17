@@ -39,15 +39,10 @@ cp quadlet/lubelogger.container ~/.config/containers/systemd/
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/lubelogger/{data,keys}
 
-# 3. Env não-secreto
+# 3. Env — copiar o exemplo e editar o domínio
 mkdir -p ~/.config/containers/env
-cat > ~/.config/containers/env/lubelogger.env <<'EOF'
-TZ=America/Sao_Paulo
-LC_ALL=pt_BR.UTF-8
-LANG=pt_BR.UTF-8
-# Usado pra montar links em e-mails automáticos (lembretes etc.)
-LUBELOGGER_DOMAIN=https://lubelogger.<seu-tailnet>.ts.net
-EOF
+cp .env.example ~/.config/containers/env/lubelogger.env
+# editar ~/.config/containers/env/lubelogger.env: LUBELOGGER_DOMAIN
 
 # 4. Subir
 systemctl --user daemon-reload

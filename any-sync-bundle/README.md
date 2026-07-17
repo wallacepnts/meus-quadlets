@@ -69,20 +69,10 @@ cp quadlet/any-sync-bundle-net.network \
 #    os containers entram em crash-loop com "statfs: no such file or directory"
 mkdir -p ~/.config/containers/volumes/any-sync-bundle/{mongo,redis,bundle}
 
-# 3. Env vars do container principal
+# 3. Env vars do container principal — copiar o exemplo e editar
 mkdir -p ~/.config/containers/env
-cat > ~/.config/containers/env/any-sync-bundle.env <<'EOF'
-# Advertise address(es) clients devem usar (separado por vírgula). Só é lido
-# na primeira inicialização — depois disso, editar externalAddr em
-# volumes/any-sync-bundle/bundle/bundle-config.yml (ver Solução de problemas).
-ANY_SYNC_BUNDLE_INIT_EXTERNAL_ADDRS=any-sync.<seu-tailnet>.ts.net
-ANY_SYNC_BUNDLE_INIT_MONGO_URI=mongodb://mongo:27017/?replicaSet=rs0
-ANY_SYNC_BUNDLE_INIT_REDIS_URI=redis://redis:6379/
-
-# Limite de storage por espaço, em bytes (default: 1 TiB)
-# 1 GiB=1073741824  10 GiB=10737418240  150 GiB=161061273600  1 TiB=1099511627776  2 TiB=2199023255552
-# ANY_SYNC_BUNDLE_INIT_FILENODE_DEFAULT_LIMIT=1099511627776
-EOF
+cp .env.example ~/.config/containers/env/any-sync-bundle.env
+# editar ~/.config/containers/env/any-sync-bundle.env: ANY_SYNC_BUNDLE_INIT_EXTERNAL_ADDRS
 
 # 4. Subir
 systemctl --user daemon-reload

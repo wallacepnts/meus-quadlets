@@ -63,17 +63,12 @@ chmod 600 ~/.config/containers/secrets/vaultwarden/*.txt
 
 podman secret create vaultwarden-admin-token ~/.config/containers/secrets/vaultwarden/admin-token-hash.txt
 
-# 4. Env não-secreto
+# 4. Env não-secreto — copiar o exemplo e editar DOMAIN
 mkdir -p ~/.config/containers/env
-cat > ~/.config/containers/env/vaultwarden.env <<'EOF'
-# Domínio real de acesso — usado pra gerar URLs de anexo, WebAuthn/passkey
-# etc. corretamente. Trocar pro endereço da tailnet ou local conforme uso.
-DOMAIN=https://vaultwarden.<seu-tailnet>.ts.net
-# Deixar "true" só até criar a primeira conta — depois, trocar pra
-# "false" (ver seção Segurança abaixo).
-SIGNUPS_ALLOWED=true
-ENABLE_WEBSOCKET=true
-EOF
+cp .env.example ~/.config/containers/env/vaultwarden.env
+# editar ~/.config/containers/env/vaultwarden.env: DOMAIN (e lembrar de
+# trocar SIGNUPS_ALLOWED pra "false" depois de criar a primeira conta —
+# ver seção Segurança abaixo)
 
 # 5. Subir
 systemctl --user daemon-reload

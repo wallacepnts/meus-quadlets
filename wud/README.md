@@ -47,13 +47,11 @@ cp quadlet/wud.container ~/.config/containers/systemd/
 # 2. Diretório de dados — bind mount exige que já exista antes do start
 mkdir -p ~/.config/containers/volumes/wud/store
 
-# 3. Env — schedule da checagem (cron). Padrão do próprio WUD é de hora
-#    em hora; diário é suficiente pra maioria dos homelabs e gera bem
-#    menos tráfego contra os registries.
+# 3. Env — copiar o exemplo. Schedule da checagem (cron): padrão do
+#    próprio WUD é de hora em hora; diário é suficiente pra maioria dos
+#    homelabs e gera bem menos tráfego contra os registries.
 mkdir -p ~/.config/containers/env
-cat > ~/.config/containers/env/wud.env <<'EOF'
-WUD_WATCHER_LOCAL_CRON=0 6 * * *
-EOF
+cp .env.example ~/.config/containers/env/wud.env
 
 # 4. Socket do Podman
 systemctl --user enable --now podman.socket

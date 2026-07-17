@@ -59,22 +59,14 @@ podman secret create linkwarden-nextauth-secret ~/.config/containers/secrets/lin
 podman secret create linkwarden-meili-key ~/.config/containers/secrets/linkwarden/meili-master-key.txt
 podman secret create linkwarden-database-url ~/.config/containers/secrets/linkwarden/database-url.txt
 
-# 4. Env não-secreto — NEXTAUTH_URL precisa bater exatamente com o
-#    endereço usado no navegador (NextAuth valida isso pra cookies/CSRF).
-#    O .container já vem com labels do tsdproxy (nó "linkwarden" na
-#    tailnet), então o padrão aqui é o endereço da tailnet.
+# 4. Env não-secreto — copiar o exemplo e editar NEXTAUTH_URL: precisa
+#    bater exatamente com o endereço usado no navegador (NextAuth valida
+#    isso pra cookies/CSRF). O .container já vem com labels do tsdproxy
+#    (nó "linkwarden" na tailnet), então o padrão do exemplo é o
+#    endereço da tailnet.
 mkdir -p ~/.config/containers/env
-cat > ~/.config/containers/env/linkwarden.env <<'EOF'
-# Domínio real da tailnet, criado automaticamente pelo tsdproxy.
-# Só acesso local (sem tsdproxy)? Trocar pra:
-#   NEXTAUTH_URL=http://localhost:3001/api/v1/auth
-NEXTAUTH_URL=https://linkwarden.<seu-tailnet>.ts.net/api/v1/auth
-MEILI_HOST=http://meilisearch:7700
-
-# Opcionais — ver lista completa em
-# https://docs.linkwarden.app/self-hosting/environment-variables
-# NEXT_PUBLIC_DISABLE_REGISTRATION=true
-EOF
+cp .env.example ~/.config/containers/env/linkwarden.env
+# editar ~/.config/containers/env/linkwarden.env: NEXTAUTH_URL
 
 # 5. Subir (postgres e meilisearch sobem primeiro via Requires=)
 systemctl --user daemon-reload

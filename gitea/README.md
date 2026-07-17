@@ -53,15 +53,13 @@ chmod 600 ~/.config/containers/secrets/gitea/*.txt
 podman secret create gitea-secret-key ~/.config/containers/secrets/gitea/secret-key.txt
 podman secret create gitea-internal-token ~/.config/containers/secrets/gitea/internal-token.txt
 
-# 4. Env não-secreto — pré-preenche o assistente de instalação (DB e
-#    domínio já vêm certos, só falta criar a conta admin na UI)
+# 4. Env não-secreto — copiar o exemplo (pré-preenche o assistente de
+#    instalação: DB e domínio já vêm certos, só falta criar a conta admin
+#    na UI)
 mkdir -p ~/.config/containers/env
-cat > ~/.config/containers/env/gitea.env <<'EOF'
-GITEA__database__DB_TYPE=sqlite3
-GITEA__server__DOMAIN=gitea.<seu-tailnet>.ts.net
-GITEA__server__ROOT_URL=https://gitea.<seu-tailnet>.ts.net/
-TZ=America/Sao_Paulo
-EOF
+cp .env.example ~/.config/containers/env/gitea.env
+# editar ~/.config/containers/env/gitea.env: GITEA__server__DOMAIN e
+# GITEA__server__ROOT_URL
 
 # 5. Subir
 systemctl --user daemon-reload

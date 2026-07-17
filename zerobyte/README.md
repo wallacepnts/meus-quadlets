@@ -80,18 +80,10 @@ openssl rand -hex 32 | tr -d '\n' > ~/.config/containers/secrets/zerobyte/app-se
 chmod 600 ~/.config/containers/secrets/zerobyte/app-secret.txt
 podman secret create zerobyte-app-secret ~/.config/containers/secrets/zerobyte/app-secret.txt
 
-# 5. Env não-secreto
+# 5. Env não-secreto — copiar o exemplo e editar
 mkdir -p ~/.config/containers/env
-cat > ~/.config/containers/env/zerobyte.env <<'EOF'
-BASE_URL=https://zerobyte.<seu-tailnet>.ts.net
-TZ=America/Sao_Paulo
-PORT=4096
-RESTIC_HOSTNAME=<nome-deste-host>
-# Necessário só se for usar webhooks de pre/post-backup (ver seção
-# "Criando os jobs de backup" — cada origem usada nos jobs precisa estar
-# nessa lista, senão o Zerobyte recusa salvar a URL do webhook)
-WEBHOOK_ALLOWED_ORIGINS=http://host.containers.internal:8765
-EOF
+cp .env.example ~/.config/containers/env/zerobyte.env
+# editar ~/.config/containers/env/zerobyte.env: BASE_URL e RESTIC_HOSTNAME
 
 # 6. Subir
 systemctl --user daemon-reload
