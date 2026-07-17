@@ -1,0 +1,38 @@
+[Unit]
+Description=Home Assistant
+
+[Container]
+# Rede bridge normal (não host) e sem dispositivo USB — ver README pro
+# porquê e como reverter se precisar de descoberta mDNS/Zigbee depois.
+Image=ghcr.io/home-assistant/home-assistant:2026.7.2
+ContainerName=home-assistant
+PublishPort=8123:8123
+
+Volume=%h/.config/containers/volumes/home-assistant/config:/config:Z
+EnvironmentFile=%h/.config/containers/env/home-assistant.env
+
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:8123/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=60s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=home-assistant
+Label=tsdproxy.port.web=443/https:8123/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name="Home Assistant"
+Label=homepage.icon=home-assistant.svg
+Label=homepage.href=https://home-assistant.<seu-tailnet>.ts.net
+Label=homepage.description="Automação residencial self-hosted"
+
+[Service]
+Restart=always
+TimeoutStartSec=90
+
+[Install]
+WantedBy=default.target
