@@ -15,9 +15,11 @@ UserNS=keep-id
 
 Volume=%h/.config/containers/volumes/jellyfin/config:/config:Z
 Volume=%h/.config/containers/volumes/jellyfin/cache:/cache:Z
-# Mídia — trocar pelo path real e descomentar antes do primeiro start
-# (bind mount exige que o path exista; ver README, seção Instalação).
-# Volume=/path/to/sua/midia:/media:ro,Z
+# Raiz de mídia compartilhada com o resto da stack (ver ../media-stack/)
+# — somente leitura aqui, os outros montam a mesma pasta com escrita.
+# Precisa de %h/data criado ou symlinkado antes do primeiro start (ver
+# README, seção Instalação).
+Volume=%h/data:/data:ro,Z
 
 # Transcodificação por hardware (opcional) — ver README pra Intel/AMD
 # (AddDevice=/dev/dri:/dev/dri) ou NVIDIA (AddDevice=nvidia.com/gpu=all,

@@ -1,0 +1,39 @@
+[Unit]
+Description=Deluge (cliente torrent)
+
+[Container]
+Image=lscr.io/linuxserver/deluge:2.2.0
+ContainerName=deluge
+PublishPort=8112:8112
+PublishPort=6881:6881
+PublishPort=6881:6881/udp
+
+Volume=%h/.config/containers/volumes/media-stack/deluge/config:/config:Z
+Volume=%h/data:/data:Z
+EnvironmentFile=%h/.config/containers/env/media-stack.env
+
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:8112/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=deluge
+Label=tsdproxy.port.web=443/https:8112/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Mídia
+Label=homepage.name=Deluge
+Label=homepage.icon=deluge.svg
+Label=homepage.href=https://deluge.<seu-tailnet>.ts.net
+Label=homepage.description="Cliente torrent"
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,38 @@
+[Unit]
+Description=Prowlarr (gerenciador de indexers)
+
+[Container]
+Image=lscr.io/linuxserver/prowlarr:2.4.0
+ContainerName=prowlarr
+PublishPort=9696:9696
+
+# Só config — Prowlarr não toca em mídia/downloads direto, só empurra
+# indexers pro Sonarr/Radarr/Lidarr via API deles.
+Volume=%h/.config/containers/volumes/media-stack/prowlarr/config:/config:Z
+EnvironmentFile=%h/.config/containers/env/media-stack.env
+
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:9696/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=prowlarr
+Label=tsdproxy.port.web=443/https:9696/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Mídia
+Label=homepage.name=Prowlarr
+Label=homepage.icon=prowlarr.svg
+Label=homepage.href=https://prowlarr.<seu-tailnet>.ts.net
+Label=homepage.description="Gerenciador de indexers"
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

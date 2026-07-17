@@ -1,0 +1,39 @@
+[Unit]
+Description=SABnzbd (cliente usenet)
+
+[Container]
+Image=lscr.io/linuxserver/sabnzbd:version-5.0.4
+ContainerName=sabnzbd
+# 8080 (padrão da imagem) já é do tsdproxy neste repo — remapeado só no
+# lado do host, a porta interna do container continua 8080.
+PublishPort=8081:8080
+
+Volume=%h/.config/containers/volumes/media-stack/sabnzbd/config:/config:Z
+Volume=%h/data:/data:Z
+EnvironmentFile=%h/.config/containers/env/media-stack.env
+
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:8080/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=sabnzbd
+Label=tsdproxy.port.web=443/https:8080/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Mídia
+Label=homepage.name=SABnzbd
+Label=homepage.icon=sabnzbd.svg
+Label=homepage.href=https://sabnzbd.<seu-tailnet>.ts.net
+Label=homepage.description="Cliente usenet"
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

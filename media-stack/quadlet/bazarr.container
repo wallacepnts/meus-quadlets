@@ -1,0 +1,39 @@
+[Unit]
+Description=Bazarr (legendas)
+
+[Container]
+Image=lscr.io/linuxserver/bazarr:1.6.0
+ContainerName=bazarr
+PublishPort=6767:6767
+
+Volume=%h/.config/containers/volumes/media-stack/bazarr/config:/config:Z
+# Mesma raiz do Sonarr/Radarr — Bazarr precisa enxergar os mesmos arquivos
+# de mídia deles pra conseguir gravar as legendas ao lado.
+Volume=%h/data:/data:Z
+EnvironmentFile=%h/.config/containers/env/media-stack.env
+
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:6767/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=bazarr
+Label=tsdproxy.port.web=443/https:6767/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Mídia
+Label=homepage.name=Bazarr
+Label=homepage.icon=bazarr.svg
+Label=homepage.href=https://bazarr.<seu-tailnet>.ts.net
+Label=homepage.description="Legendas automáticas"
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

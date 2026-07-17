@@ -5,12 +5,14 @@ via Podman Quadlet, baseado no [guia oficial pra Podman](https://jellyfin.org/do
 
 ## Decisões deste deploy
 
-- **Path da mídia não vem definido** — de propósito. Diferente dos
-  outros volumes deste repositório (que ficam todos sob
-  `~/.config/containers/volumes/<app>/`), a biblioteca de mídia é
-  gerenciada por fora, varia de host pra host, e pode ser grande demais
-  pra fazer sentido dentro dessa estrutura. Quem for instalar escolhe o
-  path real na hora (ver Instalação).
+- **Path da mídia é `%h/data`, fixo, não fica sob `volumes/jellyfin/`**
+  — de propósito, e compartilhado com o [media-stack](../media-stack/)
+  (Sonarr/Radarr/Lidarr/Bazarr/Prowlarr/Deluge/SABnzbd): todo mundo
+  precisa enxergar exatamente o mesmo path pra hardlink/move atômico
+  funcionar entre download → biblioteca. Em vez de cada serviço apontar
+  pra um path arbitrário diferente, a escolha fica **num lugar só**:
+  `~/data` (ou um symlink pra onde sua mídia realmente mora — disco
+  separado, outro mount etc.). Ver Instalação.
 - **Transcodificação por hardware documentada por fabricante, não
   configurada por padrão** — Intel/AMD (`/dev/dri`, simples) e NVIDIA
   (NVIDIA Container Toolkit + CDI, mais trabalhoso) têm caminhos bem
@@ -57,11 +59,12 @@ cp quadlet/jellyfin.container ~/.config/containers/systemd/
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/jellyfin/{config,cache}
 
-# 3. Mídia — editar o .container recém-copiado e descomentar/ajustar:
-#      Volume=/path/to/sua/midia:/media:ro,Z
-#    trocando pro path real da sua biblioteca. Pode ter mais de uma
-#    linha Volume= se a mídia estiver espalhada em pastas diferentes
-#    (ex.: filmes e séries em discos separados).
+# 3. Raiz de mídia compartilhada — criar ~/data, OU, se a mídia já mora
+#    em outro lugar (outro disco, outro mount), symlinkar em vez de criar
+#    pasta nova. Essa é a ÚNICA decisão de path — vale pra este serviço
+#    e pra todos os do media-stack, nenhum outro arquivo precisa editar.
+mkdir -p ~/data
+# ou, por exemplo: ln -s /caminho/pro/disco/de/midia ~/data
 
 # 4. Subir
 systemctl --user daemon-reload
@@ -72,7 +75,9 @@ Acessar via [tsdproxy](../tsdproxy/) (tailnet) em
 `https://jellyfin.<seu-tailnet>.ts.net`, ou local em
 `http://localhost:8096` — a raiz redireciona pro assistente de
 instalação na primeira vez (idioma, conta admin, adicionar biblioteca
-apontando pro path montado em `/media`).
+apontando pro path montado em `/data`, ex.: `/data/media/movies`,
+`/data/media/tv` — ver estrutura de pastas no README do
+[media-stack](../media-stack/)).
 
 ## Transcodificação por hardware
 

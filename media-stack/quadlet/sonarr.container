@@ -1,0 +1,39 @@
+[Unit]
+Description=Sonarr (automação de séries)
+
+[Container]
+Image=lscr.io/linuxserver/sonarr:4.0.19
+ContainerName=sonarr
+PublishPort=8989:8989
+
+Volume=%h/.config/containers/volumes/media-stack/sonarr/config:/config:Z
+# Raiz de mídia/downloads compartilhada com o resto da stack (ver README
+# — precisa de %h/data criado ou symlinkado antes do primeiro start).
+Volume=%h/data:/data:Z
+EnvironmentFile=%h/.config/containers/env/media-stack.env
+
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:8989/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=sonarr
+Label=tsdproxy.port.web=443/https:8989/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Mídia
+Label=homepage.name=Sonarr
+Label=homepage.icon=sonarr.svg
+Label=homepage.href=https://sonarr.<seu-tailnet>.ts.net
+Label=homepage.description="Automação de séries"
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

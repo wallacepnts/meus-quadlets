@@ -1,0 +1,37 @@
+[Unit]
+Description=Radarr (automação de filmes)
+
+[Container]
+Image=lscr.io/linuxserver/radarr:6.3.0
+ContainerName=radarr
+PublishPort=7878:7878
+
+Volume=%h/.config/containers/volumes/media-stack/radarr/config:/config:Z
+Volume=%h/data:/data:Z
+EnvironmentFile=%h/.config/containers/env/media-stack.env
+
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:7878/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=radarr
+Label=tsdproxy.port.web=443/https:7878/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Mídia
+Label=homepage.name=Radarr
+Label=homepage.icon=radarr.svg
+Label=homepage.href=https://radarr.<seu-tailnet>.ts.net
+Label=homepage.description="Automação de filmes"
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

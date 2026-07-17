@@ -1,0 +1,37 @@
+[Unit]
+Description=Lidarr (automação de música)
+
+[Container]
+Image=lscr.io/linuxserver/lidarr:3.1.0
+ContainerName=lidarr
+PublishPort=8686:8686
+
+Volume=%h/.config/containers/volumes/media-stack/lidarr/config:/config:Z
+Volume=%h/data:/data:Z
+EnvironmentFile=%h/.config/containers/env/media-stack.env
+
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:8686/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=lidarr
+Label=tsdproxy.port.web=443/https:8686/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Mídia
+Label=homepage.name=Lidarr
+Label=homepage.icon=lidarr.svg
+Label=homepage.href=https://lidarr.<seu-tailnet>.ts.net
+Label=homepage.description="Automação de música"
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
