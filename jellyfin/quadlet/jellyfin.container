@@ -1,0 +1,50 @@
+[Unit]
+Description=Jellyfin (servidor de mídia)
+
+[Container]
+Image=docker.io/jellyfin/jellyfin:10.11.11
+ContainerName=jellyfin
+PublishPort=8096:8096
+
+# UserNS=keep-id: mapeia o container pro MESMO uid do usuário que roda o
+# Podman, em vez do remapeamento rootless padrão (subuid). A pasta de
+# mídia é gerenciada por fora (não é um volumes/<app> deste repo, é
+# escolhida por quem instala) — sem isso, o dono real da pasta e o uid
+# que o container enxerga não batem, e some a permissão de leitura.
+UserNS=keep-id
+
+Volume=%h/.config/containers/volumes/jellyfin/config:/config:Z
+Volume=%h/.config/containers/volumes/jellyfin/cache:/cache:Z
+# Mídia — trocar pelo path real e descomentar antes do primeiro start
+# (bind mount exige que o path exista; ver README, seção Instalação).
+# Volume=/path/to/sua/midia:/media:ro,Z
+
+# Transcodificação por hardware (opcional) — ver README pra Intel/AMD
+# (AddDevice=/dev/dri:/dev/dri) ou NVIDIA (AddDevice=nvidia.com/gpu=all,
+# exige NVIDIA Container Toolkit configurado antes).
+
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:8096/health || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=40s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=jellyfin
+Label=tsdproxy.port.web=443/https:8096/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Jellyfin
+Label=homepage.icon=jellyfin.svg
+Label=homepage.href=https://jellyfin.<seu-tailnet>.ts.net
+Label=homepage.description="Servidor de mídia self-hosted"
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
