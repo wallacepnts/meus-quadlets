@@ -29,6 +29,8 @@ Label=homepage.name=Any-Sync-Bundle
 Label=homepage.icon=anytype.svg
 Label=homepage.description="Backend self-hosted do Anytype"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 

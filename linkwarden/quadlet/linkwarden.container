@@ -41,6 +41,8 @@ Label=homepage.icon=linkwarden.png
 Label=homepage.href=https://linkwarden.<seu-tailnet>.ts.net
 Label=homepage.description="Gerenciador de links self-hosted"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 TimeoutStartSec=60

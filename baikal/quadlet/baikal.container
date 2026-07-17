@@ -28,6 +28,8 @@ Label=homepage.icon=baikal.svg
 Label=homepage.href=https://baikal.<seu-tailnet>.ts.net
 Label=homepage.description="Servidor CalDAV/CardDAV self-hosted"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 
