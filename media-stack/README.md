@@ -147,7 +147,17 @@ de cada um:
    `/data/downloads/torrents`.
 2. **SABnzbd**: assistente inicial pede o provedor usenet (servidor,
    usuário, senha). Pasta de download completo:
-   `/data/downloads/usenet`.
+   `/data/downloads/usenet`. Acessando via tsdproxy, dá `External
+   internet access denied` — o SABnzbd bloqueia por padrão qualquer
+   acesso que não pareça vir da rede local, e o tráfego do tsdproxy
+   chega pelo gateway interno do Podman (`169.254.1.2`, mesmo endereço
+   por trás do `host.containers.internal` — ver [zerobyte](../zerobyte/)),
+   que não bate. Corrigir em Config → General → "External internet
+   access", subir pra `Full web interface` (ou a variante "- Only
+   external access requires login", se quiser exigir senha só de fora).
+   Diferente do "Hostname verification failed" (outro mecanismo do
+   SABnzbd, baseado em `host_whitelist` por nome, não IP) — esse aqui é
+   o `inet_exposure`.
 3. **Sonarr/Radarr/Lidarr** — em cada um, Settings → Download Clients →
    adicionar Deluge (`localhost:8112`) e/ou SABnzbd (`localhost:8081`,
    nota: porta interna do container continua 8080, mas Sonarr/Radarr
