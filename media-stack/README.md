@@ -152,9 +152,23 @@ de cada um:
    acesso que não pareça vir da rede local, e o tráfego do tsdproxy
    chega pelo gateway interno do Podman (`169.254.1.2`, mesmo endereço
    por trás do `host.containers.internal` — ver [zerobyte](../zerobyte/)),
-   que não bate. Corrigir em Config → General → "External internet
-   access", subir pra `Full web interface` (ou a variante "- Only
-   external access requires login", se quiser exigir senha só de fora).
+   que não bate. Corrigir subindo o `inet_exposure` — pela UI (Config →
+   General → "External internet access", pra `Full web interface`, ou
+   "- Only external access requires login" se quiser exigir senha só de
+   fora) ou direto no arquivo, sem precisar abrir o navegador (nem
+   variável de ambiente nem argumento de linha de comando funcionam
+   aqui — testado na prática: `Exec=--inet_exposure 4` no `.container`
+   quebra a inicialização, o script de init dessa imagem não repassa
+   argumento extra pro `sabnzbd.py`, tenta executar `--inet_exposure`
+   como se fosse um programa):
+
+   ```bash
+   systemctl --user stop sabnzbd
+   podman unshare sed -i 's/^inet_exposure = 0/inet_exposure = 4/' \
+     ~/.config/containers/volumes/media-stack/sabnzbd/config/sabnzbd.ini
+   systemctl --user start sabnzbd
+   ```
+
    Diferente do "Hostname verification failed" (outro mecanismo do
    SABnzbd, baseado em `host_whitelist` por nome, não IP) — esse aqui é
    o `inet_exposure`.
