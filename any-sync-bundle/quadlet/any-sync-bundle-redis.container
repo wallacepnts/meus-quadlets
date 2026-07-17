@@ -15,12 +15,6 @@ HealthRetries=12
 HealthStartPeriod=5s
 Notify=healthy
 
-# A imagem também publica variantes com outro sufixo de build (ex.:
-# 7.4.0-v6) — restringe candidatos ao mesmo formato X.Y.Z-vN pra evitar
-# falso positivo de atualização (mesmo motivo do baikal, ver README raiz).
-Label=wud.watch=true
-Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+-v[0-9]+$
-
 [Service]
 Restart=always
 TimeoutStartSec=120
