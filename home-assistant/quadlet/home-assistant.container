@@ -30,7 +30,13 @@ Label=homepage.icon=home-assistant.svg
 Label=homepage.href=https://home-assistant.<seu-tailnet>.ts.net
 Label=homepage.description="Automação residencial self-hosted"
 
+# A HA também publica tags de dev (ex.: 2026.8.0.dev202607170311) que o
+# WUD lê como semver "maior" que a estável (2026.8 > 2026.7), gerando
+# falso positivo — mesmo problema do baikal (ver README do wud/). Regex
+# sem \d/\. de propósito: o parser do Quadlet não aceita barra invertida
+# em Label= (regra 18 do README raiz).
 Label=wud.watch=true
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+$
 
 [Service]
 Restart=always
