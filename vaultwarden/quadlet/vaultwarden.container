@@ -31,7 +31,13 @@ Label=homepage.icon=vaultwarden.svg
 Label=homepage.href=https://vaultwarden.<seu-tailnet>.ts.net
 Label=homepage.description="Cofre de senhas self-hosted (Bitwarden)"
 
+# A imagem também publica tag sem sufixo de variante (1.36.0, build
+# Debian) — mesmo problema do baikal: WUD trata "-alpine" como
+# prerelease semver, e a tag sem sufixo aparece como "maior". Restringe
+# a candidatos da mesma variante. Regex sem \d/\. de propósito, regra 18
+# do README raiz.
 Label=wud.watch=true
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+-alpine$
 
 [Service]
 Restart=always
