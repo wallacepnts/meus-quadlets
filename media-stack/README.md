@@ -1,12 +1,13 @@
 # Media Stack — Podman Quadlet (rootless)
 
-Deploy de [Jellyfin](https://jellyfin.org) + nove serviços
-[LinuxServer.io](https://docs.linuxserver.io/)/[Seerr](https://docs.seerr.dev)
+Deploy de [Jellyfin](https://jellyfin.org) + [Dispatcharr](https://dispatcharr.github.io/Dispatcharr-Docs/)
++ nove serviços [LinuxServer.io](https://docs.linuxserver.io/)/[Seerr](https://docs.seerr.dev)
 via Podman Quadlet, todos enxergando a mesma raiz de mídia/downloads.
 
 |  | Apps | Descrição | Porta |
 | --- | --- | --- | --- |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyfin.svg" width="48" height="48" alt=""> | [Jellyfin](https://jellyfin.org) | Servidor de mídia | `8096` |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/dispatcharr.svg" width="48" height="48" alt=""> | [Dispatcharr](https://dispatcharr.github.io/Dispatcharr-Docs/) | Gerenciador de IPTV (streams, EPG, VOD) | `9191` |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/prowlarr.svg" width="48" height="48" alt=""> | [Prowlarr](https://prowlarr.com) | Gerenciador de indexers, alimenta os três abaixo | `9696` |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sonarr.svg" width="48" height="48" alt=""> | [Sonarr](https://sonarr.tv) | Automação de séries | `8989` |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/radarr.svg" width="48" height="48" alt=""> | [Radarr](https://radarr.video) | Automação de filmes | `7878` |
@@ -16,8 +17,8 @@ via Podman Quadlet, todos enxergando a mesma raiz de mídia/downloads.
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/deluge.svg" width="48" height="48" alt=""> | [Deluge](https://deluge-torrent.org) | Cliente torrent | `8112` |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sabnzbd.svg" width="48" height="48" alt=""> | [SABnzbd](https://sabnzbd.org) | Cliente usenet | `8081` (a `8080` já é do [tsdproxy](../tsdproxy/) neste repo) |
 
-Um décimo serviço, o [Gluetun](https://github.com/qdm12/gluetun) (túnel
-VPN pro Deluge), é **opcional** — ver seção própria abaixo.
+Um décimo primeiro serviço, o [Gluetun](https://github.com/qdm12/gluetun)
+(túnel VPN pro Deluge), é **opcional** — ver seção própria abaixo.
 
 **Sobre o Seerr**: é a continuação unificada do Overseerr (só Plex,
 arquivado em 2024) e do Jellyseerr (fork da comunidade pra
@@ -63,6 +64,14 @@ Rede bridge padrão, cada serviço com sua `PublishPort=`. Nenhum
 `.network` dedicado — eles conversam entre si via HTTP configurado
 manualmente depois de subir, não via rede Podman compartilhada.
 
+**Exceção: o Dispatcharr tem sua própria sub-stack.** Diferente do resto
+(um container só, sem banco), ele é Postgres + Redis + app web + worker
+Celery — quatro containers próprios na rede dedicada
+`dispatcharr-net.network`, mesmo padrão usado pelo
+[linkwarden](../linkwarden/)/[any-sync-bundle](../any-sync-bundle/). Ver
+seção própria abaixo pra detalhes (volume `/data` compartilhado entre
+dois containers, tag sem versão semver, etc.).
+
 Dois mecanismos diferentes pra mapear permissão de arquivo, dependendo
 da imagem — ver [README raiz, regra sobre UserNS vs PUID/PGID](../README.md)
 pro porquê dos dois não se misturarem:
@@ -95,6 +104,11 @@ normal, só não aparece sozinho na lista.
 ```
 quadlet/
 ├── jellyfin.container
+├── dispatcharr-net.network        # rede dedicada só do Dispatcharr
+├── dispatcharr-postgres.container
+├── dispatcharr-redis.container
+├── dispatcharr.container          # Dispatcharr, app web
+├── dispatcharr-celery.container   # Dispatcharr, worker de tarefas
 ├── prowlarr.container
 ├── sonarr.container
 ├── radarr.container
@@ -109,6 +123,7 @@ quadlet/
 ## Pré-requisitos
 
 - Podman rootless com systemd `--user` funcionando
+- `openssl` (pra gerar o secret do Postgres do Dispatcharr)
 
 ## Instalação do zero
 
@@ -116,7 +131,7 @@ quadlet/
 # 1. Copiar as units (inclui gluetun.container; só importa se for usar
 #    a seção de VPN abaixo — sem ativar, fica parado sem nenhum custo)
 mkdir -p ~/.config/containers/systemd
-cp quadlet/*.container ~/.config/containers/systemd/
+cp quadlet/*.container quadlet/*.network ~/.config/containers/systemd/
 
 # 2. Raiz de mídia — a ÚNICA decisão de path desta stack inteira, via uma
 #    variável de ambiente do systemd (não um EnvironmentFile= comum —
@@ -132,8 +147,9 @@ mkdir -p "$HOME/data"
 # em vez de $HOME/data — nada de symlink, a variável já resolve isso.
 
 # 3. Diretórios de config — bind mount exige que já existam antes do start
-mkdir -p ~/.config/containers/volumes/jellyfin/{config,cache}
+mkdir -p ~/.config/containers/volumes/media-stack/jellyfin/{config,cache}
 mkdir -p ~/.config/containers/volumes/media-stack/{prowlarr,sonarr,radarr,lidarr,bazarr,seerr,deluge,sabnzbd}/config
+mkdir -p ~/.config/containers/volumes/media-stack/dispatcharr/{postgres,redis,data}
 
 # 4. Env compartilhado (LinuxServer.io) — copiar o exemplo e ajustar
 #    PUID/PGID pro usuário que roda o Podman (mesmo dono de
@@ -143,12 +159,25 @@ cp .env.example ~/.config/containers/env/media-stack.env
 sed -i "s/^PUID=.*/PUID=$(id -u)/;s/^PGID=.*/PGID=$(id -g)/" \
   ~/.config/containers/env/media-stack.env
 
-# 5. Aplicar a env.d nova (precisa de daemon-reload, não só reiniciar
+# 5. Env não-secreto do Dispatcharr — valores padrão já batem com os
+#    NetworkAlias usados no dispatcharr-postgres.container/dispatcharr-redis.container,
+#    não costuma precisar editar nada aqui
+cp dispatcharr.env.example ~/.config/containers/env/dispatcharr.env
+
+# 6. Secret do Postgres do Dispatcharr — gerado uma vez, nunca versionado
+mkdir -p ~/.config/containers/secrets/dispatcharr
+openssl rand -hex 24 | tr -d '\n' > ~/.config/containers/secrets/dispatcharr/postgres-password.txt
+chmod 600 ~/.config/containers/secrets/dispatcharr/postgres-password.txt
+podman secret create dispatcharr-postgres-password ~/.config/containers/secrets/dispatcharr/postgres-password.txt
+
+# 7. Aplicar a env.d nova (precisa de daemon-reload, não só reiniciar
 #    o serviço — é o systemd --user que precisa reler o ambiente)
 systemctl --user daemon-reload
 
-# 6. Subir (sem o Gluetun — ver seção própria pra ativar VPN)
-systemctl --user start jellyfin prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+# 8. Subir (sem o Gluetun — ver seção própria pra ativar VPN). Um único
+#    start em dispatcharr-celery já sobe o resto da sub-stack (postgres,
+#    redis, dispatcharr) via Requires=.
+systemctl --user start jellyfin dispatcharr-celery prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 ```
 
 Acessar cada um via [tsdproxy](../tsdproxy/) (tailnet, ex.:
@@ -214,6 +243,11 @@ de cada um:
    Sonarr (`localhost:8989`) e Radarr (`localhost:7878`) com as API
    keys deles — é assim que um pedido aprovado no Seerr vira uma busca
    automática no Sonarr/Radarr.
+8. **Dispatcharr** — assistente inicial pede conta admin. Depois,
+   Settings → M3U/EPG → adicionar suas playlists IPTV (M3U) e fontes de
+   EPG (XMLTV) — é a partir daí que ele monta o guia de canais e o
+   proxy de stream. Sem afinidade com o resto da stack (não fala com
+   Sonarr/Radarr/Jellyfin via API) — funciona isolado.
 
 ## Transcodificação por hardware (Jellyfin)
 
@@ -266,6 +300,20 @@ A partir do NVIDIA Container Toolkit v1.18.0 existe um serviço
 `nvidia-cdi-refresh` que mantém a especificação CDI atualizada sozinha
 (driver atualizado, GPU trocada etc.) — sem ele, refazer o
 `nvidia-ctk cdi generate` manualmente após qualquer mudança de driver.
+
+## Dispatcharr: volume `/data` compartilhado entre dois containers
+
+`dispatcharr` e `dispatcharr-celery` montam o **mesmo** path
+(`volumes/media-stack/dispatcharr/data`) — o worker Celery grava gravações/backups
+que a interface web também precisa servir. Por isso os dois usam `:z`
+(minúsculo, rótulo SELinux **compartilhado**) em vez do `:Z` (exclusivo)
+usado no resto deste repositório (ver regra 16 do README raiz) — com
+`:Z`, o segundo container a subir tomaria `Permission denied` no mesmo
+path que o primeiro já relabelou como seu.
+
+Upstream também oferece um modo "AIO" (tudo num container só,
+`docker-compose.aio.yml`) — não usado aqui, pra manter o padrão de um
+container por processo já seguido no resto deste repositório.
 
 ## VPN opcional no Deluge, via Gluetun
 
@@ -336,22 +384,47 @@ podman exec gluetun wget -qO- https://ipinfo.io/ip
 ## Auto-update
 
 Nenhum dos serviços tem `AutoUpdate=` — tags explícitas, bump manual
-(regra 9 do README raiz; o `gluetun.container` deste repo é exceção
-consciente, fica em `:latest` porque o próprio projeto não publica
-releases versionadas de forma estável — reavaliar se isso mudar).
+(regra 9 do README raiz; `gluetun.container` e `dispatcharr.container`
+deste repo são exceção consciente, ficam em `:latest` porque os
+respectivos projetos não publicam releases versionadas de forma
+estável — reavaliar se isso mudar).
 Jellyfin, os apps LinuxServer.io e o Seerr guardam banco (SQLite, a
 maioria) com estado de biblioteca/histórico/configuração de download em
 `/config` — mesma cautela do [baikal](../baikal/)/[gitea](../gitea/):
 healthcheck confere só se o servidor HTTP responde, não se uma migração
 de schema rodou certo numa troca de versão.
 
+**Dispatcharr é o único caso deste repositório com visibilidade real do
+WUD mesmo sem tag semver:**
+
+```ini
+Label=wud.watch=true
+Label=wud.watch.digest=true
+```
+
+Sem tag versionada pra comparar, o WUD normalmente não teria sinal
+nenhum (ver README do [wud](../wud/), seção "Tags não-semver não são
+observadas") — `wud.watch.digest` contorna isso comparando o digest da
+imagem publicada em `:latest` contra o que está rodando. Só o
+`dispatcharr` (web) tem o label — `dispatcharr-celery` usa a mesma
+imagem, então observar os dois seria o mesmo alerta duas vezes. Como o
+Postgres do Dispatcharr guarda dados reais (canais, EPG, DVR) e o
+projeto ainda está em desenvolvimento ativo, a atualização continua
+manual mesmo com essa visibilidade:
+
+```bash
+systemctl --user stop dispatcharr-celery dispatcharr
+podman pull ghcr.io/dispatcharr/dispatcharr:latest
+systemctl --user start dispatcharr-celery
+```
+
 ## Backup & Recuperação
 
 ```bash
-systemctl --user stop jellyfin prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user stop jellyfin dispatcharr-celery dispatcharr dispatcharr-redis dispatcharr-postgres prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 tar -czf media-stack-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
-  -C ~/.config/containers/volumes jellyfin media-stack
-systemctl --user start jellyfin prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+  -C ~/.config/containers/volumes media-stack
+systemctl --user start jellyfin dispatcharr-celery prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 ```
 
 Só as pastas `config/`/`cache/` de cada serviço (API keys, configuração,
@@ -362,6 +435,13 @@ instalou. Se estiver usando o Gluetun,
 `~/.config/containers/env/gluetun.env` (credenciais de VPN) também
 precisa de backup separado — sem ele, só recriar do zero com o provedor.
 
+No Dispatcharr, `volumes/media-stack/dispatcharr/redis` guarda só fila/cache — não
+precisa de backup, é seguro perder. O que importa de verdade é
+`postgres/` (canais, playlists, EPG, usuários) e `data/` (logos em
+cache, gravações DVR). O secret
+(`~/.config/containers/secrets/dispatcharr/`) também precisa de backup
+separado — sem ele, o Postgres restaurado não autentica.
+
 ## Considerações de segurança — não implementadas aqui
 
 - **Portas de indexer/download client expostas na tailnet via tsdproxy**
@@ -371,14 +451,16 @@ precisa de backup separado — sem ele, só recriar do zero com o provedor.
 ## Comandos úteis
 
 ```bash
-systemctl --user status jellyfin prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user status jellyfin dispatcharr dispatcharr-celery dispatcharr-postgres dispatcharr-redis prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 podman logs -f sonarr   # trocar pelo serviço que quiser
+podman exec dispatcharr-postgres pg_isready -U dispatch -d dispatcharr
 ```
 
 ## Créditos
 
 Deploy Quadlet baseado no [Jellyfin](https://github.com/jellyfin/jellyfin)
-(GPL-2.0) e nas imagens [LinuxServer.io](https://github.com/linuxserver)
+(GPL-2.0), no [Dispatcharr](https://github.com/Dispatcharr/Dispatcharr)
+(AGPL-3.0) e nas imagens [LinuxServer.io](https://github.com/linuxserver)
 de [Prowlarr](https://github.com/Prowlarr/Prowlarr) (GPL-3.0),
 [Sonarr](https://github.com/Sonarr/Sonarr) (GPL-3.0),
 [Radarr](https://github.com/Radarr/Radarr) (GPL-3.0),

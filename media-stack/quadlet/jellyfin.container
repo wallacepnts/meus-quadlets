@@ -13,8 +13,8 @@ PublishPort=8096:8096
 # que o container enxerga não batem, e some a permissão de leitura.
 UserNS=keep-id
 
-Volume=%h/.config/containers/volumes/jellyfin/config:/config:Z
-Volume=%h/.config/containers/volumes/jellyfin/cache:/cache:Z
+Volume=%h/.config/containers/volumes/media-stack/jellyfin/config:/config:Z
+Volume=%h/.config/containers/volumes/media-stack/jellyfin/cache:/cache:Z
 # Raiz de mídia compartilhada com o resto da stack (ver ../media-stack/)
 # — somente leitura aqui, os outros montam a mesma pasta com escrita.
 # MEDIA_DATA_DIR vem de ~/.config/environment.d/ (systemd, não Quadlet —
@@ -51,7 +51,10 @@ Label=wud.watch=true
 
 [Service]
 Restart=always
-TimeoutStartSec=60
+# Testado na prática: 60s não bastou no primeiro start depois de mover o
+# volume (tarefas de inicialização — scan de plugins, etc. — ainda
+# rodando quando o timeout bateu, sem erro real por trás).
+TimeoutStartSec=120
 
 [Install]
 WantedBy=default.target

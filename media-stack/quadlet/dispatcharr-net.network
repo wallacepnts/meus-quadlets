@@ -1,0 +1,5 @@
+[Unit]
+Description=Rede do Dispatcharr
+
+[Network]
+NetworkName=dispatcharr-net

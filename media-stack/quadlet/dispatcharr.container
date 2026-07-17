@@ -1,0 +1,58 @@
+[Unit]
+Description=Dispatcharr (IPTV, EPG, VOD)
+After=dispatcharr-postgres.service dispatcharr-redis.service
+Requires=dispatcharr-postgres.service dispatcharr-redis.service
+
+[Container]
+# Upstream não publica tag semver (só :latest, :dev e hash de commit) — ver
+# seção Auto-update no README pra como isso é observado mesmo assim.
+Image=ghcr.io/dispatcharr/dispatcharr:latest
+ContainerName=dispatcharr
+Network=dispatcharr-net.network
+PublishPort=9191:9191
+
+# /data é compartilhado com o dispatcharr-celery.container (mesmo path,
+# dois containers diferentes) — :z (minúsculo, rótulo SELinux
+# compartilhado), não :Z, que é exclusivo por container (ver README raiz,
+# regra 16 e a nota "Volume /data compartilhado" abaixo).
+Volume=%h/.config/containers/volumes/media-stack/dispatcharr/data:/data:z
+EnvironmentFile=%h/.config/containers/env/dispatcharr.env
+
+# Secret criado via: podman secret create dispatcharr-postgres-password ~/.config/containers/secrets/dispatcharr/postgres-password.txt
+Secret=dispatcharr-postgres-password,type=env,target=POSTGRES_PASSWORD
+
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:9191/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=dispatcharr
+Label=tsdproxy.port.web=443/https:9191/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Mídia
+Label=homepage.name=Dispatcharr
+Label=homepage.icon=dispatcharr.svg
+Label=homepage.href=https://dispatcharr.<seu-tailnet>.ts.net
+Label=homepage.description="Gerenciador de IPTV (streams, EPG, VOD)"
+
+# Upstream só publica :latest — sem tag semver pra comparar, o WUD não
+# teria sinal nenhum sem isso (ver README do wud, seção "Tags não-semver
+# não são observadas"). wud.watch.digest compara o digest da imagem em
+# vez de versão, então ainda avisa quando existe uma build nova.
+Label=wud.watch=true
+Label=wud.watch.digest=true
+
+[Service]
+Restart=always
+# Imagem pesada (ffmpeg + Postgres client + Redis client) e primeiro
+# boot faz migração de banco — testado na prática: 60s não bastou
+# (timeout matou o container ainda inicializando, mesmo sem erro real).
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target
