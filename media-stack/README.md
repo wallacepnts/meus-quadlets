@@ -142,8 +142,9 @@ Acessar cada um via [tsdproxy](../tsdproxy/) (tailnet, ex.:
 Nenhum deles se descobre sozinho — configuração manual, uma vez, pela UI
 de cada um:
 
-1. **Deluge**: trocar a senha padrão (Preferências → Interface). Pasta
-   de download: `/data/downloads/torrents`.
+1. **Deluge**: senha inicial é `deluge` — trocar em Preferências →
+   Interface → Password assim que logar. Pasta de download:
+   `/data/downloads/torrents`.
 2. **SABnzbd**: assistente inicial pede o provedor usenet (servidor,
    usuário, senha). Pasta de download completo:
    `/data/downloads/usenet`.
