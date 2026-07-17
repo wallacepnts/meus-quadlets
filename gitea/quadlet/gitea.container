@@ -1,0 +1,43 @@
+[Unit]
+Description=Gitea (Git self-hosted)
+
+[Container]
+Image=docker.io/gitea/gitea:1.27.0
+ContainerName=gitea
+PublishPort=3002:3000
+
+Volume=%h/.config/containers/volumes/gitea/data:/data:Z
+EnvironmentFile=%h/.config/containers/env/gitea.env
+
+# Secrets criados via:
+#   podman secret create gitea-secret-key ~/.config/containers/secrets/gitea/secret-key.txt
+#   podman secret create gitea-internal-token ~/.config/containers/secrets/gitea/internal-token.txt
+# Gerados com: podman run --rm docker.io/gitea/gitea:1.27.0 gitea generate secret SECRET_KEY|INTERNAL_TOKEN
+Secret=gitea-secret-key,type=env,target=GITEA__security__SECRET_KEY
+Secret=gitea-internal-token,type=env,target=GITEA__security__INTERNAL_TOKEN
+
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:3000/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=20s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=gitea
+Label=tsdproxy.port.web=443/https:3000/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Gitea
+Label=homepage.icon=gitea.svg
+Label=homepage.href=https://gitea.<seu-tailnet>.ts.net
+Label=homepage.description="Git self-hosted"
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
