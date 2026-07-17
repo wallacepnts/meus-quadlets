@@ -205,6 +205,19 @@ podman unshare chown --reference="$HOME/.config/containers/volumes/<app>/<pasta>
   ~/.config/containers/volumes/<app>/<pasta>/arquivo.txt
 ```
 
+### 18. `Label=` não aceita barra invertida no valor
+
+Diferente do `$$` da regra 7 (que é sobre o systemd expandir `$`), aqui
+quem recusa é o **parser do próprio Quadlet**: qualquer `\` dentro do
+valor de um `Label=` (ex.: uma regex com `\d`, `\.`) faz a linha inteira
+ser descartada — `quadlet-generator: unsupported escape char` no
+journal, sem erro visível em `systemctl cat` nem em `podman inspect`
+(o label simplesmente não existe no container, como se a linha nunca
+tivesse sido escrita). Não tem escape que resolva — nem `\\` nem aspas
+em volta do valor. Reescrever sem barra invertida: `[0-9]` no lugar de
+`\d`, `.` sem escapar (aceitável em regex de filtro, não crítica).
+Caso real em [`wud/`](./wud/#wudtagincludewudtagtransform-nada-de--no-valor).
+
 ## Anatomia de referência
 
 ### `<app>-net.network`

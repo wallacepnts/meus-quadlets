@@ -84,6 +84,37 @@ versão). Não é necessário pros serviços deste repo, que ficam quase
 todos em tag fixa semver — é só um caso a se ter em mente se algum
 serviço novo usar `:latest`.
 
+## Filtrando quais containers observar (`wud.watch`)
+
+Por padrão o WUD observa tudo. Pra restringir só ao que interessa (ex.:
+os serviços que ficam de propósito sem `AutoUpdate=` — ver tabela no
+README raiz), inverter o padrão no `wud.env`:
+
+```
+WUD_WATCHER_LOCAL_WATCHBYDEFAULT=false
+```
+
+E marcar cada container desejado com `Label=wud.watch=true` no
+`.container` correspondente (não aqui — no serviço observado).
+
+## `wud.tag.include`/`wud.tag.transform`: nada de `\` no valor
+
+Tags com sufixo de variante (ex.: `0.10.1-nginx-php8.2` do
+[baikal](../baikal/)) enganam o parser semver do WUD — ele trata o
+sufixo como "prerelease" e uma tag sem sufixo (`0.10.1`, variante
+diferente da mesma imagem) aparece como "mais nova". A correção é
+restringir os candidatos com `wud.tag.include` (regex), mas o parser do
+próprio **Quadlet** não aceita barra invertida em `Label=`
+(`quadlet-generator: unsupported escape char` no journal — a linha
+inteira é descartada em silêncio, sem erro visível em `systemctl cat`
+nem em `podman inspect`). Escrever a regex sem `\d`/`\.` — usar `[0-9]`
+no lugar de `\d`, e deixar o `.` sem escapar (casa qualquer caractere
+ali, inofensivo pra esse tipo de filtro):
+
+```ini
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+-nginx-php[0-9.]+$
+```
+
 ## Auto-update
 
 Sem `AutoUpdate=` — tag explícita (`8.3.0`), bump manual (regra 9 do

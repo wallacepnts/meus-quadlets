@@ -28,7 +28,15 @@ Label=homepage.icon=baikal.svg
 Label=homepage.href=https://baikal.<seu-tailnet>.ts.net
 Label=homepage.description="Servidor CalDAV/CardDAV self-hosted"
 
+# A imagem também publica tags sem sufixo de variante (ex.: 0.10.1, sem
+# "-nginx-phpX.Y") — o WUD trata isso como semver "sem prerelease", que
+# semver considera "maior" que a tag com sufixo, gerando falso positivo
+# de atualização. Restringe a candidatos da mesma família nginx+PHP.
+# Regex sem \d/\. de propósito: o parser do Quadlet não aceita barra
+# invertida em Label= ("unsupported escape char" no journal, dropa a
+# linha inteira em silêncio, sem erro visível em `systemctl cat`).
 Label=wud.watch=true
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+-nginx-php[0-9.]+$
 
 [Service]
 Restart=always
