@@ -457,17 +457,17 @@ conteúdo), só então `systemctl --user start`.
 
 | Serviço | Descrição | AutoUpdate |
 | --- | --- | --- |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/actual-budget.svg" width="20" height="20" alt=""> [`actual-budget`](./actual-budget) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) | ✅ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/anytype.svg" width="20" height="20" alt=""> [`any-sync-bundle`](./any-sync-bundle) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/baikal.svg" width="20" height="20" alt=""> [`baikal`](./baikal) | Servidor CalDAV/CardDAV self-hosted ([README](./baikal/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/gitea.svg" width="20" height="20" alt=""> [`gitea`](./gitea) | Servidor Git self-hosted ([README](./gitea/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/homepage.png" width="20" height="20" alt=""> [`homepage`](./homepage) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) | ✅ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png" width="20" height="20" alt=""> [`linkwarden`](./linkwarden) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/lubelogger.png" width="20" height="20" alt=""> [`lubelogger`](./lubelogger) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="20" height="20" alt=""> [`tsdproxy`](./tsdproxy) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg" width="20" height="20" alt=""> [`vaultwarden`](./vaultwarden) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/getwud/wud@main/ui/public/img/icons/android-chrome-512x512.png" width="20" height="20" alt=""> [`wud`](./wud) | Monitora atualizações de imagem sem aplicar sozinho ([README](./wud/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/zerobyte.png" width="20" height="20" alt=""> [`zerobyte`](./zerobyte) | Automação de backup (Restic) pros outros serviços ([README](./zerobyte/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/actual-budget.svg" width="20" height="20" alt=""> [Actual Budget](./actual-budget) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) | ✅ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/anytype.svg" width="20" height="20" alt=""> [any-sync-bundle](./any-sync-bundle) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/baikal.svg" width="20" height="20" alt=""> [Baikal](./baikal) | Servidor CalDAV/CardDAV self-hosted ([README](./baikal/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/gitea.svg" width="20" height="20" alt=""> [Gitea](./gitea) | Servidor Git self-hosted ([README](./gitea/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/homepage.png" width="20" height="20" alt=""> [homepage](./homepage) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) | ✅ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png" width="20" height="20" alt=""> [Linkwarden](./linkwarden) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/lubelogger.png" width="20" height="20" alt=""> [LubeLogger](./lubelogger) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="20" height="20" alt=""> [tsdproxy](./tsdproxy) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg" width="20" height="20" alt=""> [Vaultwarden](./vaultwarden) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/getwud/wud@main/ui/public/img/icons/android-chrome-512x512.png" width="20" height="20" alt=""> [WUD (What's Up Docker)](./wud) | Monitora atualizações de imagem sem aplicar sozinho ([README](./wud/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/zerobyte.png" width="20" height="20" alt=""> [Zerobyte](./zerobyte) | Automação de backup (Restic) pros outros serviços ([README](./zerobyte/README.md)) | ❌ |
 
 ### O que o AutoUpdate precisa pra funcionar direito
 
