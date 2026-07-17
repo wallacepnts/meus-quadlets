@@ -1,9 +1,10 @@
 # Media Stack — Podman Quadlet (rootless)
 
-Deploy de nove serviços [LinuxServer.io](https://docs.linuxserver.io/) +
-[Gluetun](https://github.com/qdm12/gluetun) + [Seerr](https://docs.seerr.dev)
-via Podman Quadlet, todos enxergando a mesma raiz de mídia/downloads que
-o [Jellyfin](../jellyfin/):
+Deploy de oito serviços [LinuxServer.io](https://docs.linuxserver.io/) +
+[Seerr](https://docs.seerr.dev) via Podman Quadlet, todos enxergando a
+mesma raiz de mídia/downloads que o [Jellyfin](../jellyfin/). Um nono
+serviço, o [Gluetun](https://github.com/qdm12/gluetun) (túnel VPN pro
+Deluge), é **opcional** — ver seção própria abaixo.
 
 | Serviço | Papel | Porta |
 | --- | --- | --- |
@@ -13,9 +14,8 @@ o [Jellyfin](../jellyfin/):
 | [Lidarr](https://lidarr.audio) | Automação de música | `8686` |
 | [Bazarr](https://www.bazarr.media) | Legendas automáticas pro Sonarr/Radarr | `6767` |
 | [Seerr](https://docs.seerr.dev) | Pedidos de filme/série, integra com Jellyfin+Sonarr+Radarr | `5055` |
-| [Gluetun](https://github.com/qdm12/gluetun) | Túnel VPN — só o Deluge passa por ele | — (sem UI própria) |
-| [Deluge](https://deluge-torrent.org) | Cliente torrent, todo o tráfego via Gluetun | `8112` |
-| [SABnzbd](https://sabnzbd.org) | Cliente usenet (sem VPN — ver por quê abaixo) | `8081` (a `8080` já é do [tsdproxy](../tsdproxy/) neste repo) |
+| [Deluge](https://deluge-torrent.org) | Cliente torrent | `8112` |
+| [SABnzbd](https://sabnzbd.org) | Cliente usenet | `8081` (a `8080` já é do [tsdproxy](../tsdproxy/) neste repo) |
 
 **Sobre o Seerr**: é a continuação unificada do Overseerr (só Plex,
 arquivado em 2024) e do Jellyseerr (fork da comunidade pra
@@ -57,14 +57,11 @@ disco/mount, aponte a variável direto pra lá, sem symlink nem cópia.
 
 ## Arquitetura
 
-Nove containers, rede bridge padrão — exceto o Deluge, que entra na
-stack de rede do Gluetun (`Network=container:gluetun`, ver seção VPN
-abaixo) em vez de ter a própria. Nenhum `.network` dedicado — eles
-conversam entre si via HTTP configurado manualmente depois de subir, não
-via rede Podman compartilhada. `PUID`/`PGID`/`TZ` num único env file
-(`media-stack.env`), reaproveitado pelos LinuxServer.io (exceto Gluetun,
-que tem o próprio `gluetun.env` — credenciais de VPN não deveriam se
-misturar com o resto) — ver
+Oito containers, todos em rede bridge padrão, cada um com sua
+`PublishPort=`. Nenhum `.network` dedicado — eles conversam entre si via
+HTTP configurado manualmente depois de subir, não via rede Podman
+compartilhada. `PUID`/`PGID`/`TZ` num único env file
+(`media-stack.env`), reaproveitado pelos LinuxServer.io — ver
 [README raiz, regra sobre UserNS vs PUID/PGID](../README.md) pro porquê
 dessas imagens usarem esse mecanismo em vez do `UserNS=keep-id`. O Seerr
 **não** é LinuxServer.io (roda fixo como uid 1000, sem o mecanismo de
@@ -72,10 +69,9 @@ usermod interno) — usa `UserNS=keep-id`, igual o Jellyfin, não o env
 file compartilhado (`PUID`/`PGID` de lá são ignorados por ele, inofensivo,
 mas não fazem nada).
 
-`Prowlarr`, `Seerr` e `Gluetun` não montam `/data` — Prowlarr só
-gerencia indexers e fala com os outros via API, Seerr só faz pedido
-(fala com Sonarr/Radarr/Jellyfin via API, não toca em arquivo de mídia),
-Gluetun é só o túnel de rede.
+`Prowlarr` e `Seerr` não montam `/data` — Prowlarr só gerencia indexers
+e fala com os outros via API, Seerr só faz pedido (fala com
+Sonarr/Radarr/Jellyfin via API, não toca em arquivo de mídia).
 
 ## Arquivos
 
@@ -87,21 +83,20 @@ quadlet/
 ├── lidarr.container
 ├── bazarr.container
 ├── seerr.container
-├── gluetun.container
 ├── deluge.container
-└── sabnzbd.container
+├── sabnzbd.container
+└── gluetun.container   # opcional — ver seção VPN abaixo
 ```
 
 ## Pré-requisitos
 
 - Podman rootless com systemd `--user` funcionando
-- Uma conta de VPN com suporte a WireGuard ou OpenVPN, se for usar o
-  Gluetun (ver [lista de provedores suportados](https://github.com/qdm12/gluetun-wiki/tree/main/setup/providers))
 
 ## Instalação do zero
 
 ```bash
-# 1. Copiar as units
+# 1. Copiar as units (inclui gluetun.container; só importa se for usar
+#    a seção de VPN abaixo — sem ativar, fica parado sem nenhum custo)
 mkdir -p ~/.config/containers/systemd
 cp quadlet/*.container ~/.config/containers/systemd/
 
@@ -130,24 +125,12 @@ PGID=$(id -g)
 TZ=America/Sao_Paulo
 EOF
 
-# 5. Env do Gluetun — provedor de VPN, ver a doc do provedor específico
-#    (link acima) pras variáveis exatas. Exemplo genérico WireGuard:
-cat > ~/.config/containers/env/gluetun.env <<EOF
-VPN_SERVICE_PROVIDER=trocar_pelo_seu
-VPN_TYPE=wireguard
-WIREGUARD_PRIVATE_KEY=trocar_pela_sua_chave
-WIREGUARD_ADDRESSES=trocar_pelo_seu_ip_interno
-SERVER_COUNTRIES=trocar_pelo_pais_desejado
-EOF
-chmod 600 ~/.config/containers/env/gluetun.env
-
-# 6. Aplicar a env.d nova (precisa de daemon-reload, não só reiniciar
+# 5. Aplicar a env.d nova (precisa de daemon-reload, não só reiniciar
 #    o serviço — é o systemd --user que precisa reler o ambiente)
 systemctl --user daemon-reload
 
-# 7. Subir — Gluetun primeiro por causa da dependência do Deluge
-#    (Requires=/After= já cuidam disso automaticamente)
-systemctl --user start prowlarr sonarr radarr lidarr bazarr seerr gluetun deluge sabnzbd
+# 6. Subir (sem o Gluetun — ver seção própria pra ativar VPN)
+systemctl --user start prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 ```
 
 Acessar cada um via [tsdproxy](../tsdproxy/) (tailnet, ex.:
@@ -187,60 +170,101 @@ de cada um:
    keys deles — é assim que um pedido aprovado no Seerr vira uma busca
    automática no Sonarr/Radarr.
 
-## VPN no Deluge, via Gluetun
+## VPN opcional no Deluge, via Gluetun
 
-Só o **Deluge** passa pelo Gluetun — Sonarr/Radarr/Lidarr/Prowlarr/Bazarr
-continuam na rede normal (não fazem P2P, não precisam). SABnzbd também
-fica de fora de propósito: usenet é conexão direta e criptografada
-(SSL) com o provedor, sem broadcast de IP pra outros peers como torrent
-— o risco que a VPN mitiga no torrent praticamente não existe ali.
+Por padrão o Deluge sobe **sem VPN** — tráfego de torrent sai direto
+pelo IP do host, mesma rede que os outros serviços. `gluetun.container`
+já vem junto no repositório, parado até ser ativado; ativar depois não
+exige reinstalar nada.
 
-`Network=container:gluetun` no `deluge.container` faz o Deluge
-compartilhar a stack de rede inteira do Gluetun — todo o tráfego dele
-(torrent e o próprio painel web) sai pelo túnel. Consequência prática:
-**se o Gluetun cair, o Deluge cai junto** (não tem rede própria pra
-cair de volta) — na prática já funciona como um kill switch: sem VPN,
-sem Deluge, sem vazamento de IP.
+**Se for ativar**, o padrão recomendado é rotear só o Deluge (não o
+resto — Sonarr/Radarr/Lidarr/Prowlarr/Bazarr não fazem P2P, não
+precisam de VPN; SABnzbd também fica de fora de propósito, usenet é
+conexão direta e criptografada com o provedor, sem broadcast de IP pra
+peers como no torrent):
 
-**Por que `PodmanArgs=--privileged` no Gluetun** — testado na prática
-neste repositório: só `AddCapability=NET_ADMIN` (sem privileged) barra
-no setup do firewall interno do próprio Gluetun, com erro de
-`iptables`/`conntrack` — rootless não consegue mexer no netfilter real
-do host mesmo com a capability concedida agora, só dentro do próprio
-namespace remapeado. Com `--privileged` (ainda confinado ao user
-namespace rootless — **não** é root real do host, diferente de rootful
-Podman/Docker) o firewall interno sobe normal. Se preferir não usar
-`--privileged` de jeito nenhum, dá pra desligar o firewall interno do
-Gluetun (`FIREWALL=off` no `gluetun.env`) — funciona sem
-`--privileged`, mas perde o kill switch próprio dele (ainda sobra o
-"kill switch de fato" do `Network=container:` descrito acima, então o
-risco residual é menor do que parece).
+`gluetun.container` já vem pronto pra isso (portas do Deluge publicadas
+nele, healthcheck, `--privileged` — ver justificativa abaixo). Só falta:
+
+```bash
+# 1. Credenciais do provedor de VPN (ver lista de provedores suportados:
+#    https://github.com/qdm12/gluetun-wiki/tree/main/setup/providers)
+cat > ~/.config/containers/env/gluetun.env <<EOF
+VPN_SERVICE_PROVIDER=trocar_pelo_seu
+VPN_TYPE=wireguard
+WIREGUARD_PRIVATE_KEY=trocar_pela_sua_chave
+WIREGUARD_ADDRESSES=trocar_pelo_seu_ip_interno
+SERVER_COUNTRIES=trocar_pelo_pais_desejado
+EOF
+chmod 600 ~/.config/containers/env/gluetun.env
+
+# 2. Editar deluge.container: trocar as três linhas de PublishPort= por
+#    Network=container:gluetun, e adicionar em [Unit]:
+#      After=gluetun.service
+#      Requires=gluetun.service
+#    (container que entra via "container:" não declara PublishPort=
+#    próprio nem Network=<nome>.network — a porta já está publicada no
+#    gluetun.container, é por isso que os labels tsdproxy.* de descoberta
+#    também já estão lá, não no deluge.container)
+
+systemctl --user daemon-reload
+systemctl --user stop deluge
+systemctl --user start gluetun deluge
+```
+
+`Network=container:gluetun` faz o Deluge compartilhar a stack de rede
+inteira do Gluetun — todo o tráfego dele (torrent e o próprio painel
+web) sai pelo túnel. Consequência prática: **se o Gluetun cair, o
+Deluge cai junto** (não tem rede própria pra cair de volta) — na
+prática já funciona como um kill switch: sem VPN, sem Deluge, sem
+vazamento de IP.
+
+**Por que `PodmanArgs=--privileged` no Gluetun** (já vem assim no
+`gluetun.container` deste repo) — testado na prática: só
+`AddCapability=NET_ADMIN` (sem privileged) barra no setup do firewall
+interno do próprio Gluetun, com erro de `iptables`/`conntrack` —
+rootless não consegue mexer no netfilter real do host mesmo com a
+capability concedida, só dentro do próprio namespace remapeado. Com
+`--privileged` (ainda confinado ao user namespace rootless — **não** é
+root real do host, diferente de rootful Podman/Docker) o firewall
+interno sobe normal. Se preferir não usar `--privileged` de jeito
+nenhum, dá pra desligar o firewall interno do Gluetun (`FIREWALL=off`
+no `gluetun.env`) — funciona sem `--privileged`, mas perde o kill
+switch próprio dele (ainda sobra o "kill switch de fato" do
+`Network=container:` descrito acima, então o risco residual é menor do
+que parece).
+
+Conferir que o IP saindo é o da VPN, não o do host:
+```bash
+podman exec gluetun wget -qO- https://ipinfo.io/ip
+```
 
 ## Auto-update
 
-Nenhum dos nove tem `AutoUpdate=` — tags explícitas (Gluetun inclusive,
-apesar de estar em `:latest` aqui por enquanto — trocar pra uma tag
-pinada é pendência), bump manual (regra 9 do README raiz). Os apps
-LinuxServer.io e o Seerr guardam banco (SQLite, a maioria) com estado de
-biblioteca/histórico/configuração de download em `/config` — mesma
-cautela do [baikal](../baikal/)/[gitea](../gitea/): healthcheck confere
-só se o servidor HTTP responde, não se uma migração de schema rodou
-certo numa troca de versão.
+Nenhum dos serviços tem `AutoUpdate=` — tags explícitas, bump manual
+(regra 9 do README raiz; o `gluetun.container` deste repo é exceção
+consciente, fica em `:latest` porque o próprio projeto não publica
+releases versionadas de forma estável — reavaliar se isso mudar). Os
+apps LinuxServer.io e o Seerr guardam banco (SQLite, a maioria) com
+estado de biblioteca/histórico/configuração de download em `/config` —
+mesma cautela do [baikal](../baikal/)/[gitea](../gitea/): healthcheck
+confere só se o servidor HTTP responde, não se uma migração de schema
+rodou certo numa troca de versão.
 
 ## Backup & Recuperação
 
 ```bash
-systemctl --user stop prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd gluetun
+systemctl --user stop prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 tar -czf media-stack-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
   -C ~/.config/containers/volumes media-stack
-systemctl --user start prowlarr sonarr radarr lidarr bazarr seerr gluetun deluge sabnzbd
+systemctl --user start prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 ```
 
 Só as pastas `config/` de cada serviço (API keys, configuração, estado
 de download/indexer) — a mídia em si e os downloads brutos ficam fora,
-mesmo raciocínio do Jellyfin. `~/.config/containers/env/gluetun.env`
-(credenciais de VPN) também precisa de backup separado — sem ele, só
-recriar do zero com o provedor.
+mesmo raciocínio do Jellyfin. Se estiver usando o Gluetun,
+`~/.config/containers/env/gluetun.env` (credenciais de VPN) também
+precisa de backup separado — sem ele, só recriar do zero com o provedor.
 
 ## Considerações de segurança — não implementadas aqui
 
@@ -251,9 +275,8 @@ recriar do zero com o provedor.
 ## Comandos úteis
 
 ```bash
-systemctl --user status prowlarr sonarr radarr lidarr bazarr seerr gluetun deluge sabnzbd
+systemctl --user status prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 podman logs -f sonarr   # trocar pelo serviço que quiser
-podman exec gluetun wget -qO- https://ipinfo.io/ip   # confirma que o IP saindo é o da VPN, não o do host
 ```
 
 ## Créditos
@@ -267,6 +290,6 @@ de [Prowlarr](https://github.com/Prowlarr/Prowlarr) (GPL-3.0),
 [Deluge](https://github.com/deluge-torrent/deluge) (GPL-3.0) e
 [SABnzbd](https://github.com/sabnzbd/sabnzbd) (GPL-2.0). Pedidos de
 mídia via [Seerr](https://github.com/seerr-team/seerr) (MIT), sucessor
-unificado do Overseerr/Jellyseerr. Túnel VPN via
+unificado do Overseerr/Jellyseerr. Túnel VPN opcional via
 [Gluetun](https://github.com/qdm12/gluetun), de
 [qdm12](https://github.com/qdm12) (MIT).
