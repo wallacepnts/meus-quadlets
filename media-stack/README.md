@@ -4,7 +4,7 @@ Deploy de [Jellyfin](https://jellyfin.org) + nove serviços
 [LinuxServer.io](https://docs.linuxserver.io/)/[Seerr](https://docs.seerr.dev)
 via Podman Quadlet, todos enxergando a mesma raiz de mídia/downloads.
 
-| Ícone | Apps | Descrição | Porta |
+|  | Apps | Descrição | Porta |
 | --- | --- | --- | --- |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyfin.svg" width="32" height="32" alt=""> | [Jellyfin](https://jellyfin.org) | Servidor de mídia | `8096` |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/prowlarr.svg" width="32" height="32" alt=""> | [Prowlarr](https://prowlarr.com) | Gerenciador de indexers, alimenta os três abaixo | `9696` |
