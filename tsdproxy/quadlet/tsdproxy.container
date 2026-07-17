@@ -31,7 +31,15 @@ Label=homepage.icon=tailscale.svg
 Label=homepage.href=https://dash.<seu-tailnet>.ts.net
 Label=homepage.description="Publica containers na tailnet automaticamente"
 
+# A tag "3" no Docker Hub hoje resolve pra 3.0.0-beta.3 — sem release
+# estável da v3 ainda, então "atualização disponível" não é acionável
+# (não é bug de parsing tipo baikal/HA, a "3" existe de verdade, só que
+# é beta). Restringe a candidatos com formato de release completo
+# (x.y.z, sem sufixo -beta/-alpha) — exclui as tags de major sozinho
+# (2, 3) e qualquer pre-release. Regex sem \d/\. de propósito, ver regra
+# 18 do README raiz.
 Label=wud.watch=true
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+$
 
 [Service]
 Restart=always
