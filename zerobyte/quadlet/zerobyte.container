@@ -57,6 +57,8 @@ Label=homepage.icon=zerobyte.png
 Label=homepage.href=https://zerobyte.<seu-tailnet>.ts.net
 Label=homepage.description="Automação de backup (Restic)"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 

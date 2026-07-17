@@ -30,6 +30,8 @@ Label=homepage.icon=lubelogger.png
 Label=homepage.href=https://lubelogger.<seu-tailnet>.ts.net
 Label=homepage.description="Controle de manutenção veicular self-hosted"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 

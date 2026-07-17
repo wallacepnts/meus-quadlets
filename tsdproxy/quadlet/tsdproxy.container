@@ -31,6 +31,8 @@ Label=homepage.icon=tailscale.svg
 Label=homepage.href=https://dash.<seu-tailnet>.ts.net
 Label=homepage.description="Publica containers na tailnet automaticamente"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 

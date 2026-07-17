@@ -30,6 +30,8 @@ Label=homepage.icon=home-assistant.svg
 Label=homepage.href=https://home-assistant.<seu-tailnet>.ts.net
 Label=homepage.description="Automação residencial self-hosted"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 TimeoutStartSec=90

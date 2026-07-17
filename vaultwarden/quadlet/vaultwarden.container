@@ -31,6 +31,8 @@ Label=homepage.icon=vaultwarden.svg
 Label=homepage.href=https://vaultwarden.<seu-tailnet>.ts.net
 Label=homepage.description="Cofre de senhas self-hosted (Bitwarden)"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 

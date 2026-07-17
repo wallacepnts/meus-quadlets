@@ -35,6 +35,8 @@ Label=homepage.icon=gitea.svg
 Label=homepage.href=https://gitea.<seu-tailnet>.ts.net
 Label=homepage.description="Git self-hosted"
 
+Label=wud.watch=true
+
 [Service]
 Restart=always
 TimeoutStartSec=60
