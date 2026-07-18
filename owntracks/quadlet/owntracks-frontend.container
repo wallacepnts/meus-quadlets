@@ -1,0 +1,51 @@
+[Unit]
+Description=OwnTracks Frontend (interface web Vue.js)
+After=owntracks-recorder.service
+Requires=owntracks-recorder.service
+
+[Container]
+Image=docker.io/owntracks/frontend:2.15.3
+ContainerName=owntracks-frontend
+Network=owntracks-net.network
+PublishPort=8087:80
+
+# nginx interno faz reverse-proxy de /api/ e /ws/ pro recorder (ver
+# docker/nginx.tmpl da imagem) — resolve "owntracks-recorder" via DNS
+# automático do Podman na rede owntracks-net (ContainerName vira nome
+# resolvível, sem precisar de NetworkAlias explícito).
+Environment=SERVER_HOST=owntracks-recorder
+Environment=SERVER_PORT=8083
+
+Volume=%h/.config/containers/volumes/owntracks/frontend-config.js:/usr/share/nginx/html/config/config.js:Z
+
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:80/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — hostname PRÓPRIO, diferente do owntracks-recorder
+# (tsdproxy.name=owntracks, ver aquele .container). Os dois convivem: o
+# recorder mantém seu viewer básico embutido, este é a UI Vue.js mais
+# completa por cima da mesma API.
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=owntracks-ui
+Label=tsdproxy.port.web=443/https:80/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name="OwnTracks UI"
+Label=homepage.icon=owntracks.svg
+Label=homepage.href=https://owntracks-ui.<seu-tailnet>.ts.net
+Label=homepage.description="Interface web avançada (Vue.js) pro OwnTracks Recorder"
+
+Label=wud.watch=true
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+$
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

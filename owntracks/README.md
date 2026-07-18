@@ -3,13 +3,15 @@
 Deploy do [OwnTracks Recorder](https://owntracks.org/booklet/clients/recorder/)
 (backend de rastreamento de localização self-hosted, recebe posições dos
 apps oficiais OwnTracks pro Android/iOS) + [Mosquitto](https://mosquitto.org)
-(broker MQTT) via Podman Quadlet, migrado do
+(broker MQTT) + [OwnTracks Frontend](https://github.com/owntracks/frontend)
+(interface web Vue.js mais completa que o viewer embutido no recorder)
+via Podman Quadlet, migrado do
 [`docker-compose-mqtt.yml`](https://github.com/owntracks/docker-recorder/blob/master/docker-compose-mqtt.yml)
 oficial.
 
 ## Arquitetura
 
-Dois containers na rede `owntracks-net.network`:
+Três containers na rede `owntracks-net.network`:
 
 - `mosquitto` — broker MQTT, expõe `1883` (protocolo nativo MQTT, é nele
   que os apps do celular publicam a localização) e `9001` (mesmo broker
@@ -18,6 +20,17 @@ Dois containers na rede `owntracks-net.network`:
 - `owntracks-recorder` — assina `owntracks/#` no broker, grava cada
   posição recebida e expõe `8083` (interface web com mapa/histórico +
   API HTTP)
+- `owntracks-frontend` — SPA Vue.js separada, expõe `80` (mapeado pra
+  `8087` no host). nginx interno da imagem faz reverse-proxy de
+  `/api/`/`/ws/` pro `owntracks-recorder` (via `SERVER_HOST`/`SERVER_PORT`)
+  e serve os assets estáticos — não fala com o Mosquitto, só com o
+  recorder. Só sobe depois que o recorder está de pé
+  (`Requires=`/`After=`).
+
+O viewer básico embutido no recorder (`owntracks.<seu-tailnet>.ts.net`)
+e o frontend Vue.js (`owntracks-ui.<seu-tailnet>.ts.net`) convivem — os
+dois leem a mesma API/dados, o frontend só tem mais recursos (mapa de
+calor, filtros, etc.).
 
 **Diferente do
 [`docker-compose-mqtt.yml`](https://github.com/owntracks/docker-recorder/blob/master/docker-compose-mqtt.yml)
@@ -41,11 +54,13 @@ primeira tentativa mesmo assim.
 
 ```
 quadlet/
-├── owntracks-net.network       # rede dedicada
-├── mosquitto.container         # broker MQTT
-└── owntracks-recorder.container # aplicação
+├── owntracks-net.network        # rede dedicada
+├── mosquitto.container          # broker MQTT
+├── owntracks-recorder.container # aplicação (backend + viewer básico)
+└── owntracks-frontend.container # UI Vue.js separada
 
-mosquitto.conf                  # config do broker (auth habilitada)
+mosquitto.conf                   # config do broker (auth habilitada)
+frontend-config.js               # config do frontend (padrão vazio)
 ```
 
 ## Pré-requisitos
@@ -63,6 +78,7 @@ cp quadlet/*.container quadlet/*.network ~/.config/containers/systemd/owntracks/
 # 2. Diretórios — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/owntracks/{mosquitto/config,mosquitto/data,store,config}
 cp mosquitto.conf ~/.config/containers/volumes/owntracks/mosquitto/config/
+cp frontend-config.js ~/.config/containers/volumes/owntracks/frontend-config.js
 
 # 3. Senha MQTT — gerada uma vez, usada pelo app do celular pra
 #    autenticar no broker. Os dois segredos abaixo (arquivo passwd do
@@ -94,19 +110,22 @@ echo "Senha MQTT (configurar no app do celular): $MQTT_PW"
 mkdir -p ~/.config/containers/env
 cp .env.example ~/.config/containers/env/owntracks-recorder.env
 
-# 5. Subir (mosquitto sobe primeiro via Requires=)
+# 5. Subir (mosquitto sobe primeiro via Requires=; o frontend sobe
+#    depois do recorder, mesma lógica)
 systemctl --user daemon-reload
-systemctl --user start owntracks-recorder
+systemctl --user start owntracks-frontend
 ```
 
-Acessar via [tsdproxy](../tsdproxy/) (tailnet) em
-`https://owntracks.<seu-tailnet>.ts.net`, ou local em
-`http://localhost:8086` — mapa com o histórico de posições recebidas
+Viewer básico embutido no recorder via [tsdproxy](../tsdproxy/)
+(tailnet) em `https://owntracks.<seu-tailnet>.ts.net`, ou local em
+`http://localhost:8086`. UI Vue.js mais completa em
+`https://owntracks-ui.<seu-tailnet>.ts.net`, ou local em
+`http://localhost:8087` — mapa com o histórico de posições recebidas
 (vazio até o primeiro app do celular publicar algo).
 
-**Sem autenticação própria na interface web** — mesmo modelo de
-confiança já usado pelo [WUD](../wud/)/[Homepage](../homepage/) neste
-repositório: protegido só por estar na tailnet, não por login.
+**Sem autenticação própria em nenhuma das duas interfaces web** — mesmo
+modelo de confiança já usado pelo [WUD](../wud/)/[Homepage](../homepage/)
+neste repositório: protegido só por estar na tailnet, não por login.
 
 ## Configurando o app OwnTracks no celular
 
@@ -191,36 +210,40 @@ WebSockets ali só adicionaria overhead, sem ganho nenhum.
 
 ## Auto-update
 
-Sem `AutoUpdate=` — tags explícitas (`1.0.1` no recorder, `2.1.2-alpine`
-no mosquitto), bump manual (regra 9 do README raiz). Ambas as imagens
-também publicam variantes com sufixo de build (`1.0.1-43`,
-`2.1.2-alpine` vs. bare `2.1.2`) que confundiriam o parser semver do WUD
-— `wud.watch=true` só está no `owntracks-recorder` (o app voltado ao
-usuário), com `wud.tag.include` restringindo a candidatos `X.Y.Z` puro;
-o `mosquitto` fica de fora (dependência interna, mesmo padrão já
-aplicado a bancos/caches no resto do repositório).
+Sem `AutoUpdate=` — tags explícitas (`1.0.1` no recorder, `2.15.3` no
+frontend, `2.1.2-alpine` no mosquitto), bump manual (regra 9 do README
+raiz). As três imagens também publicam variantes com sufixo de build
+(`1.0.1-43`, `2.1.2-alpine` vs. bare `2.1.2`) que confundiriam o parser
+semver do WUD — `wud.watch=true` está no `owntracks-recorder` e no
+`owntracks-frontend` (os dois apps voltados ao usuário), com
+`wud.tag.include` restringindo a candidatos `X.Y.Z` puro; o `mosquitto`
+fica de fora (dependência interna, mesmo padrão já aplicado a
+bancos/caches no resto do repositório).
 
 ## Backup & Recuperação
 
 ```bash
-systemctl --user stop owntracks-recorder mosquitto
+systemctl --user stop owntracks-frontend owntracks-recorder mosquitto
 tar -czf owntracks-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
   -C ~/.config/containers/volumes owntracks
-systemctl --user start owntracks-recorder
+systemctl --user start owntracks-frontend
 ```
 
 `store/` é o histórico de localização de verdade (LMDB) — o que importa
 de verdade aqui. `mosquitto/data/` guarda só o persistence file do
 broker (retained messages, se algum), perda é inconveniente, não
-destrutiva. `~/.config/containers/secrets/owntracks/` (senha crua +
-hash do passwd do Mosquitto) também precisa de backup separado — sem
-ele, os celulares perdem acesso ao broker até reconfigurar a senha.
+destrutiva. `frontend-config.js` só importa se você tiver customizado
+algo além do padrão vazio. `~/.config/containers/secrets/owntracks/`
+(senha crua + hash do passwd do Mosquitto) também precisa de backup
+separado — sem ele, os celulares perdem acesso ao broker até
+reconfigurar a senha.
 
 ## Comandos úteis
 
 ```bash
-systemctl --user status owntracks-recorder mosquitto
+systemctl --user status owntracks-frontend owntracks-recorder mosquitto
 podman logs -f owntracks-recorder
+podman logs -f owntracks-frontend
 podman logs -f mosquitto
 curl -s http://127.0.0.1:8086/api/0/list   # usuários/devices já registrados
 ```
@@ -230,6 +253,7 @@ curl -s http://127.0.0.1:8086/api/0/list   # usuários/devices já registrados
 Deploy Quadlet baseado no [OwnTracks Recorder](https://github.com/owntracks/recorder)
 (GPL-2.0), de [Jan-Piet Mens](https://github.com/jpmens), e no
 [docker-recorder](https://github.com/owntracks/docker-recorder) oficial
-(imagem + `docker-compose-mqtt.yml` de referência). Broker MQTT via
-[Eclipse Mosquitto](https://github.com/eclipse-mosquitto/mosquitto)
+(imagem + `docker-compose-mqtt.yml` de referência). Interface web via
+[OwnTracks Frontend](https://github.com/owntracks/frontend) (MIT).
+Broker MQTT via [Eclipse Mosquitto](https://github.com/eclipse-mosquitto/mosquitto)
 (EPL-2.0/EDL-1.0).
