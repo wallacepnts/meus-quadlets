@@ -114,7 +114,7 @@ No app (Android/iOS), modo de reporte **MQTT** (não HTTP):
 
 | Campo | Valor |
 | --- | --- |
-| Host | endereço da tailnet deste host (`owntracks.<seu-tailnet>.ts.net`) ou IP local |
+| Host | hostname do **próprio host** na tailnet (`<nome-deste-host>.<seu-tailnet>.ts.net`, ver `tailscale status` nele) ou IP local — **não** `owntracks.<seu-tailnet>.ts.net` (ver observação abaixo) |
 | Port | `1883` |
 | TLS | desligado (sem certificado configurado aqui — ver observação abaixo) |
 | Usuário | `owntracks` (ou o que tiver sido usado no passo 3 da instalação) |
@@ -123,6 +123,19 @@ No app (Android/iOS), modo de reporte **MQTT** (não HTTP):
 | Protocol level (session) | `4` (MQTT 3.1.1) |
 | URL | em branco |
 | Encryption key | em branco |
+
+**Por que o hostname do host, não `owntracks.<seu-tailnet>.ts.net`**:
+testado na prática — proxy TCP puro (`tsdproxy.port.*`, mesmo mecanismo
+do [any-sync-bundle](../any-sync-bundle/)) trava permanentemente em
+"Starting"/`NeedsLogin` no tsdproxy 2.3.4, nunca chega a `Running` (o
+any-sync-bundle mostra o mesmo sintoma nos logs — health check falhando
+em loop — não é specific deste app). `mosquitto.container` não declara
+labels do tsdproxy por causa disso. Como `PublishPort=1883:1883` já
+expõe a porta em **todas** as interfaces do host — incluindo a própria
+interface da tailnet, não só localhost —, o hostname do host funciona
+direto, sem precisar do tsdproxy nesse caminho. A interface web
+(`owntracks.<seu-tailnet>.ts.net`) continua funcionando normal, é só a
+porta MQTT que não passa pelo tsdproxy.
 
 **URL em branco**: esse campo é do modo **HTTP** (endpoint tipo
 `https://.../pub`), não do MQTT — o app mostra os dois grupos de campos

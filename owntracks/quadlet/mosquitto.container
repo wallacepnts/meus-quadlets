@@ -31,6 +31,16 @@ HealthRetries=5
 HealthStartPeriod=10s
 Notify=healthy
 
+# SEM tsdproxy aqui, de propósito — testado na prática: nó TCP puro
+# (tsdproxy.port.*) trava permanentemente em "Starting"/NeedsLogin nesta
+# versão do tsdproxy (2.3.4), nunca chega a "Running". O any-sync-bundle
+# (único outro proxy TCP puro deste repositório) mostra o mesmo sintoma
+# nos logs (health check falhando em loop) — não é specific deste app,
+# parece limitação/bug do tsdproxy com proxy não-HTTP. PublishPort=1883
+# acima já expõe a porta em todas as interfaces do host, incluindo a da
+# tailnet — usar o hostname do PRÓPRIO HOST (não um nó tsdproxy) pra
+# alcançar o broker (ver README, seção "Configurando o app").
+
 [Service]
 Restart=always
 TimeoutStartSec=60
