@@ -12,7 +12,9 @@ oficial.
 Dois containers na rede `owntracks-net.network`:
 
 - `mosquitto` — broker MQTT, expõe `1883` (protocolo nativo MQTT, é nele
-  que os apps do celular publicam a localização)
+  que os apps do celular publicam a localização) e `9001` (mesmo broker
+  via WebSockets, pra clientes MQTT baseados em browser/JS — o app
+  oficial do celular usa a `1883`, não essa)
 - `owntracks-recorder` — assina `owntracks/#` no broker, grava cada
   posição recebida e expõe `8083` (interface web com mapa/histórico +
   API HTTP)
@@ -119,6 +121,11 @@ No app (Android/iOS), modo de reporte **MQTT** (não HTTP):
 | Senha | a senha impressa no passo 3 |
 | ClientID/DeviceID | um por dispositivo, livre |
 
+**Por que `1883`, não `8883`**: `8883` é a porta padrão de MQTT **com
+TLS** (MQTTS) — como este deploy não configura certificado nenhum (ver
+observação abaixo), não existe listener TLS pra atender ali. `1883` é a
+porta certa pro MQTT nativo em texto puro, que é o que está de pé aqui.
+
 **Sem TLS**: o tráfego MQTT sai em texto puro (só a senha, que trafega
 com autenticação básica do protocolo, sem estar por trás de HTTPS) —
 aceitável aqui porque, como todo resto deste repositório, só é alcançável
@@ -127,6 +134,24 @@ depois é possível (`listener` extra em `mosquitto.conf` com
 `certfile`/`keyfile`/`cafile`, ver o
 [`docker-compose-ssl.yml`](https://github.com/owntracks/docker-recorder/blob/master/docker-compose-ssl.yml)
 oficial), mas não é o padrão deste deploy.
+
+## WebSockets (porta `9001`)
+
+Além da `1883` (MQTT nativo, usado pelo app do celular), o Mosquitto
+também escuta em `9001` com `protocol websockets` — útil só se algum dia
+quiser conectar um cliente MQTT baseado em browser/JS (ex.: um
+dashboard próprio) direto no broker. Mesma autenticação
+(usuário/senha do passo 3) vale pros dois listeners, já que
+`mosquitto.conf` não usa `per_listener_settings`. Nenhum dos dois
+containers deste deploy (recorder ou algum viewer) usa esse listener —
+ele fica disponível, mas ocioso, até que algo o use.
+
+**No app do celular, não ativar/usar WebSockets — deixar no MQTT nativo
+(`1883`, ver tabela acima).** WebSockets existe pra contornar ambientes
+onde só dá pra abrir socket via HTTP (principalmente browsers/JS, que
+não têm acesso a socket TCP cru). O app oficial do OwnTracks
+(Android/iOS) implementa MQTT nativamente, sem essa limitação — usar
+WebSockets ali só adicionaria overhead, sem ganho nenhum.
 
 ## Auto-update
 

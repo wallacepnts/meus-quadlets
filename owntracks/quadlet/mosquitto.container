@@ -7,6 +7,8 @@ ContainerName=mosquitto
 Network=owntracks-net.network
 NetworkAlias=mosquitto
 PublishPort=1883:1883
+# WebSockets — ver mosquitto.conf
+PublishPort=9001:9001
 
 # mosquitto.conf fica no diretório de config — a imagem já usa
 # /mosquitto/config/mosquitto.conf automaticamente se o arquivo existir,
@@ -16,10 +18,11 @@ Volume=%h/.config/containers/volumes/owntracks/mosquitto/data:/mosquitto/data:Z
 
 # Secret criado via: podman secret create owntracks-mosquitto-passwd ~/.config/containers/secrets/owntracks/mosquitto-passwd
 # uid/gid=1883: uid interno do usuário "mosquitto" que o processo usa
-# depois de subir (testado na prática — sem isso, secret vem root:root
-# 0444 por padrão do Podman; funciona, mas o mosquitto 2.1.2 já avisa
-# "Future versions will refuse to load this file" por causa do dono).
-Secret=owntracks-mosquitto-passwd,target=/mosquitto/secrets/passwd,uid=1883,gid=1883
+# depois de subir. mode=0400: o Mosquitto reclama em dois avisos
+# separados testados na prática — dono errado (default root:root do
+# Podman) E permissão "mundo-legível" (0444 default também); sem os
+# dois ajustes juntos ("Future versions will refuse to load this file").
+Secret=owntracks-mosquitto-passwd,target=/mosquitto/secrets/passwd,uid=1883,gid=1883,mode=0400
 
 HealthCmd=CMD-SHELL nc -z 127.0.0.1 1883 || exit 1
 HealthInterval=15s
