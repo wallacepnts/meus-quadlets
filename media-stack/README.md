@@ -66,13 +66,14 @@ Rede bridge padrão, cada serviço com sua `PublishPort=`. Nenhum
 `.network` dedicado — eles conversam entre si via HTTP configurado
 manualmente depois de subir, não via rede Podman compartilhada.
 
-**Exceção: o Dispatcharr tem sua própria sub-stack.** Diferente do resto
-(um container só, sem banco), ele é Postgres + Redis + app web + worker
-Celery — quatro containers próprios na rede dedicada
-`dispatcharr-net.network`, mesmo padrão usado pelo
-[linkwarden](../linkwarden/)/[any-sync-bundle](../any-sync-bundle/). Ver
-seção própria abaixo pra detalhes (volume `/data` compartilhado entre
-dois containers, tag sem versão semver, etc.).
+**Dispatcharr roda em modo AIO** (`DISPATCHARR_ENV=aio`) — um único
+container, sem banco/rede próprios: Postgres e Redis rodam *dentro*
+dele mesmo (a própria imagem sobe `pg_ctl`/Redis internamente), tudo
+num `/data` só. Diferente do modo modular (Postgres/Redis/Celery em
+containers separados, como linkwarden/any-sync-bundle) usado
+originalmente aqui — trocado a pedido do usuário depois que a imagem
+upstream passou a ter um `entrypoint.sh` único cobrindo os dois modos.
+Ver seção própria abaixo.
 
 Dois mecanismos diferentes pra mapear permissão de arquivo, dependendo
 da imagem — ver [README raiz, regra sobre UserNS vs PUID/PGID](../README.md)
@@ -106,11 +107,7 @@ normal, só não aparece sozinho na lista.
 ```
 quadlet/
 ├── jellyfin.container
-├── dispatcharr-net.network        # rede dedicada só do Dispatcharr
-├── dispatcharr-postgres.container
-├── dispatcharr-redis.container
-├── dispatcharr.container          # Dispatcharr, app web
-├── dispatcharr-celery.container   # Dispatcharr, worker de tarefas
+├── dispatcharr.container   # modo AIO — Postgres/Redis internos, um container só
 ├── downtify.container
 ├── prowlarr.container
 ├── sonarr.container
@@ -126,7 +123,6 @@ quadlet/
 ## Pré-requisitos
 
 - Podman rootless com systemd `--user` funcionando
-- `openssl` (pra gerar o secret do Postgres do Dispatcharr)
 
 ## Instalação do zero
 
@@ -152,7 +148,7 @@ mkdir -p "$HOME/data"
 # 3. Diretórios de config — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/media-stack/jellyfin/{config,cache}
 mkdir -p ~/.config/containers/volumes/media-stack/{prowlarr,sonarr,radarr,lidarr,bazarr,seerr,deluge,sabnzbd}/config
-mkdir -p ~/.config/containers/volumes/media-stack/dispatcharr/{postgres,redis,data}
+mkdir -p ~/.config/containers/volumes/media-stack/dispatcharr/data
 mkdir -p ~/.config/containers/volumes/media-stack/downtify/data
 # Downtify baixa em downloads/ (dentro da raiz de mídia), a mesma pasta
 # onde o Deluge salva os torrents completos — diferente do resto (passo
@@ -169,25 +165,14 @@ cp .env.example ~/.config/containers/env/media-stack.env
 sed -i "s/^PUID=.*/PUID=$(id -u)/;s/^PGID=.*/PGID=$(id -g)/" \
   ~/.config/containers/env/media-stack.env
 
-# 5. Env não-secreto do Dispatcharr — valores padrão já batem com os
-#    NetworkAlias usados no dispatcharr-postgres.container/dispatcharr-redis.container,
-#    não costuma precisar editar nada aqui
-cp dispatcharr.env.example ~/.config/containers/env/dispatcharr.env
-
-# 6. Secret do Postgres do Dispatcharr — gerado uma vez, nunca versionado
-mkdir -p ~/.config/containers/secrets/dispatcharr
-openssl rand -hex 24 | tr -d '\n' > ~/.config/containers/secrets/dispatcharr/postgres-password.txt
-chmod 600 ~/.config/containers/secrets/dispatcharr/postgres-password.txt
-podman secret create dispatcharr-postgres-password ~/.config/containers/secrets/dispatcharr/postgres-password.txt
-
-# 7. Aplicar a env.d nova (precisa de daemon-reload, não só reiniciar
+# 5. Aplicar a env.d nova (precisa de daemon-reload, não só reiniciar
 #    o serviço — é o systemd --user que precisa reler o ambiente)
 systemctl --user daemon-reload
 
-# 8. Subir (sem o Gluetun — ver seção própria pra ativar VPN). Um único
-#    start em dispatcharr-celery já sobe o resto da sub-stack (postgres,
-#    redis, dispatcharr) via Requires=.
-systemctl --user start jellyfin dispatcharr-celery downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+# 6. Subir (sem o Gluetun — ver seção própria pra ativar VPN). Sem
+#    Requires= entre serviços aqui — Dispatcharr é um container só,
+#    Postgres/Redis sobem dentro dele mesmo.
+systemctl --user start jellyfin dispatcharr downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 ```
 
 Acessar cada um via [tsdproxy](../tsdproxy/) (tailnet, ex.:
@@ -311,19 +296,29 @@ A partir do NVIDIA Container Toolkit v1.18.0 existe um serviço
 (driver atualizado, GPU trocada etc.) — sem ele, refazer o
 `nvidia-ctk cdi generate` manualmente após qualquer mudança de driver.
 
-## Dispatcharr: volume `/data` compartilhado entre dois containers
+## Dispatcharr: modo AIO, Postgres e Redis embutidos
 
-`dispatcharr` e `dispatcharr-celery` montam o **mesmo** path
-(`volumes/media-stack/dispatcharr/data`) — o worker Celery grava gravações/backups
-que a interface web também precisa servir. Por isso os dois usam `:z`
-(minúsculo, rótulo SELinux **compartilhado**) em vez do `:Z` (exclusivo)
-usado no resto deste repositório (ver regra 16 do README raiz) — com
-`:Z`, o segundo container a subir tomaria `Permission denied` no mesmo
-path que o primeiro já relabelou como seu.
+`dispatcharr.container` roda em modo AIO
+(`Environment=DISPATCHARR_ENV=aio`) — a própria imagem sobe Postgres e
+Redis internamente (via `pg_ctl`/uwsgi attach-daemon no
+`entrypoint.sh`), tudo dentro de um único `/data:Z` (banco em
+`/data/db`, chave Django em `/data/jwt`, config/gravações no resto).
+Diferente do modo "modular" (Postgres/Redis externos, containers
+separados) que este repositório usava originalmente — trocado a pedido
+do usuário depois que a imagem upstream passou a ter um `entrypoint.sh`
+único cobrindo os dois modos, o que tornou o AIO viável sem abrir mão
+de nada.
 
-Upstream também oferece um modo "AIO" (tudo num container só,
-`docker-compose.aio.yml`) — não usado aqui, pra manter o padrão de um
-container por processo já seguido no resto deste repositório.
+**Sem secret**: o modo AIO usa uma senha fixa (`secret`) pro Postgres
+interno, que só é alcançável via socket Unix *dentro* do próprio
+container — nunca exposta na rede, então não há segredo real pra
+gerenciar aqui (diferente do modo modular, que expunha o Postgres numa
+rede Podman compartilhada e por isso precisava de senha real).
+
+**Primeiro boot é mais lento** que os outros serviços desta stack:
+`initdb` do Postgres embutido + migração do schema Django + Redis +
+Celery + nginx + uwsgi, tudo em sequência — testado na prática, dentro
+da margem de `TimeoutStartSec=300` já usada aqui.
 
 ## Downtify: baixa na mesma pasta do Deluge
 
@@ -436,26 +431,28 @@ Label=wud.watch.digest=true
 Sem tag versionada pra comparar, o WUD normalmente não teria sinal
 nenhum (ver README do [wud](../wud/), seção "Tags não-semver não são
 observadas") — `wud.watch.digest` contorna isso comparando o digest da
-imagem publicada em `:latest` contra o que está rodando. Só o
-`dispatcharr` (web) tem o label — `dispatcharr-celery` usa a mesma
-imagem, então observar os dois seria o mesmo alerta duas vezes. Como o
-Postgres do Dispatcharr guarda dados reais (canais, EPG, DVR) e o
-projeto ainda está em desenvolvimento ativo, a atualização continua
+imagem publicada em `:latest` contra o que está rodando. Como o
+Postgres embutido do Dispatcharr guarda dados reais (canais, EPG, DVR)
+e o projeto ainda está em desenvolvimento ativo, a atualização continua
 manual mesmo com essa visibilidade:
 
 ```bash
-systemctl --user stop dispatcharr-celery dispatcharr
+systemctl --user stop dispatcharr
 podman pull ghcr.io/dispatcharr/dispatcharr:latest
-systemctl --user start dispatcharr-celery
+systemctl --user start dispatcharr
 ```
+
+**Fazer backup antes de atualizar** (seção abaixo) — em modo AIO, uma
+migração de schema malsucedida afeta o único container que existe, sem
+a rede de segurança de containers isolados que o modo modular tinha.
 
 ## Backup & Recuperação
 
 ```bash
-systemctl --user stop jellyfin dispatcharr-celery dispatcharr dispatcharr-redis dispatcharr-postgres downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user stop jellyfin dispatcharr downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 tar -czf media-stack-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
   -C ~/.config/containers/volumes media-stack
-systemctl --user start jellyfin dispatcharr-celery downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user start jellyfin dispatcharr downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 ```
 
 Só as pastas `config/`/`cache/` de cada serviço (API keys, configuração,
@@ -466,12 +463,19 @@ instalou. Se estiver usando o Gluetun,
 `~/.config/containers/env/gluetun.env` (credenciais de VPN) também
 precisa de backup separado — sem ele, só recriar do zero com o provedor.
 
-No Dispatcharr, `volumes/media-stack/dispatcharr/redis` guarda só fila/cache — não
-precisa de backup, é seguro perder. O que importa de verdade é
-`postgres/` (canais, playlists, EPG, usuários) e `data/` (logos em
-cache, gravações DVR). O secret
-(`~/.config/containers/secrets/dispatcharr/`) também precisa de backup
-separado — sem ele, o Postgres restaurado não autentica.
+No Dispatcharr (modo AIO), `volumes/media-stack/dispatcharr/data`
+guarda tudo — banco (`data/db`, canais/playlists/EPG/usuários), chave
+Django (`data/jwt`) e o resto (logos em cache, gravações DVR). Um
+`tar` a frio funciona (backup de arquivo do Postgres embutido, válido
+porque tudo pára junto), mas pra restaurar em outra instância —
+migração, versão incompatível de Postgres — `pg_dump`/`pg_restore` é
+mais confiável que copiar `data/db` cru:
+
+```bash
+podman exec dispatcharr su - dispatch -c \
+  "pg_dump -h /var/run/postgresql -U dispatch -d dispatcharr --format=custom -f /tmp/dispatcharr.pgdump"
+podman cp dispatcharr:/tmp/dispatcharr.pgdump ./dispatcharr-backup.pgdump
+```
 
 No Downtify, `data/` é o que importa (playlists monitoradas,
 preferências) — `downloads/` é só o resultado final, reconstruível
@@ -486,9 +490,9 @@ baixando de novo se precisar.
 ## Comandos úteis
 
 ```bash
-systemctl --user status jellyfin dispatcharr dispatcharr-celery dispatcharr-postgres dispatcharr-redis downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user status jellyfin dispatcharr downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 podman logs -f sonarr   # trocar pelo serviço que quiser
-podman exec dispatcharr-postgres pg_isready -U dispatch -d dispatcharr
+podman exec dispatcharr su - dispatch -c "psql -h /var/run/postgresql -U dispatch -d dispatcharr -c 'SELECT 1;'"
 ```
 
 ## Créditos

@@ -1,25 +1,26 @@
 [Unit]
-Description=Dispatcharr (IPTV, EPG, VOD)
-After=dispatcharr-postgres.service dispatcharr-redis.service
-Requires=dispatcharr-postgres.service dispatcharr-redis.service
+Description=Dispatcharr (IPTV, EPG, VOD) — modo AIO (tudo em um container)
 
 [Container]
 # Upstream não publica tag semver (só :latest, :dev e hash de commit) — ver
 # seção Auto-update no README pra como isso é observado mesmo assim.
+#
+# Modo AIO (DISPATCHARR_ENV=aio), não o modular usado antes neste repo —
+# Postgres e Redis rodam DENTRO deste mesmo container (via pg_ctl/uwsgi
+# attach-daemon no entrypoint.sh da própria imagem), um único /data guarda
+# tudo (banco em /data/db, chave Django em /data/jwt, config/gravações).
+# Trocado de modular pra AIO a pedido do usuário — a imagem evoluiu desde
+# o deploy modular original e passou a ter um entrypoint.sh único cobrindo
+# os dois modos, tornando o AIO uma opção viável sem as 4 units/secret
+# que o modular exigia.
 Image=ghcr.io/dispatcharr/dispatcharr:latest
 ContainerName=dispatcharr
-Network=dispatcharr-net.network
 PublishPort=9191:9191
 
-# /data é compartilhado com o dispatcharr-celery.container (mesmo path,
-# dois containers diferentes) — :z (minúsculo, rótulo SELinux
-# compartilhado), não :Z, que é exclusivo por container (ver README raiz,
-# regra 16 e a nota "Volume /data compartilhado" abaixo).
-Volume=%h/.config/containers/volumes/media-stack/dispatcharr/data:/data:z
-EnvironmentFile=%h/.config/containers/env/dispatcharr.env
+Environment=DISPATCHARR_ENV=aio
+Environment=DISPATCHARR_LOG_LEVEL=info
 
-# Secret criado via: podman secret create dispatcharr-postgres-password ~/.config/containers/secrets/dispatcharr/postgres-password.txt
-Secret=dispatcharr-postgres-password,type=env,target=POSTGRES_PASSWORD
+Volume=%h/.config/containers/volumes/media-stack/dispatcharr/data:/data:Z
 
 HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:9191/ || exit 1
 HealthInterval=30s
@@ -49,9 +50,10 @@ Label=wud.watch.digest=true
 
 [Service]
 Restart=always
-# Imagem pesada (ffmpeg + Postgres client + Redis client) e primeiro
-# boot faz migração de banco — testado na prática: 60s não bastou
-# (timeout matou o container ainda inicializando, mesmo sem erro real).
+# Imagem pesada e primeiro boot em modo AIO faz MAIS coisa que o modular
+# (initdb do Postgres embutido + migração + Redis + Celery + nginx +
+# uwsgi, tudo em sequência) — 300s testado como suficiente pro modular,
+# mantido aqui com folga de propósito.
 TimeoutStartSec=300
 
 [Install]
