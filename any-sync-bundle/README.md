@@ -47,13 +47,6 @@ any-sync-bundle. Ver seção "Variantes" pra quando isso importa.
 ```
 quadlet/
 └── any-sync-bundle.container   # AIO — servidor + Mongo + Redis embutidos
-
-# Mantidos no repositório como fallback (não copiados por padrão — ver
-# seção Variantes):
-├── any-sync-bundle-net.network      # rede dedicada do modo modular
-├── any-sync-mongo.container         # MongoDB 8.0.4 externo (CPUs com AVX)
-├── any-sync-mongo-legacy.container  # MongoDB 4.4 externo (CPUs sem AVX)
-└── any-sync-bundle-redis.container  # Redis Stack 7.4.0-v7 externo
 ```
 
 ## Pré-requisitos
@@ -61,10 +54,9 @@ quadlet/
 - Podman rootless com systemd `--user` funcionando (`systemctl --user status`)
 - `loginctl enable-linger <usuário>` — essencial num servidor, senão os
   serviços somem quando a sessão de login encerra
-- Checar suporte a AVX na CPU (Mongo 5.0+ exige, embutido ou não):
-  `grep -m1 avx /proc/cpuinfo` — se não tiver, usar o modo modular com
-  `any-sync-mongo-legacy.container` (veja seção Variantes); o modo AIO
-  não tem variante sem AVX
+- Checar suporte a AVX na CPU (Mongo 5.0+ exige, embutido): `grep -m1 avx
+  /proc/cpuinfo` — sem AVX, este deploy AIO não funciona (não existe
+  variante sem AVX pro Mongo embutido; ver seção Variantes)
 - Firewall liberando TCP 33010 e UDP 33020 (`firewall-cmd`, `ufw`, `iptables`
   conforme a distro) — sem isso, clientes fora do host não conseguem
   conectar mesmo com o container rodando certo
@@ -233,24 +225,25 @@ O que muda por servidor/tailnet:
 
 ## Variantes
 
-**Modo modular** (Mongo/Redis em containers externos, separados) —
-`any-sync-mongo.container`/`any-sync-mongo-legacy.container`/
-`any-sync-bundle-redis.container`/`any-sync-bundle-net.network` continuam
-no repositório, não copiados por padrão. Use esse modo em vez do AIO
-se precisar de:
+**Modo modular** (Mongo/Redis em containers externos, separados) — não
+existe mais neste repositório (removido depois da migração pro AIO,
+já testado e funcionando neste host). Use esse modo em vez do AIO se
+precisar de:
 
-- **CPU sem AVX** — `any-sync-mongo-legacy.container` (Mongo 4.4) só
-  existe pro modo modular; o AIO não tem opção sem AVX.
+- **CPU sem AVX** — o modo modular permite trocar o Mongo por uma
+  versão 4.4 (sem exigência de AVX); o AIO não tem essa opção, o Mongo
+  embutido é sempre 5.0+.
 - **Controle manual da versão do Mongo** — pinar numa versão específica
   em vez de aceitar a que vier embutida na imagem do any-sync-bundle
   (relevante se um kernel novo bater no bug SERVER-121912 documentado
   acima e a imagem AIO ainda não tiver corrigido isso upstream).
 
-Para usar o modo modular, trocar o passo 1/2/3 da instalação pelos
-comandos documentados nas versões anteriores deste README (`git log` /
-histórico do repositório) — resumo: `any-sync-bundle.container` na
-variante `-minimal` da imagem, mais os três containers auxiliares na
-mesma rede dedicada, com `Requires=`/`After=` entre eles.
+Se algum desses cenários se aplicar, recriar o modo modular a partir do
+[`compose.external.yml`](https://github.com/grishy/any-sync-bundle/blob/main/compose.external.yml)
+oficial (Mongo + Redis externos, `start-bundle` em vez de
+`start-all-in-one`) — ou resgatar a versão anterior deste README/`.container`
+no histórico do git (`git log -- any-sync-bundle/`) como referência de
+como este repositório fazia isso antes.
 
 ## Solução de problemas
 
@@ -270,8 +263,8 @@ any-sync-bundle` — isso regenera o `client-config.yml`.
 
 **MongoDB embutido morre com "illegal instruction" (SIGILL/AVX)**
 CPU sem AVX — Mongo 5.0+ exige, inclusive embutido no modo AIO. Não tem
-variante sem AVX pro AIO — usar o modo modular com
-`any-sync-mongo-legacy.container` (seção Variantes).
+variante sem AVX pro AIO — precisa voltar pro modo modular com Mongo
+4.4 (seção Variantes).
 
 **Migrando dados do modo modular pro AIO: réplica trava em "Our replica
 set config is invalid or we are not a member of it"**
