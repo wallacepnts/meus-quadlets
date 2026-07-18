@@ -1,0 +1,62 @@
+[Unit]
+Description=Paperless-ngx
+After=paperless-ngx-broker.service paperless-ngx-gotenberg.service paperless-ngx-tika.service
+Requires=paperless-ngx-broker.service paperless-ngx-gotenberg.service paperless-ngx-tika.service
+
+[Container]
+# Imagem faz usermod/chown interno via USERMAP_UID/GID (ver .env.example)
+# — precisa rodar como root de verdade dentro do próprio namespace do
+# container, sem UserNS=keep-id (mesmo motivo dos LSIO do ../media-stack/
+# e do calibre-web-automated).
+Image=ghcr.io/paperless-ngx/paperless-ngx:2.20.15
+ContainerName=paperless-ngx
+Network=paperless-ngx-net.network
+PublishPort=8091:8000
+
+Volume=%h/.config/containers/volumes/paperless-ngx/data:/usr/src/paperless/data:Z
+Volume=%h/.config/containers/volumes/paperless-ngx/media:/usr/src/paperless/media:Z
+Volume=%h/.config/containers/volumes/paperless-ngx/export:/usr/src/paperless/export:Z
+Volume=%h/.config/containers/volumes/paperless-ngx/consume:/usr/src/paperless/consume:Z
+EnvironmentFile=%h/.config/containers/env/paperless-ngx.env
+
+# Topologia fixa deste stack (nomes resolvidos via NetworkAlias dos
+# containers ao lado) — não é pra usuário editar, ver .env.example pro
+# que é de fato configurável.
+Environment=PAPERLESS_REDIS=redis://broker:6379
+Environment=PAPERLESS_DBENGINE=sqlite
+Environment=PAPERLESS_TIKA_ENABLED=1
+Environment=PAPERLESS_TIKA_GOTENBERG_ENDPOINT=http://gotenberg:3000
+Environment=PAPERLESS_TIKA_ENDPOINT=http://tika:9998
+
+# Secret criado via: podman secret create paperless-ngx-secret-key ~/.config/containers/secrets/paperless-ngx/secret-key.txt
+Secret=paperless-ngx-secret-key,type=env,target=PAPERLESS_SECRET_KEY
+
+# Mesmo comando do HEALTHCHECK embutido na imagem — regra 14 do README
+# raiz (127.0.0.1 em vez de localhost, regra 13).
+HealthCmd=CMD-SHELL curl -fs -S -L --max-time 2 http://127.0.0.1:8000 || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=5
+HealthStartPeriod=60s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=paperless
+Label=tsdproxy.port.web=443/https:8000/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Paperless-ngx
+Label=homepage.icon=paperless-ngx.svg
+Label=homepage.href=https://paperless.<seu-tailnet>.ts.net
+Label=homepage.description="Gerenciador de documentos self-hosted"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

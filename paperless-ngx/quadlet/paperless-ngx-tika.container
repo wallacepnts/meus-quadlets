@@ -1,0 +1,20 @@
+[Unit]
+Description=Paperless-ngx Tika (extração de texto/metadados de Office)
+
+[Container]
+Image=docker.io/apache/tika:3.3.1.0
+ContainerName=paperless-ngx-tika
+Network=paperless-ngx-net.network
+NetworkAlias=tika
+
+# Sem HealthCmd de propósito — a imagem oficial não tem curl/wget/nenhuma
+# ferramenta de rede (TIKA-3333, ainda em aberto upstream). After=/Requires=
+# no webserver garante só ordem de start, não que o Tika já esteja aceitando
+# conexão — paperless tenta de novo por documento, não trava no startup.
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

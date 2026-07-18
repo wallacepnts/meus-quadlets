@@ -1,0 +1,27 @@
+[Unit]
+Description=Paperless-ngx Gotenberg (conversão de Office pra PDF)
+
+[Container]
+Image=docker.io/gotenberg/gotenberg:8.34
+ContainerName=paperless-ngx-gotenberg
+Network=paperless-ngx-net.network
+NetworkAlias=gotenberg
+
+# Mesmos flags do compose oficial — a rota Chromium é usada só pra
+# converter .eml, desliga JS e restringe acesso a conteúdo externo
+# (tracking pixel etc.), só permite arquivo local temporário.
+Exec=gotenberg --chromium-disable-javascript=true --chromium-allow-list=file:///tmp/.*
+
+HealthCmd=CMD-SHELL curl -fs http://127.0.0.1:3000/health || exit 1
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=6
+HealthStartPeriod=15s
+Notify=healthy
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

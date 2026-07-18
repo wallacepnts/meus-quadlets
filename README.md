@@ -323,7 +323,7 @@ serviços somem quando a sessão de login encerra.
 
 Direto: `systemctl --user restart <app>`.
 
-### Serviço com dependências (ex.: linkwarden, owntracks)
+### Serviço com dependências (ex.: linkwarden, owntracks, paperless-ngx)
 
 - **Subir**: só o principal — `systemctl --user start <app>` já sobe as
   dependências primeiro, via `Requires=`.
@@ -503,6 +503,7 @@ conteúdo), só então `systemctl --user start`.
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/lubelogger.png" width="48" height="48" alt=""> | [LubeLogger](./lubelogger) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) | ❌ |
 |  | [Media Stack](./media-stack) | Jellyfin, Dispatcharr, Downtify, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Seerr, Gluetun, Deluge, SABnzbd — servidor de mídia + automação, raiz de dados compartilhada ([README](./media-stack/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/netbootxyz.svg" width="48" height="48" alt=""> | [netboot.xyz](./netbootxyz) | Menu de boot pela rede (PXE) self-hosted ([README](./netbootxyz/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/paperless-ngx.svg" width="48" height="48" alt=""> | [Paperless-ngx](./paperless-ngx) | Gerenciador de documentos self-hosted (OCR + busca) ([README](./paperless-ngx/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owntracks.svg" width="48" height="48" alt=""> | [OwnTracks](./owntracks) | Rastreamento de localização self-hosted, com broker MQTT ([README](./owntracks/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="48" height="48" alt=""> | [tsdproxy](./tsdproxy) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg" width="48" height="48" alt=""> | [Vaultwarden](./vaultwarden) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) | ❌ |
@@ -569,6 +570,9 @@ cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
 - **netboot.xyz** — tem `curl`/healthcheck real, mas prefiro conferir o
   changelog do webapp antes de trocar de tag (menu/boot loader sensível a
   mudança de versão).
+- **Paperless-ngx** — mesmo raciocínio do baikal: SQLite embutido
+  (documentos + índice) é dado real do usuário, healthcheck HTTP não
+  cobre migração de schema quebrada.
 - **tsdproxy** — sem motivo técnico específico, só não foi avaliado/ligado
   ainda (já usa uma tag de major flutuante, `:2`, mas sem `AutoUpdate=`
   isso não dispara sozinho).
