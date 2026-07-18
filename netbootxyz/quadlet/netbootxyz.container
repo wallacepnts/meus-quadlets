@@ -39,7 +39,14 @@ Label=homepage.icon=netbootxyz.svg
 Label=homepage.href=https://netbootxyz.<seu-tailnet>.ts.net
 Label=homepage.description="Servidor de PXE boot pela rede"
 
+# Bug conhecido do WUD com sufixo numérico de build (getwud/wud#566): tag
+# de um dígito (nbxyz9) é lexicamente "maior" que uma de dois dígitos
+# (nbxyz23) na comparação semver de prerelease, falso positivo de
+# atualização apontando pra trás. Zero-pad no sufixo de um dígito só
+# (regra 18 do README raiz: sem \, usar [0-9] em vez de \d) — normaliza a
+# comparação sem afetar tags já com 2+ dígitos.
 Label=wud.watch=true
+Label=wud.tag.transform="nbxyz([0-9])$ => nbxyz0$$1"
 
 [Service]
 Restart=always

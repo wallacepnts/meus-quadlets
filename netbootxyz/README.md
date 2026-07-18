@@ -102,6 +102,19 @@ atualizados independente da tag da imagem — o menu builder do
 netboot.xyz busca a versão mais recente do menu a cada start por padrão,
 isso não é controlado pelo `AutoUpdate=` do Podman.
 
+**`wud.tag.transform` necessário**: bug conhecido do WUD com sufixo
+numérico de build ([getwud/wud#566](https://github.com/getwud/wud/issues/566)) —
+`0.7.6-nbxyz9` é lexicamente "maior" que `0.7.6-nbxyz23` na comparação
+semver de prerelease (compara como string, não como número), gerando
+falso positivo de atualização apontando pra uma versão mais **antiga**.
+Zero-pad no sufixo de um dígito só, deixando tags de 2+ dígitos
+intocadas (testado — confirmado via `podman inspect` que o `$` sobrevive
+sem duplicar, só o `$1` de grupo de captura precisa de `$$`, regra 7 do
+README raiz):
+```ini
+Label=wud.tag.transform="nbxyz([0-9])$ => nbxyz0$$1"
+```
+
 ## Backup & Recuperação
 
 ```bash
