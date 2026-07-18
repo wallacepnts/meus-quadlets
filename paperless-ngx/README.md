@@ -104,6 +104,14 @@ reconhecimento. Setar só uma das duas não funciona (testado — sem
 `PAPERLESS_OCR_LANGUAGES`, o idioma nunca fica disponível pro Tesseract
 mesmo com `PAPERLESS_OCR_LANGUAGE` apontando pra ele).
 
+`por` é o único código de português que o Tesseract tem — não existe
+variante separada pra Brasil/Portugal no OCR, então `por` já é a opção
+certa independente da variante. **Isso é só o OCR**, diferente do
+idioma da própria interface do Paperless-ngx: a UI tem uma opção
+específica `pt-BR` (Português do Brasil), mas ela é escolhida **por
+usuário**, dentro do app (Configurações → Idioma, depois de logar) — não
+tem variável de ambiente pra isso, cada conta define a sua.
+
 ## `Notify=healthy` com imagem que já tem HEALTHCHECK embutido
 
 Mesma pegadinha do linkwarden: a imagem oficial do Paperless-ngx já vem
