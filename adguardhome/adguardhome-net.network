@@ -1,0 +1,5 @@
+[Unit]
+Description=Rede do AdGuard Home
+
+[Network]
+NetworkName=adguardhome-net

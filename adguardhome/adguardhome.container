@@ -1,0 +1,56 @@
+[Unit]
+Description=AdGuard Home (DNS ad-blocking)
+
+[Container]
+Image=docker.io/adguard/adguardhome:v0.107.78
+ContainerName=adguardhome
+Network=adguardhome-net.network
+
+# DNS — porta alta de propósito (5335), não a 53 padrão. Rootless Podman
+# não publica portas <1024 sem mexer num sysctl do host (ver seção "Usar
+# a porta 53 padrão" no README) — quem não quiser essa mudança de escopo
+# de host usa esta porta alta mesmo, só que aí precisa apontar cada
+# cliente/consulta pra ela explicitamente (a maioria dos roteadores/SO
+# só fala DNS na porta 53, não aceita porta customizada).
+PublishPort=5335:53/tcp
+PublishPort=5335:53/udp
+
+# Painel web — 3002 no host: 3000 já é do homepage, 3001 já é do linkwarden
+# (ver ../homepage/ e ../linkwarden/)
+PublishPort=3002:3000/tcp
+
+Volume=%h/.config/containers/volumes/adguardhome/conf:/opt/adguardhome/conf:Z
+Volume=%h/.config/containers/volumes/adguardhome/work:/opt/adguardhome/work:Z
+
+NoNewPrivileges=true
+
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:3000/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — só o painel web (ver ../tsdproxy/); a porta 53 (DNS,
+# não-HTTP) NÃO entra aqui — essa versão do tsdproxy trava indefinidamente
+# em nós tsdproxy.port.* não-HTTP, usar o hostname tailnet do próprio host
+# pra DNS, não o proxy.
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=adguardhome
+Label=tsdproxy.port.web=443/https:3000/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name="AdGuard Home"
+Label=homepage.icon=adguard-home.svg
+Label=homepage.href=https://adguardhome.<seu-tailnet>.ts.net
+Label=homepage.description="Bloqueio de anúncios e rastreadores via DNS pra toda a rede"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
