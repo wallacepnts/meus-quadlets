@@ -143,15 +143,14 @@ systemctl --user start linkwarden-pgdump
 ls -la ~/.config/containers/volumes/linkwarden/pg-dump/
 ```
 
-**any-sync-bundle** (badger storage do bundle + Mongo + Redis) tem o
-mesmo tipo de risco que o linkwarden, mas sem saída de `pg_dump`/`BGSAVE`
-via hook: a imagem do any-sync-bundle é minimal, sem shell, então não dá
-pra rodar um comando de pré-backup dentro do container. A solução aqui
-foi diferente — parar o stack inteiro (bundle + mongo + redis) antes do
-Restic rodar e religar depois, em vez de gerar dumps. Como o único
-cliente do Mongo/Redis é o próprio any-sync-bundle, parar os três juntos
-vira um backup a frio completo — sem risco de corrupção em nenhum dos
-três (ver seção *Backup & Recuperação* do
+**any-sync-bundle** (modo AIO — badger storage do bundle + Mongo + Redis
+embutidos num único container) tem o mesmo tipo de risco que o
+linkwarden, mas sem saída de `pg_dump`/`BGSAVE` via hook: copiar os
+arquivos crus do Mongo/badger enquanto o processo está escrevendo é a
+receita clássica pra um backup corrompido/não restaurável. A solução aqui
+foi diferente — parar o container inteiro antes do Restic rodar e religar
+depois, em vez de gerar dumps. Um backup a frio completo, sem risco de
+corrupção (ver seção *Backup & Recuperação* do
 [README do any-sync-bundle](../any-sync-bundle/README.md)).
 
 Diferente do linkwarden (timer de horário fixo, sem garantia de
@@ -199,15 +198,15 @@ existe como IP real do lado do host, só via a NAT da rede). Isso deixa a
 porta 8765 tecnicamente alcançável pela LAN/tailnet também, não só pelo
 container — a única barreira é o token no header (`hmac.compare_digest`,
 comparação em tempo constante). Sem esse token, qualquer um que alcance a
-porta consegue parar o stack. Se quiser uma camada a mais, restringir a
-porta 8765 no firewall do host pra só aceitar da sub-rede do Podman.
+porta consegue parar o container. Se quiser uma camada a mais, restringir
+a porta 8765 no firewall do host pra só aceitar da sub-rede do Podman.
 
 O pós-backup dispara o `systemctl --user start` em background e responde
-na hora — mongo/redis usam `Notify=healthy` (o `start` só retorna depois
+na hora — o container usa `Notify=healthy` (o `start` só retorna depois
 do healthcheck passar), o que pode passar dos 60s padrão do
 `WEBHOOK_TIMEOUT`; como falha no pós-backup só vira warning no Zerobyte
 (não desfaz o backup que já rodou), preferível responder logo a arriscar
-estourar o timeout com o stack ainda parado.
+estourar o timeout com o container ainda parado.
 
 ## Auto-update
 

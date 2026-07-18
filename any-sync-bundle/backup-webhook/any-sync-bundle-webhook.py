@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Recebe os webhooks de pre/post-backup do Zerobyte pro any-sync-bundle.
 
-Para o stack inteiro (bundle+mongo+redis) antes do Restic rodar e religa
-depois — ver any-sync-bundle/README.md e zerobyte/README.md. Só stdlib de
-propósito (sem dependências pra instalar num script que roda direto no
-host, fora de container).
+Para o container (modo AIO — Mongo/Redis embutidos, um único systemd
+unit) antes do Restic rodar e religa depois — ver any-sync-bundle/README.md
+e zerobyte/README.md. Só stdlib de propósito (sem dependências pra
+instalar num script que roda direto no host, fora de container).
 """
 import hmac
 import json
@@ -20,14 +20,7 @@ TOKEN_PATH = os.environ.get(
 )
 SECRET_HEADER = "X-Zerobyte-Hook-Secret"
 
-UNITS = [
-    "any-sync-bundle.service",
-    "any-sync-mongo.service",
-    "any-sync-bundle-redis.service",
-]
-# Start em ordem de dependência (mongo/redis antes do bundle, que os
-# Requires=) — stop não precisa, systemctl para cada unit independente.
-START_ORDER = ["any-sync-mongo.service", "any-sync-bundle-redis.service", "any-sync-bundle.service"]
+UNIT = "any-sync-bundle.service"
 
 
 def load_token() -> str:
@@ -96,7 +89,7 @@ class Handler(BaseHTTPRequestHandler):
         # um 2xx aqui, então a resposta PRECISA esperar o stop terminar
         # de verdade (systemctl --user stop já bloqueia até parar).
         try:
-            result = systemctl("stop", *UNITS, timeout=45)
+            result = systemctl("stop", UNIT, timeout=45)
         except subprocess.TimeoutExpired:
             self._send_json(500, {"error": "timeout stopping units"})
             return
@@ -107,15 +100,15 @@ class Handler(BaseHTTPRequestHandler):
         self._send_json(200, {"ok": True, "action": "stopped"})
 
     def _handle_post(self) -> None:
-        # Não-bloqueante de propósito: mongo/redis usam Notify=healthy,
+        # Não-bloqueante de propósito: o container usa Notify=healthy,
         # então "systemctl start" só retorna depois do healthcheck passar
         # — pode passar dos 60s padrão do WEBHOOK_TIMEOUT do Zerobyte.
         # Falha aqui só vira warning no Zerobyte (não aborta o backup,
         # que já rodou), então preferível responder logo e deixar o
         # restart em background do que arriscar o webhook estourar o
-        # timeout com o stack já parado.
+        # timeout com o container ainda parado.
         subprocess.Popen(
-            ["systemctl", "--user", "start", *START_ORDER],
+            ["systemctl", "--user", "start", UNIT],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
