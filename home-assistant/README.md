@@ -45,8 +45,7 @@ Container único, imagem oficial (Debian + Python). Um volume só
 ## Arquivos
 
 ```
-quadlet/
-└── home-assistant.container   # unit principal
+home-assistant.container   # unit principal
 ```
 
 ## Pré-requisitos
@@ -58,7 +57,7 @@ quadlet/
 ```bash
 # 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd
-cp quadlet/home-assistant.container ~/.config/containers/systemd/
+cp home-assistant.container ~/.config/containers/systemd/
 
 # 2. Diretório de dados — bind mount exige que já exista antes do start
 mkdir -p ~/.config/containers/volumes/home-assistant/config

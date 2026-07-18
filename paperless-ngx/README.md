@@ -35,12 +35,11 @@ Postgres a mais só pra este serviço; ver seção Auto-update pro trade-off.
 ## Arquivos
 
 ```
-quadlet/
-├── paperless-ngx-net.network        # rede dedicada
-├── paperless-ngx-broker.container   # Valkey (fila)
-├── paperless-ngx-gotenberg.container # conversão Office → PDF
-├── paperless-ngx-tika.container     # extração de texto/metadados
-└── paperless-ngx.container          # aplicação
+paperless-ngx-net.network          # rede dedicada
+paperless-ngx-broker.container     # Valkey (fila)
+paperless-ngx-gotenberg.container  # conversão Office → PDF
+paperless-ngx-tika.container       # extração de texto/metadados
+paperless-ngx.container            # aplicação
 ```
 
 ## Pré-requisitos
@@ -53,7 +52,7 @@ quadlet/
 ```bash
 # 1. Copiar as units para uma subpasta dedicada
 mkdir -p ~/.config/containers/systemd/paperless-ngx
-cp quadlet/*.container quadlet/*.network ~/.config/containers/systemd/paperless-ngx/
+cp *.container *.network ~/.config/containers/systemd/paperless-ngx/
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/paperless-ngx/{broker,data,media,export,consume}

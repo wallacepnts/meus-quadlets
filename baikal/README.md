@@ -29,8 +29,7 @@ correspondente) pra algo tipo `baikal-dav` antes de subir.
 ## Arquivos
 
 ```
-quadlet/
-└── baikal.container   # unit principal
+baikal.container   # unit principal
 ```
 
 ## Pré-requisitos
@@ -42,7 +41,7 @@ quadlet/
 ```bash
 # 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd
-cp quadlet/baikal.container ~/.config/containers/systemd/
+cp baikal.container ~/.config/containers/systemd/
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/baikal/{config,data}

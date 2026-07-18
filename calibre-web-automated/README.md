@@ -31,8 +31,7 @@ manual — não existe o mesmo problema de mount cruzado.
 ## Arquivos
 
 ```
-quadlet/
-└── calibre-web-automated.container   # unit principal
+calibre-web-automated.container   # unit principal
 ```
 
 ## Pré-requisitos
@@ -47,7 +46,7 @@ quadlet/
 ```bash
 # 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd
-cp quadlet/calibre-web-automated.container ~/.config/containers/systemd/
+cp calibre-web-automated.container ~/.config/containers/systemd/
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/calibre-web-automated/{config,ingest,library}

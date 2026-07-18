@@ -26,8 +26,7 @@ mecanismo já usado pelo [tsdproxy](../tsdproxy/) e pela
 ## Arquivos
 
 ```
-quadlet/
-└── wud.container   # unit principal
+wud.container   # unit principal
 ```
 
 ## Pré-requisitos
@@ -42,7 +41,7 @@ quadlet/
 ```bash
 # 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd
-cp quadlet/wud.container ~/.config/containers/systemd/
+cp wud.container ~/.config/containers/systemd/
 
 # 2. Diretório de dados — bind mount exige que já exista antes do start
 mkdir -p ~/.config/containers/volumes/wud/store

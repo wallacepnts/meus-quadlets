@@ -53,14 +53,12 @@ primeira tentativa mesmo assim.
 ## Arquivos
 
 ```
-quadlet/
-├── owntracks-net.network        # rede dedicada
-├── mosquitto.container          # broker MQTT
-├── owntracks-recorder.container # aplicação (backend + viewer básico)
-└── owntracks-frontend.container # UI Vue.js separada
-
-mosquitto.conf                   # config do broker (auth habilitada)
-frontend-config.js               # config do frontend (padrão vazio)
+owntracks-net.network          # rede dedicada
+mosquitto.container            # broker MQTT
+owntracks-recorder.container   # aplicação (backend + viewer básico)
+owntracks-frontend.container   # UI Vue.js separada
+mosquitto.conf                 # config do broker (auth habilitada)
+frontend-config.js             # config do frontend (padrão vazio)
 ```
 
 ## Pré-requisitos
@@ -73,7 +71,7 @@ frontend-config.js               # config do frontend (padrão vazio)
 ```bash
 # 1. Copiar as units
 mkdir -p ~/.config/containers/systemd/owntracks
-cp quadlet/*.container quadlet/*.network ~/.config/containers/systemd/owntracks/
+cp *.container *.network ~/.config/containers/systemd/owntracks/
 
 # 2. Diretórios — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/owntracks/{mosquitto/config,mosquitto/data,store,config}

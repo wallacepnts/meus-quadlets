@@ -45,8 +45,7 @@ any-sync-bundle. Ver seção "Variantes" pra quando isso importa.
 ## Arquivos
 
 ```
-quadlet/
-└── any-sync-bundle.container   # AIO — servidor + Mongo + Redis embutidos
+any-sync-bundle.container   # AIO — servidor + Mongo + Redis embutidos
 ```
 
 ## Pré-requisitos
@@ -66,7 +65,7 @@ quadlet/
 ```bash
 # 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd/any-sync
-cp quadlet/any-sync-bundle.container ~/.config/containers/systemd/any-sync/
+cp any-sync-bundle.container ~/.config/containers/systemd/any-sync/
 
 # 2. Diretório de dados — bind mount do Podman não cria o diretório do
 #    host sozinho (diferente do docker compose); sem isso o container

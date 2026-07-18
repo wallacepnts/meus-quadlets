@@ -16,8 +16,7 @@ quando se usa labels.
 ## Arquivos
 
 ```
-quadlet/
-└── homepage.container   # unit principal
+homepage.container   # unit principal
 
 config/
 ├── docker.yaml           # define a fonte de descoberta (o socket do Podman)
@@ -35,7 +34,7 @@ config/
 ```bash
 # 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd
-cp quadlet/homepage.container ~/.config/containers/systemd/
+cp homepage.container ~/.config/containers/systemd/
 
 # 2. Config — precisa existir antes do start; se a pasta estiver vazia a
 #    própria Homepage gera o resto na primeira vez (bookmarks.yaml etc.)
@@ -123,9 +122,9 @@ dashboard-icons (`nome.svg`/`.png`) mostram a arte original, com as
 cores de verdade. Prefira dashboard-icons quando existir equivalente
 (veja se `nome.svg` responde antes de cair pra `si-`/`mdi-`), pra manter
 visual consistente entre os cards. Exemplos já em uso neste repo:
-[`any-sync-bundle.container`](../any-sync-bundle/quadlet/any-sync-bundle.container)
+[`any-sync-bundle.container`](../any-sync-bundle/any-sync-bundle.container)
 (`anytype.svg`, sem `href` — não é um serviço HTTP navegável) e
-[`tsdproxy.container`](../tsdproxy/quadlet/tsdproxy.container) (`tailscale.svg`).
+[`tsdproxy.container`](../tsdproxy/tsdproxy.container) (`tailscale.svg`).
 
 **Ícone customizado, sem equivalente em dashboard-icons/`si-`/`mdi-`:**
 colocar o arquivo em `~/.config/containers/volumes/homepage/icons/` e

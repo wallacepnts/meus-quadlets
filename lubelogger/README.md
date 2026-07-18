@@ -21,8 +21,7 @@ Dois volumes, como no compose oficial:
 ## Arquivos
 
 ```
-quadlet/
-└── lubelogger.container   # unit principal
+lubelogger.container   # unit principal
 ```
 
 ## Pré-requisitos
@@ -34,7 +33,7 @@ quadlet/
 ```bash
 # 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd
-cp quadlet/lubelogger.container ~/.config/containers/systemd/
+cp lubelogger.container ~/.config/containers/systemd/
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/lubelogger/{data,keys}

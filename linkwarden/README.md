@@ -20,11 +20,10 @@ Três containers na rede `linkwarden-net.network`:
 ## Arquivos
 
 ```
-quadlet/
-├── linkwarden-net.network          # rede dedicada
-├── linkwarden-postgres.container   # Postgres 16
-├── linkwarden-meilisearch.container # Meilisearch, tag presa (compatibilidade)
-└── linkwarden.container            # aplicação
+linkwarden-net.network             # rede dedicada
+linkwarden-postgres.container      # Postgres 16
+linkwarden-meilisearch.container   # Meilisearch, tag presa (compatibilidade)
+linkwarden.container               # aplicação
 ```
 
 ## Pré-requisitos
@@ -37,7 +36,7 @@ quadlet/
 ```bash
 # 1. Copiar as units para uma subpasta dedicada
 mkdir -p ~/.config/containers/systemd/linkwarden
-cp quadlet/*.container quadlet/*.network ~/.config/containers/systemd/linkwarden/
+cp *.container *.network ~/.config/containers/systemd/linkwarden/
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/linkwarden/{postgres,meili_data,data}

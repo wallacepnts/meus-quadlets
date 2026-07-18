@@ -23,8 +23,7 @@ banco SQLite, repositórios, configuração (`app.ini`) e anexos.
 ## Arquivos
 
 ```
-quadlet/
-└── gitea.container   # unit principal
+gitea.container   # unit principal
 ```
 
 ## Pré-requisitos
@@ -36,7 +35,7 @@ quadlet/
 ```bash
 # 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd
-cp quadlet/gitea.container ~/.config/containers/systemd/
+cp gitea.container ~/.config/containers/systemd/
 
 # 2. Diretório de dados — bind mount exige que já exista antes do start
 mkdir -p ~/.config/containers/volumes/gitea/data

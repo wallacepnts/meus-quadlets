@@ -28,8 +28,9 @@ novo adicionado aqui.
 mkdir -p ~/.config/containers/{systemd,secrets,env,volumes}
 ```
 
-Cada pasta deste repositório espelha esse layout dentro de `quadlet/`,
-pronta pra copiar para `~/.config/containers/systemd/<app>/`.
+Os arquivos `.container`/`.network` de cada serviço ficam na raiz da
+própria pasta do app (ex.: `baikal/baikal.container`), prontos pra copiar
+direto para `~/.config/containers/systemd/<app>/`.
 
 ## Convenções
 

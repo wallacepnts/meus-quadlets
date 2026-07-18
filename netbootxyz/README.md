@@ -31,8 +31,7 @@ direto no IP da LAN do host.
 ## Arquivos
 
 ```
-quadlet/
-└── netbootxyz.container   # unit principal
+netbootxyz.container   # unit principal
 ```
 
 ## Pré-requisitos
@@ -66,7 +65,7 @@ quadlet/
 ```bash
 # 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd
-cp quadlet/netbootxyz.container ~/.config/containers/systemd/
+cp netbootxyz.container ~/.config/containers/systemd/
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/netbootxyz/{config,assets}

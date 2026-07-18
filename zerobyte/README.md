@@ -37,8 +37,7 @@ FUSE). Só o primeiro modo é usado aqui — por isso **não** precisamos de
 ## Arquivos
 
 ```
-quadlet/
-└── zerobyte.container         # unit principal
+zerobyte.container            # unit principal
 
 ../linkwarden/pgdump/
 ├── linkwarden-pgdump.service  # dump do Postgres do linkwarden (systemd comum, não Quadlet)
@@ -60,7 +59,7 @@ quadlet/
 ```bash
 # 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd
-cp quadlet/zerobyte.container ~/.config/containers/systemd/
+cp zerobyte.container ~/.config/containers/systemd/
 
 # 2. Diretórios — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/zerobyte/data

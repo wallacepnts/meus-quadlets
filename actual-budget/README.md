@@ -6,8 +6,7 @@ via Podman Quadlet — orçamento pessoal self-hosted, local-first.
 ## Arquivos
 
 ```
-quadlet/
-└── actual.container   # unit principal
+actual.container   # unit principal
 ```
 
 ## Pré-requisitos
@@ -19,7 +18,7 @@ quadlet/
 ```bash
 # 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd
-cp quadlet/actual.container ~/.config/containers/systemd/
+cp actual.container ~/.config/containers/systemd/
 
 # 2. Diretório de dados — bind mount exige que já exista antes do start.
 #    O próprio Actual cria server-files/ e user-files/ dentro dele.

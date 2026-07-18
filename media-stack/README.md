@@ -105,19 +105,18 @@ normal, só não aparece sozinho na lista.
 ## Arquivos
 
 ```
-quadlet/
-├── jellyfin.container
-├── dispatcharr.container   # modo AIO — Postgres/Redis internos, um container só
-├── downtify.container
-├── prowlarr.container
-├── sonarr.container
-├── radarr.container
-├── lidarr.container
-├── bazarr.container
-├── seerr.container
-├── deluge.container
-├── sabnzbd.container
-└── gluetun.container   # opcional — ver seção VPN abaixo
+jellyfin.container
+dispatcharr.container   # modo AIO — Postgres/Redis internos, um container só
+downtify.container
+prowlarr.container
+sonarr.container
+radarr.container
+lidarr.container
+bazarr.container
+seerr.container
+deluge.container
+sabnzbd.container
+gluetun.container        # opcional — ver seção VPN abaixo
 ```
 
 ## Pré-requisitos
@@ -130,7 +129,7 @@ quadlet/
 # 1. Copiar as units (inclui gluetun.container; só importa se for usar
 #    a seção de VPN abaixo — sem ativar, fica parado sem nenhum custo)
 mkdir -p ~/.config/containers/systemd
-cp quadlet/*.container quadlet/*.network ~/.config/containers/systemd/
+cp *.container ~/.config/containers/systemd/
 
 # 2. Raiz de mídia — a ÚNICA decisão de path desta stack inteira, via uma
 #    variável de ambiente do systemd (não um EnvironmentFile= comum —

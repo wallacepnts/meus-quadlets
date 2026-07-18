@@ -24,8 +24,7 @@ container — TCP/UDP puro, não só HTTP (ver uso real em
 ## Arquivos
 
 ```
-quadlet/
-└── tsdproxy.container    # unit principal
+tsdproxy.container      # unit principal
 
 config/
 └── tsdproxy.yaml         # config do tsdproxy (bind mount) — precisa existir ANTES do primeiro start
@@ -42,7 +41,7 @@ config/
 ```bash
 # 1. Copiar a unit
 mkdir -p ~/.config/containers/systemd
-cp quadlet/tsdproxy.container ~/.config/containers/systemd/
+cp tsdproxy.container ~/.config/containers/systemd/
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start.
 #    O tsdproxy não gera um config padrão sozinho, então config/tsdproxy.yaml
@@ -87,7 +86,7 @@ Label=tsdproxy.port.web=443/https:8080/http
 ```
 
 Exemplo real de proxy TCP/UDP puro (não-HTTP) em
-[`any-sync-bundle.container`](../any-sync-bundle/quadlet/any-sync-bundle.container).
+[`any-sync-bundle.container`](../any-sync-bundle/any-sync-bundle.container).
 
 ## Solução de problemas
 
