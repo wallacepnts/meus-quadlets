@@ -323,7 +323,7 @@ serviços somem quando a sessão de login encerra.
 
 Direto: `systemctl --user restart <app>`.
 
-### Serviço com dependências (ex.: any-sync-bundle, linkwarden)
+### Serviço com dependências (ex.: linkwarden, owntracks)
 
 - **Subir**: só o principal — `systemctl --user start <app>` já sobe as
   dependências primeiro, via `Requires=`.
@@ -539,10 +539,10 @@ Padrão deste repositório: tag explícita + bump manual por default,
 auto-update é opt-in. Motivos específicos, documentados no README de
 cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
 
-- **any-sync-bundle** — a imagem principal é minimal, sem shell (sem
-  `HealthCmd` real possível); o Mongo além disso tem uma regressão
-  upstream conhecida (kernel 6.19+) que pede revisão manual antes de
-  trocar de tag, healthcheck ou não.
+- **any-sync-bundle** — modo AIO, Mongo embutido na imagem sem controle
+  de versão nosso (diferente do modo modular, onde dava pra pinar); tem
+  uma regressão upstream conhecida no Mongo (kernel 6.19+) que pede
+  revisão manual antes de trocar de tag.
 - **linkwarden** — a versão do Meilisearch é a que o `docker-compose.yml`
   oficial recomenda; trocar sem checar compatibilidade pode quebrar a
   busca. Migrations do Postgres também pedem revisão antes de subir de

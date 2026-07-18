@@ -1,21 +1,36 @@
 [Unit]
-Description=Any-Sync-Bundle server
-After=any-sync-mongo.service any-sync-bundle-redis.service
-Requires=any-sync-mongo.service any-sync-bundle-redis.service
+Description=Any-Sync-Bundle server — modo AIO (Mongo + Redis embutidos)
 
 [Container]
-# Tag explícita (recomendação do próprio projeto) — sem auto-update: esta
-# imagem não tem shell/utilitários (é minimal de propósito), então não dá
-# pra configurar HealthCmd nela, e sem HealthCmd não existe rollback
-# automático do Podman. Bump manual: trocar a versão aqui, daemon-reload,
-# restart. Ver Auto-update no README antes de mudar isso.
-Image=ghcr.io/grishy/any-sync-bundle:1.4.3-2026-04-21-minimal
+# Modo AIO (imagem SEM sufixo -minimal — essa variante embute MongoDB e
+# Redis, sobe os dois como processos filhos do próprio binário Go via
+# "start-all-in-one", em vez de precisar de containers externos). Trocado
+# do modo modular (Postgres/Redis/mongo em containers separados) a pedido
+# do usuário. Tag explícita — sem auto-update: mesmo motivo de sempre
+# (regra 9 do README raiz), reforçado aqui porque a versão do Mongo
+# embutido vem fixa dentro da própria imagem, sem controle nosso (ver
+# Auto-update no README pra como isso foi testado/validado).
+Image=ghcr.io/grishy/any-sync-bundle:1.4.3-2026-04-21
 ContainerName=any-sync-bundle
-Network=any-sync-bundle-net.network
 PublishPort=33010:33010
 PublishPort=33020:33020/udp
-Volume=%h/.config/containers/volumes/any-sync-bundle/bundle:/data:Z
+
+# Um único /data — a própria imagem organiza os subdiretórios
+# (data/bundle-config.yml, data/storage/, data/mongo/, data/redis/),
+# diferente do modo modular que precisava de três volumes separados.
+Volume=%h/.config/containers/volumes/any-sync-bundle/data:/data:Z
 EnvironmentFile=%h/.config/containers/env/any-sync-bundle.env
+
+# Diferente da imagem -minimal (sem shell/utilitários, por isso o modo
+# modular nunca teve HealthCmd), esta imagem é baseada em
+# redis-stack-server + apt, tem bash — dá pra fazer um check TCP real na
+# 33010 (mesmo truque /dev/tcp do lubelogger, regra 13 do README raiz).
+HealthCmd=CMD-SHELL bash -c '</dev/tcp/127.0.0.1/33010' || exit 1
+HealthInterval=15s
+HealthTimeout=5s
+HealthRetries=5
+HealthStartPeriod=30s
+Notify=healthy
 
 # tsdproxy discovery — expõe o bundle na tailnet (TCP + QUIC/UDP)
 Label=tsdproxy.enable=true
@@ -33,6 +48,7 @@ Label=wud.watch=true
 
 [Service]
 Restart=always
+TimeoutStartSec=90
 
 [Install]
 WantedBy=default.target
