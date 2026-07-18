@@ -1,0 +1,45 @@
+[Unit]
+Description=ownCloud
+
+[Container]
+Image=docker.io/owncloud/server:10.16.3-20260709
+ContainerName=owncloud
+PublishPort=8094:8080
+
+Volume=%h/.config/containers/volumes/owncloud/data:/mnt/data:Z
+EnvironmentFile=%h/.config/containers/env/owncloud.env
+
+# Sem OWNCLOUD_DB_TYPE/OWNCLOUD_DB_* de propósito — SQLite é o default
+# quando nenhum banco é configurado (pedido explícito do usuário).
+# Oficialmente não suportado em produção pelo próprio projeto — ver
+# README.
+Secret=owncloud-admin-password,type=env,target=OWNCLOUD_ADMIN_PASSWORD
+
+# Mesmo comando do healthcheck embutido na imagem oficial.
+HealthCmd=CMD-SHELL /usr/bin/healthcheck || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=5
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=owncloud
+Label=tsdproxy.port.web=443/https:8080/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=ownCloud
+Label=homepage.icon=owncloud.svg
+Label=homepage.href=https://owncloud.<seu-tailnet>.ts.net
+Label=homepage.description="Sincronização e compartilhamento de arquivos em nuvem (avaliação SQLite)"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=90
+
+[Install]
+WantedBy=default.target

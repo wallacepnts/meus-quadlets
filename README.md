@@ -23,6 +23,7 @@ novo adicionado aqui.
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/n8n.svg" width="48" height="48" alt=""> | [n8n](./n8n) | `1.123.66` | Automação de workflows via editor visual de nós ([README](./n8n/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/netbootxyz.svg" width="48" height="48" alt=""> | [netboot.xyz](./netbootxyz) | `0.7.6-nbxyz23` | Menu de boot pela rede (PXE) pra instalar ou testar distros e ferramentas sem gravar pendrive ([README](./netbootxyz/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/paperless-ngx.svg" width="48" height="48" alt=""> | [Paperless-ngx](./paperless-ngx) | `2.20.15` | Digitaliza, faz OCR e indexa documentos automaticamente, com busca full-text pra nunca mais procurar papel ([README](./paperless-ngx/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owncloud.svg" width="48" height="48" alt=""> | [ownCloud](./owncloud) | `10.16.3-20260709` | Sincronização e compartilhamento de arquivos em nuvem própria ([README](./owncloud/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owntracks.svg" width="48" height="48" alt=""> | [OwnTracks](./owntracks) | `1.0.1` | Rastreamento de localização pessoal via app de celular, com broker MQTT próprio e histórico de posições ([README](./owntracks/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="48" height="48" alt=""> | [tsdproxy](./tsdproxy) | `2` | Publica containers na tailnet automaticamente, só com labels — sem configurar proxy manualmente por serviço ([README](./tsdproxy/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg" width="48" height="48" alt=""> | [Vaultwarden](./vaultwarden) | `1.36.0-alpine` | Cofre de senhas compatível com o protocolo do Bitwarden, leve o bastante pra rodar em qualquer lugar ([README](./vaultwarden/README.md)) |
@@ -577,6 +578,9 @@ cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
 - **n8n** — mesmo raciocínio do baikal: workflows/credenciais salvos são
   dado real do usuário, healthcheck HTTP não cobre uma atualização que
   quebre workflows existentes silenciosamente.
+- **ownCloud** — mesmo raciocínio do linkwarden: arquivos sincronizados
+  são dado real do usuário; rodando em SQLite (modo não suportado em
+  produção pelo próprio projeto), motivo a mais pra revisão manual.
 - **tsdproxy** — sem motivo técnico específico, só não foi avaliado/ligado
   ainda (já usa uma tag de major flutuante, `:2`, mas sem `AutoUpdate=`
   isso não dispara sozinho).
