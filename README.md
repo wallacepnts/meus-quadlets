@@ -253,6 +253,36 @@ na hora que o systemd de fato inicia o processo, não na hora de gerar o
 arquivo. Testar com `podman inspect <container> --format
 '{{json .Mounts}}'`, não confiar só no `systemctl cat`.
 
+### 20. Nem tudo vira Quadlet: software que precisa *ser* o host na rede usa `transactional-update`
+
+Este repositório roda em cima de distros imutáveis (openSUSE MicroOS) —
+mas "imutável" não quer dizer "tudo em container". A pergunta que decide
+é: **esse software precisa ter identidade própria isolada (porta, dado,
+rede dele), ou precisa ser indistinguível do host na rede (mesmo
+hostname, mesma tabela de rotas, integrado ao DNS que os outros
+processos do host também usam)?** No primeiro caso, Quadlet como sempre.
+No segundo, `transactional-update pkg install <pacote>` — o mecanismo
+nativo do MicroOS pra isso, que continua sendo reprodutível/reversível
+(aplica num snapshot Btrfs novo no próximo boot, `transactional-update
+rollback` desfaz), só que sem as camadas de isolamento que atrapalham
+justamente o que esse tipo de software precisa fazer.
+
+Caso concreto: **Tailscale como identidade do host** (não um app atrás
+do [tsdproxy](./tsdproxy/), que é outra coisa — isso continua sendo o
+padrão pra publicar serviços). Rodar o `tailscaled` num container com
+`--network=host` compartilha a interface de rede com o host (SSH via
+tailnet funciona), mas **não** compartilha D-Bus/mount namespace — o
+container não consegue integrar com o `systemd-resolved` do host, e o
+MagicDNS fica quebrado pros próprios processos do host (outros peers da
+tailnet ainda resolvem o nome deste host normalmente, quem quebra é a
+resolução *saindo* deste host). Confirmado em pesquisa: até guias
+dedicados a rodar Tailscale em distros imutáveis (openSUSE Kalpa) esbarram
+na mesma limitação e não recomendam essa rota pra identidade primária do
+host. `transactional-update pkg install tailscale` evita o problema
+inteiro — ganha integração nativa com `systemd-resolved`/rotas, ao custo
+de precisar de um reboot pra aplicar (normal pra esse tipo de pacote,
+diferente de uma app que só precisa de `systemctl --user restart`).
+
 ## Anatomia de referência
 
 ### `<app>-net.network`
