@@ -1,0 +1,51 @@
+[Unit]
+Description=n8n
+
+[Container]
+Image=docker.n8n.io/n8nio/n8n:1.123.66
+ContainerName=n8n
+PublishPort=5678:5678
+
+Volume=%h/.config/containers/volumes/n8n/data:/home/node/.n8n:Z
+EnvironmentFile=%h/.config/containers/env/n8n.env
+
+# Segurança recomendada pelo próprio guia oficial de instalação (Docker).
+Environment=N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+Environment=N8N_RUNNERS_ENABLED=true
+
+# Secret criado via: podman secret create n8n-encryption-key ~/.config/containers/secrets/n8n/encryption-key.txt
+# Sem isso, o n8n gera uma chave sozinho e guarda em /home/node/.n8n/config
+# no primeiro start — funciona igual, só que sem o valor documentado à
+# parte (mesmo raciocínio do NEXTAUTH_SECRET do linkwarden/karakeep).
+Secret=n8n-encryption-key,type=env,target=N8N_ENCRYPTION_KEY
+
+# Alpine tem wget via busybox — endpoint de health é opt-in em modo fila
+# (QUEUE_HEALTH_CHECK_ACTIVE), mas fica disponível por padrão no modo
+# single-instance (sem fila) usado aqui.
+HealthCmd=CMD-SHELL wget -q -O- http://127.0.0.1:5678/healthz > /dev/null || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=n8n
+Label=tsdproxy.port.web=443/https:5678/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=n8n
+Label=homepage.icon=n8n.svg
+Label=homepage.href=https://n8n.<seu-tailnet>.ts.net
+Label=homepage.description="Automação de workflows via editor visual de nós"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

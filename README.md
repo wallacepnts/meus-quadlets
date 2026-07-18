@@ -20,6 +20,7 @@ novo adicionado aqui.
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png" width="48" height="48" alt=""> | [Linkwarden](./linkwarden) | `v2.15.1` | Gerenciador de links que arquiva uma cópia de cada página (texto, captura, PDF), pra não perder o conteúdo se o site sair do ar ([README](./linkwarden/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/lubelogger.png" width="48" height="48" alt=""> | [LubeLogger](./lubelogger) | `v1.7.0` | Registro de manutenção veicular — trocas de óleo, revisões, gastos e lembretes, por veículo ([README](./lubelogger/README.md)) |
 |  | [Media Stack](./media-stack) | — | Jellyfin, Dispatcharr, Downtify, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Seerr, Gluetun, Deluge, SABnzbd — servidor de mídia + automação, raiz de dados compartilhada, cada app com sua própria versão ([README](./media-stack/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/n8n.svg" width="48" height="48" alt=""> | [n8n](./n8n) | `1.123.66` | Automação de workflows via editor visual de nós ([README](./n8n/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/netbootxyz.svg" width="48" height="48" alt=""> | [netboot.xyz](./netbootxyz) | `0.7.6-nbxyz23` | Menu de boot pela rede (PXE) pra instalar ou testar distros e ferramentas sem gravar pendrive ([README](./netbootxyz/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/paperless-ngx.svg" width="48" height="48" alt=""> | [Paperless-ngx](./paperless-ngx) | `2.20.15` | Digitaliza, faz OCR e indexa documentos automaticamente, com busca full-text pra nunca mais procurar papel ([README](./paperless-ngx/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owntracks.svg" width="48" height="48" alt=""> | [OwnTracks](./owntracks) | `1.0.1` | Rastreamento de localização pessoal via app de celular, com broker MQTT próprio e histórico de posições ([README](./owntracks/README.md)) |
@@ -573,6 +574,9 @@ cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
 - **Paperless-ngx** — mesmo raciocínio do baikal: SQLite embutido
   (documentos + índice) é dado real do usuário, healthcheck HTTP não
   cobre migração de schema quebrada.
+- **n8n** — mesmo raciocínio do baikal: workflows/credenciais salvos são
+  dado real do usuário, healthcheck HTTP não cobre uma atualização que
+  quebre workflows existentes silenciosamente.
 - **tsdproxy** — sem motivo técnico específico, só não foi avaliado/ligado
   ainda (já usa uma tag de major flutuante, `:2`, mas sem `AutoUpdate=`
   isso não dispara sozinho).
