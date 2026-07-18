@@ -5,6 +5,33 @@ Coleção pessoal de deploys via [Podman Quadlet](https://docs.podman.io/en/late
 regras e exemplos verificados na prática, pra seguir em qualquer serviço
 novo adicionado aqui.
 
+## Serviços neste repositório
+
+|  | Apps | Descrição |
+| --- | --- | --- |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/actual-budget.svg" width="48" height="48" alt=""> | [Actual Budget](./actual-budget) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/anytype.svg" width="48" height="48" alt=""> | [any-sync-bundle](./any-sync-bundle) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/baikal.svg" width="48" height="48" alt=""> | [Baikal](./baikal) | Servidor CalDAV/CardDAV self-hosted ([README](./baikal/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/calibre-web.svg" width="48" height="48" alt=""> | [Calibre-Web-Automated](./calibre-web-automated) | Biblioteca de ebooks self-hosted ([README](./calibre-web-automated/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/gitea.svg" width="48" height="48" alt=""> | [Gitea](./gitea) | Servidor Git self-hosted ([README](./gitea/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/home-assistant.svg" width="48" height="48" alt=""> | [Home Assistant](./home-assistant) | Automação residencial self-hosted ([README](./home-assistant/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/homepage.png" width="48" height="48" alt=""> | [homepage](./homepage) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png" width="48" height="48" alt=""> | [Linkwarden](./linkwarden) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/lubelogger.png" width="48" height="48" alt=""> | [LubeLogger](./lubelogger) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) |
+|  | [Media Stack](./media-stack) | Jellyfin, Dispatcharr, Downtify, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Seerr, Gluetun, Deluge, SABnzbd — servidor de mídia + automação, raiz de dados compartilhada ([README](./media-stack/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/netbootxyz.svg" width="48" height="48" alt=""> | [netboot.xyz](./netbootxyz) | Menu de boot pela rede (PXE) self-hosted ([README](./netbootxyz/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/paperless-ngx.svg" width="48" height="48" alt=""> | [Paperless-ngx](./paperless-ngx) | Gerenciador de documentos self-hosted (OCR + busca) ([README](./paperless-ngx/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owntracks.svg" width="48" height="48" alt=""> | [OwnTracks](./owntracks) | Rastreamento de localização self-hosted, com broker MQTT ([README](./owntracks/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="48" height="48" alt=""> | [tsdproxy](./tsdproxy) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg" width="48" height="48" alt=""> | [Vaultwarden](./vaultwarden) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/getwud/wud@main/ui/public/img/icons/android-chrome-512x512.png" width="48" height="48" alt=""> | [WUD (What's Up Docker)](./wud) | Monitora atualizações de imagem sem aplicar sozinho ([README](./wud/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/zerobyte.png" width="48" height="48" alt=""> | [Zerobyte](./zerobyte) | Automação de backup (Restic) pros outros serviços ([README](./zerobyte/README.md)) |
+
+**AutoUpdate ligado**: [Actual Budget](./actual-budget/), [homepage](./homepage/)
+— todo o resto usa tag explícita + bump manual (padrão deste repositório,
+regra 9). Critério de quando ativar e por que a maioria fica desligada:
+ver seção [Auto-update](#auto-update).
+
 ## Estrutura padrão
 
 ```
@@ -427,7 +454,8 @@ Desligado por padrão em todo o repositório (regra 9) — ativar é opt-in,
 serviço por serviço, só quando as condições da regra 9 se cumprem
 (`HealthCmd` real na imagem + sem dado crítico de terceiros em jogo, ou
 disposição consciente de aceitar o risco). [`actual-budget`](./actual-budget/)
-é o único exemplo ativo hoje — usar o README dele como referência.
+e [`homepage`](./homepage/) são os exemplos ativos hoje — usar os
+READMEs deles como referência.
 
 ### 1. Ligar o timer (uma vez só, vale pra todo o host)
 
@@ -473,73 +501,6 @@ podman auto-update --rollback <container> # reverter manualmente
 Fazer backup antes de qualquer bump de versão relevante — o rollback
 automático só cobre "não ficou `healthy`", não cobre "ficou healthy mas
 com um bug silencioso nos dados" (ver seção Backup de cada serviço).
-
-## Migrando de outro servidor
-
-Trazer um backup de um servidor diferente (não uma instalação nova do
-zero — pra isso, ver "Implantando em outro servidor" de cada serviço) pra
-este host.
-
-### 1. No servidor antigo
-
-Parar o serviço e gerar o backup como já documentado na seção Backup de
-cada README — `tar` de `volumes/<app>/` — incluindo também
-`~/.config/containers/secrets/<app>/` se o serviço usar secrets
-(linkwarden, vaultwarden, tsdproxy): sem eles os dados restaurados não
-autenticam/decodificam.
-
-### 2. Transferir
-
-Os dois hosts já estão na mesma tailnet — `scp`/`rsync` direto entre eles
-pela tailnet é o caminho mais simples: já é criptografado, sem storage
-intermediário, sem configuração extra.
-
-### 3. Neste servidor
-
-Instalar o Quadlet normalmente, mas **sem dar o primeiro `start`** —
-extrair o backup em `volumes/<app>/` antes disso, recriar os secrets a
-partir dos arquivos copiados (`podman secret create` com o mesmo
-conteúdo), só então `systemctl --user start`.
-
-### O que checar antes de considerar migrado
-
-- **Identidade criptográfica**: any-sync-bundle e tsdproxy geram
-  identidade própria no primeiro run (`peerId`/`peerKey`; estado
-  `tsnet`). Trazer esses dados faz o servidor novo *ser* a continuação do
-  antigo (mesmo nó, clientes existentes reconhecem). Não trazer gera uma
-  instância nova e independente — o oposto do que "Implantando em outro
-  servidor" de cada serviço recomenda pra instalação do zero.
-- **Endereços gravados nos dados**: `externalAddr` (any-sync-bundle),
-  `DOMAIN` (vaultwarden), `NEXTAUTH_URL`/cookies (linkwarden) referenciam
-  o hostname do servidor antigo — ajustar pro endereço da tailnet deste
-  host depois de restaurar.
-- **Compatibilidade de versão**: se o servidor antigo estava numa versão
-  bem atrás da tag pinada aqui, checar o changelog antes — principalmente
-  linkwarden (migrations do Postgres) e vaultwarden (schema do SQLite).
-- **Não apagar o servidor antigo até confirmar** que o novo está saudável
-  e acessível — se algo der errado na migração, ainda dá pra voltar.
-
-## Serviços neste repositório
-
-|  | Apps | Descrição | AutoUpdate |
-| --- | --- | --- | --- |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/actual-budget.svg" width="48" height="48" alt=""> | [Actual Budget](./actual-budget) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) | ✅ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/anytype.svg" width="48" height="48" alt=""> | [any-sync-bundle](./any-sync-bundle) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/baikal.svg" width="48" height="48" alt=""> | [Baikal](./baikal) | Servidor CalDAV/CardDAV self-hosted ([README](./baikal/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/calibre-web.svg" width="48" height="48" alt=""> | [Calibre-Web-Automated](./calibre-web-automated) | Biblioteca de ebooks self-hosted ([README](./calibre-web-automated/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/gitea.svg" width="48" height="48" alt=""> | [Gitea](./gitea) | Servidor Git self-hosted ([README](./gitea/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/home-assistant.svg" width="48" height="48" alt=""> | [Home Assistant](./home-assistant) | Automação residencial self-hosted ([README](./home-assistant/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/homepage.png" width="48" height="48" alt=""> | [homepage](./homepage) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) | ✅ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png" width="48" height="48" alt=""> | [Linkwarden](./linkwarden) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/lubelogger.png" width="48" height="48" alt=""> | [LubeLogger](./lubelogger) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) | ❌ |
-|  | [Media Stack](./media-stack) | Jellyfin, Dispatcharr, Downtify, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Seerr, Gluetun, Deluge, SABnzbd — servidor de mídia + automação, raiz de dados compartilhada ([README](./media-stack/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/netbootxyz.svg" width="48" height="48" alt=""> | [netboot.xyz](./netbootxyz) | Menu de boot pela rede (PXE) self-hosted ([README](./netbootxyz/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/paperless-ngx.svg" width="48" height="48" alt=""> | [Paperless-ngx](./paperless-ngx) | Gerenciador de documentos self-hosted (OCR + busca) ([README](./paperless-ngx/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owntracks.svg" width="48" height="48" alt=""> | [OwnTracks](./owntracks) | Rastreamento de localização self-hosted, com broker MQTT ([README](./owntracks/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="48" height="48" alt=""> | [tsdproxy](./tsdproxy) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg" width="48" height="48" alt=""> | [Vaultwarden](./vaultwarden) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/getwud/wud@main/ui/public/img/icons/android-chrome-512x512.png" width="48" height="48" alt=""> | [WUD (What's Up Docker)](./wud) | Monitora atualizações de imagem sem aplicar sozinho ([README](./wud/README.md)) | ❌ |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/zerobyte.png" width="48" height="48" alt=""> | [Zerobyte](./zerobyte) | Automação de backup (Restic) pros outros serviços ([README](./zerobyte/README.md)) | ❌ |
 
 ### O que o AutoUpdate precisa pra funcionar direito
 
@@ -607,3 +568,49 @@ cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
 - **tsdproxy** — sem motivo técnico específico, só não foi avaliado/ligado
   ainda (já usa uma tag de major flutuante, `:2`, mas sem `AutoUpdate=`
   isso não dispara sozinho).
+
+## Migrando de outro servidor
+
+Trazer um backup de um servidor diferente (não uma instalação nova do
+zero — pra isso, ver "Implantando em outro servidor" de cada serviço) pra
+este host.
+
+### 1. No servidor antigo
+
+Parar o serviço e gerar o backup como já documentado na seção Backup de
+cada README — `tar` de `volumes/<app>/` — incluindo também
+`~/.config/containers/secrets/<app>/` se o serviço usar secrets
+(linkwarden, vaultwarden, tsdproxy): sem eles os dados restaurados não
+autenticam/decodificam.
+
+### 2. Transferir
+
+Os dois hosts já estão na mesma tailnet — `scp`/`rsync` direto entre eles
+pela tailnet é o caminho mais simples: já é criptografado, sem storage
+intermediário, sem configuração extra.
+
+### 3. Neste servidor
+
+Instalar o Quadlet normalmente, mas **sem dar o primeiro `start`** —
+extrair o backup em `volumes/<app>/` antes disso, recriar os secrets a
+partir dos arquivos copiados (`podman secret create` com o mesmo
+conteúdo), só então `systemctl --user start`.
+
+### O que checar antes de considerar migrado
+
+- **Identidade criptográfica**: any-sync-bundle e tsdproxy geram
+  identidade própria no primeiro run (`peerId`/`peerKey`; estado
+  `tsnet`). Trazer esses dados faz o servidor novo *ser* a continuação do
+  antigo (mesmo nó, clientes existentes reconhecem). Não trazer gera uma
+  instância nova e independente — o oposto do que "Implantando em outro
+  servidor" de cada serviço recomenda pra instalação do zero.
+- **Endereços gravados nos dados**: `externalAddr` (any-sync-bundle),
+  `DOMAIN` (vaultwarden), `NEXTAUTH_URL`/cookies (linkwarden) referenciam
+  o hostname do servidor antigo — ajustar pro endereço da tailnet deste
+  host depois de restaurar.
+- **Compatibilidade de versão**: se o servidor antigo estava numa versão
+  bem atrás da tag pinada aqui, checar o changelog antes — principalmente
+  linkwarden (migrations do Postgres) e vaultwarden (schema do SQLite).
+- **Não apagar o servidor antigo até confirmar** que o novo está saudável
+  e acessível — se algo der errado na migração, ainda dá pra voltar.
+
