@@ -120,6 +120,29 @@ No app (Android/iOS), modo de reporte **MQTT** (não HTTP):
 | Usuário | `owntracks` (ou o que tiver sido usado no passo 3 da instalação) |
 | Senha | a senha impressa no passo 3 |
 | ClientID/DeviceID | um por dispositivo, livre |
+| Protocol level (session) | `4` (MQTT 3.1.1) |
+| URL | em branco |
+| Encryption key | em branco |
+
+**URL em branco**: esse campo é do modo **HTTP** (endpoint tipo
+`https://.../pub`), não do MQTT — o app mostra os dois grupos de campos
+na mesma tela independente do modo escolhido. Sem efeito aqui, já que o
+modo é MQTT.
+
+**Encryption key em branco**: criptografa o payload da localização antes
+de publicar no broker — pensado pra quando o broker é compartilhado ou
+público e você não confia em quem mais tem acesso a ele. Como este
+Mosquitto só é alcançável de dentro da tailnet e é de uso pessoal, não
+agrega segurança real, só complexidade (o recorder precisaria carregar
+a mesma chave via `ocat --load=keys` pra conseguir decodificar as
+posições).
+
+**Protocol level `4`, não `3`/`5`**: é o "protocol level" do pacote
+CONNECT do MQTT — `3` = MQTT 3.1, `4` = MQTT 3.1.1, `5` = MQTT 5.0. O
+Mosquitto 2.1.2 aceita os três, mas `4`/3.1.1 é o mais testado e
+compatível, o que o próprio `ot-recorder` usa — MQTT 5.0 traz recursos
+que nem o recorder nem a maioria dos clientes exploram, sem ganho
+prático aqui.
 
 **Por que `1883`, não `8883`**: `8883` é a porta padrão de MQTT **com
 TLS** (MQTTS) — como este deploy não configura certificado nenhum (ver
