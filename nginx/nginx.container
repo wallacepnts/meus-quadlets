@@ -1,0 +1,43 @@
+[Unit]
+Description=nginx (servidor de arquivos estáticos)
+
+[Container]
+Image=docker.io/library/nginx:1.30.4-alpine
+ContainerName=nginx
+Network=nginx-net.network
+PublishPort=8086:80
+
+# Conteúdo estático — editar os arquivos direto aqui, o nginx só lê (:ro)
+Volume=%h/.config/containers/volumes/nginx/html:/usr/share/nginx/html:ro,Z
+
+# server blocks customizados (opcional) — vazio por padrão, usa o
+# nginx.conf/default.conf embutidos da imagem se nada for colocado aqui
+Volume=%h/.config/containers/volumes/nginx/conf.d:/etc/nginx/conf.d:ro,Z
+
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:80/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=10s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=nginx
+Label=tsdproxy.port.web=443/https:80/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=nginx
+Label=homepage.icon=nginx.svg
+Label=homepage.href=https://nginx.<seu-tailnet>.ts.net
+Label=homepage.description="Servidor de arquivos estáticos"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
