@@ -7,30 +7,34 @@ novo adicionado aqui.
 
 ## Serviços neste repositório
 
-|  | Apps | Descrição |
-| --- | --- | --- |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/actual-budget.svg" width="48" height="48" alt=""> | [Actual Budget](./actual-budget) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/anytype.svg" width="48" height="48" alt=""> | [any-sync-bundle](./any-sync-bundle) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/baikal.svg" width="48" height="48" alt=""> | [Baikal](./baikal) | Servidor CalDAV/CardDAV self-hosted ([README](./baikal/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/calibre-web.svg" width="48" height="48" alt=""> | [Calibre-Web-Automated](./calibre-web-automated) | Biblioteca de ebooks self-hosted ([README](./calibre-web-automated/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/gitea.svg" width="48" height="48" alt=""> | [Gitea](./gitea) | Servidor Git self-hosted ([README](./gitea/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/home-assistant.svg" width="48" height="48" alt=""> | [Home Assistant](./home-assistant) | Automação residencial self-hosted ([README](./home-assistant/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/homepage.png" width="48" height="48" alt=""> | [homepage](./homepage) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png" width="48" height="48" alt=""> | [Linkwarden](./linkwarden) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/lubelogger.png" width="48" height="48" alt=""> | [LubeLogger](./lubelogger) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) |
-|  | [Media Stack](./media-stack) | Jellyfin, Dispatcharr, Downtify, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Seerr, Gluetun, Deluge, SABnzbd — servidor de mídia + automação, raiz de dados compartilhada ([README](./media-stack/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/netbootxyz.svg" width="48" height="48" alt=""> | [netboot.xyz](./netbootxyz) | Menu de boot pela rede (PXE) self-hosted ([README](./netbootxyz/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/paperless-ngx.svg" width="48" height="48" alt=""> | [Paperless-ngx](./paperless-ngx) | Gerenciador de documentos self-hosted (OCR + busca) ([README](./paperless-ngx/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owntracks.svg" width="48" height="48" alt=""> | [OwnTracks](./owntracks) | Rastreamento de localização self-hosted, com broker MQTT ([README](./owntracks/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="48" height="48" alt=""> | [tsdproxy](./tsdproxy) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg" width="48" height="48" alt=""> | [Vaultwarden](./vaultwarden) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/getwud/wud@main/ui/public/img/icons/android-chrome-512x512.png" width="48" height="48" alt=""> | [WUD (What's Up Docker)](./wud) | Monitora atualizações de imagem sem aplicar sozinho ([README](./wud/README.md)) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/zerobyte.png" width="48" height="48" alt=""> | [Zerobyte](./zerobyte) | Automação de backup (Restic) pros outros serviços ([README](./zerobyte/README.md)) |
+| Logo | Aplicativo | Versão | Descrição |
+| --- | --- | --- | --- |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/actual-budget.svg" width="48" height="48" alt=""> | [Actual Budget](./actual-budget) | `latest` (auto-update) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/anytype.svg" width="48" height="48" alt=""> | [any-sync-bundle](./any-sync-bundle) | `1.4.3-2026-04-21` | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/baikal.svg" width="48" height="48" alt=""> | [Baikal](./baikal) | `0.10.1-nginx-php8.2` | Servidor CalDAV/CardDAV self-hosted ([README](./baikal/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/calibre-web.svg" width="48" height="48" alt=""> | [Calibre-Web-Automated](./calibre-web-automated) | `v4.0.6` | Biblioteca de ebooks self-hosted ([README](./calibre-web-automated/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/gitea.svg" width="48" height="48" alt=""> | [Gitea](./gitea) | `1.27.0` | Servidor Git self-hosted ([README](./gitea/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/home-assistant.svg" width="48" height="48" alt=""> | [Home Assistant](./home-assistant) | `2026.7.2` | Automação residencial self-hosted ([README](./home-assistant/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/homepage.png" width="48" height="48" alt=""> | [homepage](./homepage) | `latest` (auto-update) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png" width="48" height="48" alt=""> | [Linkwarden](./linkwarden) | `v2.15.1` | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/lubelogger.png" width="48" height="48" alt=""> | [LubeLogger](./lubelogger) | `v1.7.0` | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) |
+|  | [Media Stack](./media-stack) | — | Jellyfin, Dispatcharr, Downtify, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Seerr, Gluetun, Deluge, SABnzbd — servidor de mídia + automação, raiz de dados compartilhada, cada app com sua própria versão ([README](./media-stack/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/netbootxyz.svg" width="48" height="48" alt=""> | [netboot.xyz](./netbootxyz) | `0.7.6-nbxyz23` | Menu de boot pela rede (PXE) self-hosted ([README](./netbootxyz/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/paperless-ngx.svg" width="48" height="48" alt=""> | [Paperless-ngx](./paperless-ngx) | `2.20.15` | Gerenciador de documentos self-hosted (OCR + busca) ([README](./paperless-ngx/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owntracks.svg" width="48" height="48" alt=""> | [OwnTracks](./owntracks) | `1.0.1` | Rastreamento de localização self-hosted, com broker MQTT ([README](./owntracks/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="48" height="48" alt=""> | [tsdproxy](./tsdproxy) | `2` | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg" width="48" height="48" alt=""> | [Vaultwarden](./vaultwarden) | `1.36.0-alpine` | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/getwud/wud@main/ui/public/img/icons/android-chrome-512x512.png" width="48" height="48" alt=""> | [WUD (What's Up Docker)](./wud) | `8.3.0` | Monitora atualizações de imagem sem aplicar sozinho ([README](./wud/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/zerobyte.png" width="48" height="48" alt=""> | [Zerobyte](./zerobyte) | `v0.41.0` | Automação de backup (Restic) pros outros serviços ([README](./zerobyte/README.md)) |
 
 **AutoUpdate ligado**: [Actual Budget](./actual-budget/), [homepage](./homepage/)
 — todo o resto usa tag explícita + bump manual (padrão deste repositório,
 regra 9). Critério de quando ativar e por que a maioria fica desligada:
 ver seção [Auto-update](#auto-update).
+
+A coluna Versão espelha a tag em `Image=` do `.container` de cada
+serviço — atualizar aqui junto de qualquer bump manual, não é gerado
+automaticamente.
 
 ## Estrutura padrão
 

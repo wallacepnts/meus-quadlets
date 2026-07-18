@@ -5,19 +5,19 @@ Deploy de [Jellyfin](https://jellyfin.org) + [Dispatcharr](https://dispatcharr.g
 + nove serviços [LinuxServer.io](https://docs.linuxserver.io/)/[Seerr](https://docs.seerr.dev)
 via Podman Quadlet, todos enxergando a mesma raiz de mídia/downloads.
 
-|  | Apps | Descrição | Porta |
-| --- | --- | --- | --- |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyfin.svg" width="48" height="48" alt=""> | [Jellyfin](https://jellyfin.org) | Servidor de mídia | `8096` |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/dispatcharr.svg" width="48" height="48" alt=""> | [Dispatcharr](https://dispatcharr.github.io/Dispatcharr-Docs/) | Gerenciador de IPTV (streams, EPG, VOD) | `9191` |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/downtify.png" width="48" height="48" alt=""> | [Downtify](https://github.com/henriquesebastiao/downtify) | Downloader de música do Spotify | `8000` |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/prowlarr.svg" width="48" height="48" alt=""> | [Prowlarr](https://prowlarr.com) | Gerenciador de indexers, alimenta os três abaixo | `9696` |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sonarr.svg" width="48" height="48" alt=""> | [Sonarr](https://sonarr.tv) | Automação de séries | `8989` |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/radarr.svg" width="48" height="48" alt=""> | [Radarr](https://radarr.video) | Automação de filmes | `7878` |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/lidarr.svg" width="48" height="48" alt=""> | [Lidarr](https://lidarr.audio) | Automação de música | `8686` |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/bazarr.svg" width="48" height="48" alt=""> | [Bazarr](https://www.bazarr.media) | Legendas automáticas pro Sonarr/Radarr | `6767` |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/seerr.svg" width="48" height="48" alt=""> | [Seerr](https://docs.seerr.dev) | Pedidos de filme/série, integra com Jellyfin+Sonarr+Radarr | `5055` |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/deluge.svg" width="48" height="48" alt=""> | [Deluge](https://deluge-torrent.org) | Cliente torrent | `8112` |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sabnzbd.svg" width="48" height="48" alt=""> | [SABnzbd](https://sabnzbd.org) | Cliente usenet | `8081` (a `8080` já é do [tsdproxy](../tsdproxy/) neste repo) |
+| Logo | Aplicativo | Versão | Descrição | Porta |
+| --- | --- | --- | --- | --- |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyfin.svg" width="48" height="48" alt=""> | [Jellyfin](https://jellyfin.org) | `10.11.11` | Servidor de mídia | `8096` |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/dispatcharr.svg" width="48" height="48" alt=""> | [Dispatcharr](https://dispatcharr.github.io/Dispatcharr-Docs/) | `latest` | Gerenciador de IPTV (streams, EPG, VOD) | `9191` |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/downtify.png" width="48" height="48" alt=""> | [Downtify](https://github.com/henriquesebastiao/downtify) | `2.9.1` | Downloader de música do Spotify | `8000` |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/prowlarr.svg" width="48" height="48" alt=""> | [Prowlarr](https://prowlarr.com) | `2.4.0` | Gerenciador de indexers, alimenta os três abaixo | `9696` |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sonarr.svg" width="48" height="48" alt=""> | [Sonarr](https://sonarr.tv) | `4.0.19` | Automação de séries | `8989` |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/radarr.svg" width="48" height="48" alt=""> | [Radarr](https://radarr.video) | `6.3.0` | Automação de filmes | `7878` |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/lidarr.svg" width="48" height="48" alt=""> | [Lidarr](https://lidarr.audio) | `3.1.0` | Automação de música | `8686` |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/bazarr.svg" width="48" height="48" alt=""> | [Bazarr](https://www.bazarr.media) | `1.6.0` | Legendas automáticas pro Sonarr/Radarr | `6767` |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/seerr.svg" width="48" height="48" alt=""> | [Seerr](https://docs.seerr.dev) | `v3.3.0` | Pedidos de filme/série, integra com Jellyfin+Sonarr+Radarr | `5055` |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/deluge.svg" width="48" height="48" alt=""> | [Deluge](https://deluge-torrent.org) | `2.2.0` | Cliente torrent | `8112` |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sabnzbd.svg" width="48" height="48" alt=""> | [SABnzbd](https://sabnzbd.org) | `version-5.0.4` | Cliente usenet | `8081` (a `8080` já é do [tsdproxy](../tsdproxy/) neste repo) |
 
 Um décimo segundo serviço, o [Gluetun](https://github.com/qdm12/gluetun)
 (túnel VPN pro Deluge), é **opcional** — ver seção própria abaixo.
