@@ -1,0 +1,51 @@
+[Unit]
+Description=Calibre-Web-Automated
+
+[Container]
+# Imagem LinuxServer.io (ghcr.io/linuxserver/baseimage-ubuntu por baixo) —
+# usa PUID/PGID via usermod interno, roda como root de verdade dentro do
+# próprio namespace do container. Sem UserNS=keep-id (mistura os dois
+# mecanismos quebra a imagem — mesmo motivo dos LSIO do ../media-stack/).
+Image=docker.io/crocodilestick/calibre-web-automated:v4.0.6
+ContainerName=calibre-web-automated
+PublishPort=8090:8083
+
+# /config — configuração + banco (metadata.db) persistente
+# /cwa-book-ingest — pasta de "entrada": tudo que cai aqui é processado e
+#   importado pra biblioteca, depois REMOVIDO da pasta (não é storage)
+# /calibre-library — biblioteca de verdade; se estiver vazia, a imagem cria
+#   uma do zero
+Volume=%h/.config/containers/volumes/calibre-web-automated/config:/config:Z
+Volume=%h/.config/containers/volumes/calibre-web-automated/ingest:/cwa-book-ingest:Z
+Volume=%h/.config/containers/volumes/calibre-web-automated/library:/calibre-library:Z
+EnvironmentFile=%h/.config/containers/env/calibre-web-automated.env
+
+# Mesmo comando do HEALTHCHECK embutido na imagem — regra 14 do README
+# raiz (127.0.0.1 em vez de localhost, regra 13).
+HealthCmd=CMD-SHELL curl -f http://127.0.0.1:8083/ || curl -f -k https://127.0.0.1:8083/ || exit 1
+HealthInterval=30s
+HealthTimeout=3s
+HealthRetries=3
+HealthStartPeriod=120s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=calibre-web
+Label=tsdproxy.port.web=443/https:8083/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Calibre-Web Automated
+Label=homepage.icon=calibre-web.svg
+Label=homepage.href=https://calibre-web.<seu-tailnet>.ts.net
+Label=homepage.description="Servidor de biblioteca de ebooks self-hosted"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=150
+
+[Install]
+WantedBy=default.target

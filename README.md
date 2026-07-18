@@ -495,6 +495,7 @@ conteúdo), só então `systemctl --user start`.
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/actual-budget.svg" width="48" height="48" alt=""> | [Actual Budget](./actual-budget) | Orçamento pessoal self-hosted ([README](./actual-budget/README.md)) | ✅ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/anytype.svg" width="48" height="48" alt=""> | [any-sync-bundle](./any-sync-bundle) | Backend self-hosted do Anytype ([README](./any-sync-bundle/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/baikal.svg" width="48" height="48" alt=""> | [Baikal](./baikal) | Servidor CalDAV/CardDAV self-hosted ([README](./baikal/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/calibre-web.svg" width="48" height="48" alt=""> | [Calibre-Web-Automated](./calibre-web-automated) | Biblioteca de ebooks self-hosted ([README](./calibre-web-automated/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/gitea.svg" width="48" height="48" alt=""> | [Gitea](./gitea) | Servidor Git self-hosted ([README](./gitea/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/home-assistant.svg" width="48" height="48" alt=""> | [Home Assistant](./home-assistant) | Automação residencial self-hosted ([README](./home-assistant/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/homepage.png" width="48" height="48" alt=""> | [homepage](./homepage) | Dashboard que descobre containers por labels ([README](./homepage/README.md)) | ✅ |
@@ -562,6 +563,9 @@ cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
   healthcheck primeiro.
 - **baikal** — mesmo raciocínio do vaultwarden: banco SQLite embutido
   (calendários/contatos), healthcheck não cobre migração de schema.
+- **Calibre-Web-Automated** — mesmo raciocínio do baikal: banco
+  (`metadata.db`) + biblioteca são dado real do usuário, revisão manual
+  antes de trocar de versão.
 - **netboot.xyz** — tem `curl`/healthcheck real, mas prefiro conferir o
   changelog do webapp antes de trocar de tag (menu/boot loader sensível a
   mudança de versão).
