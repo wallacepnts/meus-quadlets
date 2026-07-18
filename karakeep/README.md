@@ -80,6 +80,26 @@ Criar a primeira conta pela própria UI (sem usuário/senha padrão).
 Depois, considerar `DISABLE_SIGNUPS=true` no `.env` (instância pessoal,
 sem motivo pra deixar cadastro aberto).
 
+## Sincronizar bookmarks do navegador (Floccus)
+
+O [Floccus](https://floccus.org) (extensão de navegador — Chrome,
+Firefox, Edge, Brave, Vivaldi, Opera) sincroniza os bookmarks nativos do
+navegador com um backend próprio, com suporte nativo ao Karakeep desde a
+versão 5.6. Sincronização é bidirecional: salvar um link no navegador
+manda ele pro Karakeep, e salvar/editar pela UI do Karakeep reflete de
+volta nos bookmarks do navegador (e nos outros navegadores que
+sincronizam com a mesma conta).
+
+1. Gerar uma API key no Karakeep: ícone de usuário (canto superior
+   direito) → **User Settings** → **API Keys** → **New API Key** → dar um
+   nome → **Create**. A chave só aparece uma vez nesse momento
+   (formato `ak2_<id>_<segredo>`) — copiar antes de fechar.
+2. Instalar o Floccus no navegador e, no assistente de configuração,
+   escolher **Karakeep** como tipo de conta — preencher a URL do servidor
+   (`https://karakeep.<seu-tailnet>.ts.net`) e a API key do passo 1.
+3. Escolher quais pastas de bookmark sincronizar (o Floccus permite
+   restringir a uma subpasta em vez do navegador inteiro).
+
 ## `Notify=healthy` com imagem que já tem HEALTHCHECK embutido
 
 Mesma pegadinha do linkwarden/paperless-ngx: a imagem oficial do
