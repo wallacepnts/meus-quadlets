@@ -1,0 +1,72 @@
+[Unit]
+Description=Radicale (CalDAV/CardDAV)
+
+[Container]
+Image=docker.io/tomsquest/docker-radicale:3.7.6.0
+ContainerName=radicale
+PublishPort=5232:5232
+
+# Hardening replicado do compose oficial: filesystem raiz somente
+# leitura (só /data é gravável), sem privilégio novo, capabilities
+# reduzidas ao mínimo que o entrypoint precisa (CHOWN/SETUID/SETGID pra
+# ajustar dono de /data no primeiro start via TAKE_FILE_OWNERSHIP; KILL
+# pro processo supervisor). Por isso sem UserNS=keep-id — é a própria
+# imagem que ajusta o dono de /data pro uid interno (2999), não o host.
+ReadOnly=true
+RunInit=true
+NoNewPrivileges=true
+DropCapability=all
+AddCapability=chown
+AddCapability=setuid
+AddCapability=setgid
+AddCapability=kill
+# Sem --memory (compose oficial usa 256m): testado na prática — falha
+# nesse host com "error setting cgroup config ... memory.swap.max: no
+# such file or directory", porque o controller "memory" não está
+# delegado ao cgroup do usuário (só "pids" está — ver
+# cgroup.controllers do slice do usuário). Limite de memória por
+# container rootless depende de delegação de cgroup v2 no host
+# (systemd/logind), fora do escopo de uma unit individual.
+PodmanArgs=--pids-limit=50
+
+Volume=%h/.config/containers/volumes/radicale/data:/data:Z
+Volume=%h/.config/containers/volumes/radicale/config:/config:ro,Z
+EnvironmentFile=%h/.config/containers/env/radicale.env
+
+# Pacotes pip do sincronizador de aniversários (vobject/python-dateutil,
+# ver ../radicale-birthday-sync.timer) — não dá pra instalar no
+# site-packages padrão porque o filesystem raiz é somente leitura;
+# instalados uma vez em /data (gravável) via container avulso, ver
+# README. Usado via "podman exec", que herda o Environment= do
+# container em execução — não precisa repetir na unit do timer.
+Environment=PYTHONPATH=/data/python-libs
+
+# Mesmo comando do healthcheck do compose oficial (127.0.0.1 em vez de
+# localhost, regra 13 do README raiz).
+HealthCmd=CMD-SHELL curl -fs http://127.0.0.1:5232 || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=radicale
+Label=tsdproxy.port.web=443/https:5232/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Radicale
+Label=homepage.icon=radicale.svg
+Label=homepage.href=https://radicale.<seu-tailnet>.ts.net
+Label=homepage.description="Servidor CalDAV/CardDAV leve e minimalista"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=30
+
+[Install]
+WantedBy=default.target

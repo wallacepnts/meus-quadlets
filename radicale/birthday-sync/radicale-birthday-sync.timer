@@ -1,0 +1,10 @@
+[Unit]
+Description=Roda a sincronização do calendário de aniversários do Radicale periodicamente
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
