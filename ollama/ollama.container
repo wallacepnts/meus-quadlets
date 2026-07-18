@@ -1,0 +1,42 @@
+[Unit]
+Description=Ollama (LLMs locais)
+
+[Container]
+Image=docker.io/ollama/ollama:0.32.1
+ContainerName=ollama
+Network=ollama-net.network
+PublishPort=11434:11434
+
+# CPU-only por padrão (sem GPU) — ver README pra ativar NVIDIA/AMD ROCm
+Volume=%h/.config/containers/volumes/ollama/data:/root/.ollama:Z
+
+# A imagem não tem wget/curl, só o binário ollama — "ollama list" fala
+# com o servidor local (127.0.0.1:11434 via OLLAMA_HOST padrão) e serve
+# de healthcheck real sem precisar de ferramenta extra.
+HealthCmd=CMD-SHELL ollama list || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe a API na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=ollama
+Label=tsdproxy.port.web=443/https:11434/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Ollama
+Label=homepage.icon=ollama.svg
+Label=homepage.href=https://ollama.<seu-tailnet>.ts.net
+Label=homepage.description="Servidor de LLMs locais"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
