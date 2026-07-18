@@ -45,7 +45,12 @@ Label=homepage.name=Any-Sync-Bundle
 Label=homepage.icon=anytype.svg
 Label=homepage.description="Backend self-hosted do Anytype"
 
+# O ghcr publica um "-minimal" pra cada release (mesma versão/data, sem
+# Mongo/Redis embutidos) — o WUD trata o sufixo como versão "maior" e gera
+# falso positivo de atualização. Restringe a candidatos sem sufixo (mesmo
+# problema do baikal; regex sem \d/\., regra 18 do README raiz).
 Label=wud.watch=true
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+-[0-9]+-[0-9]+-[0-9]+$
 
 [Service]
 Restart=always

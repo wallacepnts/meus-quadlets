@@ -124,11 +124,18 @@ externalAddr:
 
 Tag explícita, igual ao `compose.aio.yml` original — sem `AutoUpdate=`,
 bump manual quando quiser (regra 9 do README raiz). `wud.watch=true`
-está ligado pra visibilidade passiva (ver [wud](../wud/)) — todas as
-tags publicadas seguem o mesmo formato `X.Y.Z-YYYY-MM-DD` (sem variante
-"bare" de uma versão já sufixada), então não precisa de
-`wud.tag.include` pra evitar falso positivo, diferente de imagens como
-baikal/vaultwarden que têm as duas formas convivendo.
+está ligado pra visibilidade passiva (ver [wud](../wud/)).
+
+**`wud.tag.include` necessário**: o ghcr publica um `-minimal` pra cada
+release (mesma versão/data, variante sem Mongo/Redis embutidos — é a
+imagem do modo modular) — o WUD trata esse sufixo como versão "maior" e
+gera falso positivo de atualização (`1.4.3-2026-04-21-minimal` marcado
+como disponível mesmo já estando na tag mais recente sem sufixo). Mesmo
+tipo de problema do baikal/vaultwarden, regex restringindo ao formato
+`X.Y.Z-YYYY-MM-DD` sem sufixo:
+```ini
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+-[0-9]+-[0-9]+-[0-9]+$
+```
 
 Por que manual mesmo com `HealthCmd` real (diferente da antiga imagem
 `-minimal`, que nunca teve isso)? Não é por causa da versão do Mongo
