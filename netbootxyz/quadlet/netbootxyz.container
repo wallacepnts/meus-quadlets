@@ -1,0 +1,48 @@
+[Unit]
+Description=netboot.xyz — servidor de PXE boot pela rede
+
+[Container]
+Image=ghcr.io/netbootxyz/netbootxyz:0.7.6-nbxyz23
+ContainerName=netbootxyz
+# 69/udp precisa ser exatamente essa porta no host — é o padrão TFTP que
+# o DHCP da rede aponta pros clientes de PXE, não dá pra remapear (ver
+# Pré-requisitos sobre porta <1024 em rootless).
+PublishPort=69:69/udp
+PublishPort=8088:3000
+PublishPort=8089:80
+
+Volume=%h/.config/containers/volumes/netbootxyz/config:/config:Z
+Volume=%h/.config/containers/volumes/netbootxyz/assets:/assets:Z
+EnvironmentFile=%h/.config/containers/env/netbootxyz.env
+
+# Mesmo comando do HEALTHCHECK embutido na imagem (root/healthcheck.sh) —
+# regra 14 do README raiz.
+HealthCmd=CMD-SHELL nc -z -u -w2 127.0.0.1 69 && curl -fs http://127.0.0.1:80/ && curl -fs http://127.0.0.1:3000/ || exit 1
+HealthInterval=30s
+HealthTimeout=15s
+HealthRetries=3
+HealthStartPeriod=60s
+Notify=healthy
+
+# tsdproxy discovery — só a UI web de configuração (ver ../tsdproxy/).
+# TFTP/HTTP de assets (69, 8089) são pra clientes de PXE na LAN, antes
+# de terem sistema operacional — não fazem parte da tailnet, publicar
+# neles não ajuda em nada.
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=netbootxyz
+Label=tsdproxy.port.web=443/https:3000/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=netboot.xyz
+Label=homepage.icon=netbootxyz.svg
+Label=homepage.href=https://netbootxyz.<seu-tailnet>.ts.net
+Label=homepage.description="Servidor de PXE boot pela rede"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

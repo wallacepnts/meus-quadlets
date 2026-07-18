@@ -501,6 +501,7 @@ conteúdo), só então `systemctl --user start`.
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png" width="48" height="48" alt=""> | [Linkwarden](./linkwarden) | Gerenciador de links/bookmarks self-hosted ([README](./linkwarden/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/lubelogger.png" width="48" height="48" alt=""> | [LubeLogger](./lubelogger) | Controle de manutenção veicular self-hosted ([README](./lubelogger/README.md)) | ❌ |
 |  | [Media Stack](./media-stack) | Jellyfin, Dispatcharr, Downtify, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Seerr, Gluetun, Deluge, SABnzbd — servidor de mídia + automação, raiz de dados compartilhada ([README](./media-stack/README.md)) | ❌ |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/netbootxyz.svg" width="48" height="48" alt=""> | [netboot.xyz](./netbootxyz) | Menu de boot pela rede (PXE) self-hosted ([README](./netbootxyz/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owntracks.svg" width="48" height="48" alt=""> | [OwnTracks](./owntracks) | Rastreamento de localização self-hosted, com broker MQTT ([README](./owntracks/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="48" height="48" alt=""> | [tsdproxy](./tsdproxy) | Publica containers na tailnet automaticamente, por labels ([README](./tsdproxy/README.md)) | ❌ |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg" width="48" height="48" alt=""> | [Vaultwarden](./vaultwarden) | Cofre de senhas self-hosted, compatível com Bitwarden ([README](./vaultwarden/README.md)) | ❌ |
@@ -539,10 +540,12 @@ Padrão deste repositório: tag explícita + bump manual por default,
 auto-update é opt-in. Motivos específicos, documentados no README de
 cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
 
-- **any-sync-bundle** — modo AIO, Mongo embutido na imagem sem controle
-  de versão nosso (diferente do modo modular, onde dava pra pinar); tem
-  uma regressão upstream conhecida no Mongo (kernel 6.19+) que pede
-  revisão manual antes de trocar de tag.
+- **any-sync-bundle** — modo AIO com dado real (identidade do Anytype);
+  `HealthCmd` cobre "o processo respondeu", não "a atualização não
+  quebrou nada silenciosamente" (mesmo raciocínio de gitea/linkwarden).
+  Cada bump é testado à parte com dado descartável antes de tocar no
+  dado real, coisa que auto-update automático não faz sozinho (ver
+  README do serviço).
 - **linkwarden** — a versão do Meilisearch é a que o `docker-compose.yml`
   oficial recomenda; trocar sem checar compatibilidade pode quebrar a
   busca. Migrations do Postgres também pedem revisão antes de subir de
@@ -559,6 +562,9 @@ cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
   healthcheck primeiro.
 - **baikal** — mesmo raciocínio do vaultwarden: banco SQLite embutido
   (calendários/contatos), healthcheck não cobre migração de schema.
+- **netboot.xyz** — tem `curl`/healthcheck real, mas prefiro conferir o
+  changelog do webapp antes de trocar de tag (menu/boot loader sensível a
+  mudança de versão).
 - **tsdproxy** — sem motivo técnico específico, só não foi avaliado/ligado
   ainda (já usa uma tag de major flutuante, `:2`, mas sem `AutoUpdate=`
   isso não dispara sozinho).
