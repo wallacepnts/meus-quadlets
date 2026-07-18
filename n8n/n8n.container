@@ -2,10 +2,19 @@
 Description=n8n
 
 [Container]
-Image=docker.n8n.io/n8nio/n8n:1.123.66
+# O guia oficial usa docker.n8n.io/n8nio/n8n — testado na prática: esse
+# mirror bate no rate limit anônimo do Docker Hub por trás (logar no
+# docker.io não resolve, é um registro separado). Puxando direto do
+# Docker Hub em vez disso, onde a autenticação (podman login) funciona.
+Image=docker.io/n8nio/n8n:1.123.66
 ContainerName=n8n
 PublishPort=5678:5678
 
+# Imagem roda como usuário fixo "node", sem usermod interno (mesmo caso
+# do Jellyfin/Seerr no ../media-stack/) — sem UserNS=keep-id, o container
+# não é dono do bind mount criado pelo host, e trava com "EACCES:
+# permission denied, open '/home/node/.n8n/config'" (testado na prática).
+UserNS=keep-id
 Volume=%h/.config/containers/volumes/n8n/data:/home/node/.n8n:Z
 EnvironmentFile=%h/.config/containers/env/n8n.env
 

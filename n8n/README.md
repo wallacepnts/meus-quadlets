@@ -12,6 +12,12 @@ oficial — dá pra trocar por Postgres depois, ver seção Variantes, mas não
 uso pessoal; modo fila é só necessário em escala (muitos workflows
 concorrentes).
 
+A imagem roda como usuário fixo `node`, sem usermod interno (mesmo caso
+do Jellyfin/Seerr no [media-stack](../media-stack/)) — por isso
+`UserNS=keep-id` no `.container`, mapeando o container pro mesmo uid do
+usuário que roda o Podman. Sem isso, o container não é dono do bind
+mount criado pelo host (ver Solução de problemas).
+
 ## Arquivos
 
 ```
@@ -86,6 +92,25 @@ O guia oficial também documenta trocar SQLite por Postgres
 (`DB_TYPE=postgresdb` + `DB_POSTGRESDB_*`) — não usado aqui de propósito,
 mesmo raciocínio do baikal/paperless-ngx: evitar mais um banco externo
 sem necessidade real pro volume de uso esperado.
+
+## Solução de problemas
+
+**`toomanyrequests: You have reached your unauthenticated pull rate
+limit`** ao puxar a imagem — testado na prática: o guia oficial recomenda
+`docker.n8n.io/n8nio/n8n`, mas esse mirror bate no rate limit anônimo do
+Docker Hub por trás dele. Fazer `podman login docker.io` **não resolve**,
+porque é um registro separado — a autenticação não se propaga pro
+mirror. Solução: usar `docker.io/n8nio/n8n` direto (mesma imagem, mesma
+tag), onde a autenticação funciona de verdade. Já é o que este
+`.container` usa.
+
+**`Error: EACCES: permission denied, open '/home/node/.n8n/config'`** no
+primeiro start — a imagem roda como usuário fixo `node` (uid interno
+fixo, sem usermod tipo LSIO). Sem `UserNS=keep-id`, o bind mount criado
+pelo host (`mkdir -p`, dono = seu uid) não é acessível pro uid do `node`
+dentro do container. `UserNS=keep-id` resolve, mapeando o container pro
+mesmo uid de quem roda o Podman — já incluído no `.container` deste
+repositório, só documentando caso apareça de novo em outro host.
 
 ## Comandos úteis
 
