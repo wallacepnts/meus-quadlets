@@ -1,0 +1,42 @@
+[Unit]
+Description=Audiobookshelf (audiolivros e podcasts)
+
+[Container]
+Image=ghcr.io/advplyr/audiobookshelf:2.35.1
+ContainerName=audiobookshelf
+Network=audiobookshelf-net.network
+PublishPort=13378:80
+
+Volume=%h/.config/containers/volumes/audiobookshelf/config:/config:Z
+Volume=%h/.config/containers/volumes/audiobookshelf/metadata:/metadata:Z
+Volume=%h/.config/containers/volumes/audiobookshelf/audiobooks:/audiobooks:Z
+Volume=%h/.config/containers/volumes/audiobookshelf/podcasts:/podcasts:Z
+EnvironmentFile=%h/.config/containers/env/audiobookshelf.env
+
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:80/healthcheck || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=audiobookshelf
+Label=tsdproxy.port.web=443/https:80/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Audiobookshelf
+Label=homepage.icon=audiobookshelf.svg
+Label=homepage.href=https://audiobookshelf.<seu-tailnet>.ts.net
+Label=homepage.description="Servidor de audiolivros e podcasts, com progresso sincronizado entre dispositivos"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
