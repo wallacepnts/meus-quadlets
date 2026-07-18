@@ -7,9 +7,10 @@ Description=Any-Sync-Bundle server — modo AIO (Mongo + Redis embutidos)
 # "start-all-in-one", em vez de precisar de containers externos). Trocado
 # do modo modular (Postgres/Redis/mongo em containers separados) a pedido
 # do usuário. Tag explícita — sem auto-update: mesmo motivo de sempre
-# (regra 9 do README raiz), reforçado aqui porque a versão do Mongo
-# embutido vem fixa dentro da própria imagem, sem controle nosso (ver
-# Auto-update no README pra como isso foi testado/validado).
+# (regra 9 do README raiz, dado real + sem teste prévio possível em cada
+# bump), não porque a versão do Mongo embutido seja "desconhecida" — o
+# binário já detecta e falha limpo se o Mongo não sobe (ver Auto-update
+# e Troubleshooting no README).
 Image=ghcr.io/grishy/any-sync-bundle:1.4.3-2026-04-21
 ContainerName=any-sync-bundle
 PublishPort=33010:33010

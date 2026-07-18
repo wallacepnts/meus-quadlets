@@ -123,7 +123,25 @@ externalAddr:
 ## Atualizando a imagem
 
 Tag explícita, igual ao `compose.aio.yml` original — sem `AutoUpdate=`,
-bump manual quando quiser:
+bump manual quando quiser (regra 9 do README raiz). `wud.watch=true`
+está ligado pra visibilidade passiva (ver [wud](../wud/)) — todas as
+tags publicadas seguem o mesmo formato `X.Y.Z-YYYY-MM-DD` (sem variante
+"bare" de uma versão já sufixada), então não precisa de
+`wud.tag.include` pra evitar falso positivo, diferente de imagens como
+baikal/vaultwarden que têm as duas formas convivendo.
+
+Por que manual mesmo com `HealthCmd` real (diferente da antiga imagem
+`-minimal`, que nunca teve isso)? Não é por causa da versão do Mongo
+embutido em si — o binário já detecta e falha limpo se o Mongo não
+sobe (ex.: SIGILL por falta de AVX no host, ver Troubleshooting), então
+o rollback do Podman em tag `:latest` pegaria isso. O motivo é o mesmo
+genérico de qualquer serviço com dado real e sem teste prévio possível
+(gitea, linkwarden): `HealthCmd` garante que o processo respondeu, não
+que a atualização não quebrou nada silenciosamente (migração de schema,
+mudança de protocolo). Antes desta migração, a versão do Mongo embutido
+foi testada à parte com dado descartável antes de tocar no dado real
+(ver Migrando dados, Troubleshooting) — automático perderia essa
+checagem em cada bump futuro.
 
 ```ini
 Image=ghcr.io/grishy/any-sync-bundle:1.4.3-2026-04-21
