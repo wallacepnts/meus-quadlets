@@ -1,0 +1,58 @@
+[Unit]
+Description=OwnTracks Recorder
+After=mosquitto.service
+Requires=mosquitto.service
+
+[Container]
+# Testado na prática: o ot-recorder não tolera o broker indisponível no
+# start — sai com "Connection refused" em vez de esperar/retentar
+# sozinho. Requires=/After= acima cobrem a ordem; Restart=always cobre
+# o caso do mosquitto ainda não estar pronto na primeira tentativa.
+Image=docker.io/owntracks/recorder:1.0.1
+ContainerName=owntracks-recorder
+Network=owntracks-net.network
+PublishPort=8086:8083
+
+Volume=%h/.config/containers/volumes/owntracks/store:/store:Z
+Volume=%h/.config/containers/volumes/owntracks/config:/config:Z
+EnvironmentFile=%h/.config/containers/env/owntracks-recorder.env
+
+# Secret criado via: podman secret create owntracks-mqtt-password ~/.config/containers/secrets/owntracks/mqtt-password.txt
+Secret=owntracks-mqtt-password,type=env,target=OTR_PASS
+
+# Sem o script oficial recorder-health.sh de propósito: ele publica uma
+# localização fake (usuário/device "ping") a cada execução, virando
+# lixo permanente no /store a cada HealthInterval. Um curl na raiz (serve
+# o viewer estático, sem side effect) já confirma que o processo está de
+# pé e conectado ao broker.
+HealthCmd=CMD-SHELL curl --silent --fail http://127.0.0.1:8083/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=owntracks
+Label=tsdproxy.port.web=443/https:8083/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=OwnTracks
+Label=homepage.icon=owntracks.svg
+Label=homepage.href=https://owntracks.<seu-tailnet>.ts.net
+Label=homepage.description="Rastreamento de localização self-hosted"
+
+# A imagem também publica variantes com sufixo de build (ex.: 1.0.1-43)
+# — mesmo risco de falso positivo já visto no baikal/vaultwarden (tag
+# bare aparentando "mais nova" que a com sufixo). Restringe a X.Y.Z puro.
+Label=wud.watch=true
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+$
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
