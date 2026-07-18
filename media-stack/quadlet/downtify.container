@@ -1,0 +1,58 @@
+[Unit]
+Description=Downtify (downloader de música do Spotify, self-hosted)
+
+[Container]
+Image=ghcr.io/henriquesebastiao/downtify:2.9.1
+ContainerName=downtify
+PublishPort=8000:8000
+
+# DNS explícito — recomendação do próprio docker-compose.yml oficial: o
+# pipeline depende de resolver open.spotify.com e music.youtube.com de
+# forma confiável (raspagem de página + busca), sem isso fica sujeito ao
+# resolver default do host/rede.
+DNS=1.1.1.1
+DNS=1.0.0.1
+
+# Sem UserNS=keep-id nem PUID/PGID: a imagem instala shadow/su-exec e
+# declara UID/GID/UMASK como env vars (sugerindo suporte a usermod, like
+# LinuxServer.io), mas testado na prática — o entrypoint.sh atual não
+# usa nenhum dos dois, o processo roda direto como root dentro do
+# próprio namespace do container. :Z normal já resolve certo.
+#
+# /downloads aponta pra dentro da raiz de mídia compartilhada
+# (MEDIA_DATA_DIR), na MESMA pasta que o Deluge usa (downloads/torrents)
+# — decisão explícita do usuário, não o padrão original (que usava um
+# diretório isolado só do Downtify). Precisa de MEDIA_DATA_DIR
+# configurado em ~/.config/environment.d/ antes do start (ver README,
+# seção Instalação do media-stack).
+Volume=${MEDIA_DATA_DIR}/downloads:/downloads:Z
+Volume=%h/.config/containers/volumes/media-stack/downtify/data:/data:Z
+
+HealthCmd=CMD-SHELL wget --no-verbose --tries=1 --spider http://127.0.0.1:8000/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=downtify
+Label=tsdproxy.port.web=443/https:8000/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Mídia
+Label=homepage.name=Downtify
+Label=homepage.icon=downtify.png
+Label=homepage.href=https://downtify.<seu-tailnet>.ts.net
+Label=homepage.description="Downloader de música do Spotify, self-hosted"
+
+Label=wud.watch=true
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+$
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

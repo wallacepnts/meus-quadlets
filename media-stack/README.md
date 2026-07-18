@@ -1,6 +1,7 @@
 # Media Stack — Podman Quadlet (rootless)
 
 Deploy de [Jellyfin](https://jellyfin.org) + [Dispatcharr](https://dispatcharr.github.io/Dispatcharr-Docs/)
++ [Downtify](https://github.com/henriquesebastiao/downtify)
 + nove serviços [LinuxServer.io](https://docs.linuxserver.io/)/[Seerr](https://docs.seerr.dev)
 via Podman Quadlet, todos enxergando a mesma raiz de mídia/downloads.
 
@@ -8,6 +9,7 @@ via Podman Quadlet, todos enxergando a mesma raiz de mídia/downloads.
 | --- | --- | --- | --- |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyfin.svg" width="48" height="48" alt=""> | [Jellyfin](https://jellyfin.org) | Servidor de mídia | `8096` |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/dispatcharr.svg" width="48" height="48" alt=""> | [Dispatcharr](https://dispatcharr.github.io/Dispatcharr-Docs/) | Gerenciador de IPTV (streams, EPG, VOD) | `9191` |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/downtify.png" width="48" height="48" alt=""> | [Downtify](https://github.com/henriquesebastiao/downtify) | Downloader de música do Spotify | `8000` |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/prowlarr.svg" width="48" height="48" alt=""> | [Prowlarr](https://prowlarr.com) | Gerenciador de indexers, alimenta os três abaixo | `9696` |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sonarr.svg" width="48" height="48" alt=""> | [Sonarr](https://sonarr.tv) | Automação de séries | `8989` |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/radarr.svg" width="48" height="48" alt=""> | [Radarr](https://radarr.video) | Automação de filmes | `7878` |
@@ -17,7 +19,7 @@ via Podman Quadlet, todos enxergando a mesma raiz de mídia/downloads.
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/deluge.svg" width="48" height="48" alt=""> | [Deluge](https://deluge-torrent.org) | Cliente torrent | `8112` |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sabnzbd.svg" width="48" height="48" alt=""> | [SABnzbd](https://sabnzbd.org) | Cliente usenet | `8081` (a `8080` já é do [tsdproxy](../tsdproxy/) neste repo) |
 
-Um décimo primeiro serviço, o [Gluetun](https://github.com/qdm12/gluetun)
+Um décimo segundo serviço, o [Gluetun](https://github.com/qdm12/gluetun)
 (túnel VPN pro Deluge), é **opcional** — ver seção própria abaixo.
 
 **Sobre o Seerr**: é a continuação unificada do Overseerr (só Plex,
@@ -109,6 +111,7 @@ quadlet/
 ├── dispatcharr-redis.container
 ├── dispatcharr.container          # Dispatcharr, app web
 ├── dispatcharr-celery.container   # Dispatcharr, worker de tarefas
+├── downtify.container
 ├── prowlarr.container
 ├── sonarr.container
 ├── radarr.container
@@ -150,6 +153,13 @@ mkdir -p "$HOME/data"
 mkdir -p ~/.config/containers/volumes/media-stack/jellyfin/{config,cache}
 mkdir -p ~/.config/containers/volumes/media-stack/{prowlarr,sonarr,radarr,lidarr,bazarr,seerr,deluge,sabnzbd}/config
 mkdir -p ~/.config/containers/volumes/media-stack/dispatcharr/{postgres,redis,data}
+mkdir -p ~/.config/containers/volumes/media-stack/downtify/data
+# Downtify baixa em downloads/ (dentro da raiz de mídia), a mesma pasta
+# onde o Deluge salva os torrents completos — diferente do resto (passo
+# 2 acima já cria a raiz, mas não downloads/, criado pelo Deluge só
+# depois do primeiro uso; Downtify bind-monta esse subdiretório direto,
+# então precisa existir ANTES do start, não pode esperar).
+mkdir -p "$HOME/data/downloads"
 
 # 4. Env compartilhado (LinuxServer.io) — copiar o exemplo e ajustar
 #    PUID/PGID pro usuário que roda o Podman (mesmo dono de
@@ -177,7 +187,7 @@ systemctl --user daemon-reload
 # 8. Subir (sem o Gluetun — ver seção própria pra ativar VPN). Um único
 #    start em dispatcharr-celery já sobe o resto da sub-stack (postgres,
 #    redis, dispatcharr) via Requires=.
-systemctl --user start jellyfin dispatcharr-celery prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user start jellyfin dispatcharr-celery downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 ```
 
 Acessar cada um via [tsdproxy](../tsdproxy/) (tailnet, ex.:
@@ -315,6 +325,27 @@ Upstream também oferece um modo "AIO" (tudo num container só,
 `docker-compose.aio.yml`) — não usado aqui, pra manter o padrão de um
 container por processo já seguido no resto deste repositório.
 
+## Downtify: baixa na mesma pasta do Deluge
+
+`downtify` monta `${MEDIA_DATA_DIR}/downloads:/downloads:Z` — a mesma
+`downloads/` onde o Deluge (`torrents/`) e o SABnzbd (`usenet/`) também
+gravam, em vez de um diretório isolado só dele (decisão explícita, não
+o padrão do projeto original). Como o mount é a pasta `downloads/`
+inteira, os arquivos do Downtify ficam soltos na raiz dela, ao lado das
+subpastas `torrents/`/`usenet/` dos outros dois. Precisa de
+`MEDIA_DATA_DIR` configurado em `~/.config/environment.d/` antes do
+start, igual ao resto da stack (ver Instalação acima) — sem isso o
+Volume= não expande e o start falha.
+
+Sem credenciais de API pra configurar: o pipeline (scraping do Spotify
++ busca no YouTube Music) é autocontido, não depende de mais nada da
+stack (Prowlarr, indexers, etc.).
+
+`DNS=1.1.1.1`/`DNS=1.0.0.1` no `.container` — recomendação do próprio
+projeto (o `docker-compose.yml` oficial já vem assim), já que a
+resolução confiável de `open.spotify.com`/`music.youtube.com` é
+crítica pro pipeline funcionar.
+
 ## VPN opcional no Deluge, via Gluetun
 
 Por padrão o Deluge sobe **sem VPN** — tráfego de torrent sai direto
@@ -421,10 +452,10 @@ systemctl --user start dispatcharr-celery
 ## Backup & Recuperação
 
 ```bash
-systemctl --user stop jellyfin dispatcharr-celery dispatcharr dispatcharr-redis dispatcharr-postgres prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user stop jellyfin dispatcharr-celery dispatcharr dispatcharr-redis dispatcharr-postgres downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 tar -czf media-stack-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
   -C ~/.config/containers/volumes media-stack
-systemctl --user start jellyfin dispatcharr-celery prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user start jellyfin dispatcharr-celery downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 ```
 
 Só as pastas `config/`/`cache/` de cada serviço (API keys, configuração,
@@ -442,6 +473,10 @@ cache, gravações DVR). O secret
 (`~/.config/containers/secrets/dispatcharr/`) também precisa de backup
 separado — sem ele, o Postgres restaurado não autentica.
 
+No Downtify, `data/` é o que importa (playlists monitoradas,
+preferências) — `downloads/` é só o resultado final, reconstruível
+baixando de novo se precisar.
+
 ## Considerações de segurança — não implementadas aqui
 
 - **Portas de indexer/download client expostas na tailnet via tsdproxy**
@@ -451,7 +486,7 @@ separado — sem ele, o Postgres restaurado não autentica.
 ## Comandos úteis
 
 ```bash
-systemctl --user status jellyfin dispatcharr dispatcharr-celery dispatcharr-postgres dispatcharr-redis prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user status jellyfin dispatcharr dispatcharr-celery dispatcharr-postgres dispatcharr-redis downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
 podman logs -f sonarr   # trocar pelo serviço que quiser
 podman exec dispatcharr-postgres pg_isready -U dispatch -d dispatcharr
 ```
@@ -460,7 +495,9 @@ podman exec dispatcharr-postgres pg_isready -U dispatch -d dispatcharr
 
 Deploy Quadlet baseado no [Jellyfin](https://github.com/jellyfin/jellyfin)
 (GPL-2.0), no [Dispatcharr](https://github.com/Dispatcharr/Dispatcharr)
-(AGPL-3.0) e nas imagens [LinuxServer.io](https://github.com/linuxserver)
+(AGPL-3.0), no [Downtify](https://github.com/henriquesebastiao/downtify)
+(GPL-3.0), de [Henrique Sebastião](https://github.com/henriquesebastiao),
+e nas imagens [LinuxServer.io](https://github.com/linuxserver)
 de [Prowlarr](https://github.com/Prowlarr/Prowlarr) (GPL-3.0),
 [Sonarr](https://github.com/Sonarr/Sonarr) (GPL-3.0),
 [Radarr](https://github.com/Radarr/Radarr) (GPL-3.0),
