@@ -39,18 +39,20 @@ wud.container   # unit principal
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp wud.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/wud/wud.container
 
 # 2. Diretório de dados — bind mount exige que já exista antes do start
 mkdir -p ~/.config/containers/volumes/wud/store
 
-# 3. Env — copiar o exemplo. Schedule da checagem (cron): padrão do
+# 3. Env — baixar o exemplo. Schedule da checagem (cron): padrão do
 #    próprio WUD é de hora em hora; diário é suficiente pra maioria dos
 #    homelabs e gera bem menos tráfego contra os registries.
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/wud.env
+wget -O ~/.config/containers/env/wud.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/wud/.env.example
 
 # 4. Socket do Podman
 systemctl --user enable --now podman.socket

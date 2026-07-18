@@ -63,16 +63,18 @@ netbootxyz.container   # unit principal
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp netbootxyz.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/netbootxyz/netbootxyz.container
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/netbootxyz/{config,assets}
 
 # 3. Env não-secreto (todas as variáveis são opcionais, ver .env.example)
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/netbootxyz.env
+wget -O ~/.config/containers/env/netbootxyz.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/netbootxyz/.env.example
 
 # 4. Subir
 systemctl --user daemon-reload

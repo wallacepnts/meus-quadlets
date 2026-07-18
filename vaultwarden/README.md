@@ -26,9 +26,10 @@ vaultwarden.container   # unit principal
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp vaultwarden.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/vaultwarden/vaultwarden.container
 
 # 2. Diretório de dados — bind mount exige que já exista antes do start
 mkdir -p ~/.config/containers/volumes/vaultwarden/data
@@ -62,9 +63,10 @@ chmod 600 ~/.config/containers/secrets/vaultwarden/*.txt
 
 podman secret create vaultwarden-admin-token ~/.config/containers/secrets/vaultwarden/admin-token-hash.txt
 
-# 4. Env não-secreto — copiar o exemplo e editar DOMAIN
+# 4. Env não-secreto — baixar o exemplo e editar DOMAIN
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/vaultwarden.env
+wget -O ~/.config/containers/env/vaultwarden.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/vaultwarden/.env.example
 # editar ~/.config/containers/env/vaultwarden.env: DOMAIN (e lembrar de
 # trocar SIGNUPS_ALLOWED pra "false" depois de criar a primeira conta —
 # ver seção Segurança abaixo)

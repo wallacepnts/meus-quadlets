@@ -126,10 +126,15 @@ gluetun.container        # opcional — ver seção VPN abaixo
 ## Instalação do zero
 
 ```bash
-# 1. Copiar as units (inclui gluetun.container; só importa se for usar
-#    a seção de VPN abaixo — sem ativar, fica parado sem nenhum custo)
+# 1. Baixar as units (sem precisar clonar o repositório; inclui
+#    gluetun.container — só importa se for usar a seção de VPN abaixo,
+#    sem ativar fica parado sem nenhum custo)
 mkdir -p ~/.config/containers/systemd
-cp *.container ~/.config/containers/systemd/
+for f in jellyfin dispatcharr downtify prowlarr sonarr radarr lidarr \
+         bazarr seerr deluge sabnzbd gluetun; do
+  wget -P ~/.config/containers/systemd/ \
+    "https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/media-stack/$f.container"
+done
 
 # 2. Raiz de mídia — a ÚNICA decisão de path desta stack inteira, via uma
 #    variável de ambiente do systemd (não um EnvironmentFile= comum —
@@ -156,11 +161,12 @@ mkdir -p ~/.config/containers/volumes/media-stack/downtify/data
 # então precisa existir ANTES do start, não pode esperar).
 mkdir -p "$HOME/data/downloads"
 
-# 4. Env compartilhado (LinuxServer.io) — copiar o exemplo e ajustar
+# 4. Env compartilhado (LinuxServer.io) — baixar o exemplo e ajustar
 #    PUID/PGID pro usuário que roda o Podman (mesmo dono de
 #    MEDIA_DATA_DIR, senão os apps não conseguem escrever nela)
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/media-stack.env
+wget -O ~/.config/containers/env/media-stack.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/media-stack/.env.example
 sed -i "s/^PUID=.*/PUID=$(id -u)/;s/^PGID=.*/PGID=$(id -g)/" \
   ~/.config/containers/env/media-stack.env
 
@@ -357,10 +363,11 @@ peers como no torrent):
 nele, healthcheck, `--privileged` — ver justificativa abaixo). Só falta:
 
 ```bash
-# 1. Credenciais do provedor de VPN — copiar o exemplo e editar (ver
+# 1. Credenciais do provedor de VPN — baixar o exemplo e editar (ver
 #    lista de provedores suportados:
 #    https://github.com/qdm12/gluetun-wiki/tree/main/setup/providers)
-cp gluetun.env.example ~/.config/containers/env/gluetun.env
+wget -O ~/.config/containers/env/gluetun.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/media-stack/gluetun.env.example
 # editar ~/.config/containers/env/gluetun.env: VPN_SERVICE_PROVIDER,
 # WIREGUARD_PRIVATE_KEY, WIREGUARD_ADDRESSES, SERVER_COUNTRIES
 chmod 600 ~/.config/containers/env/gluetun.env

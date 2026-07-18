@@ -44,17 +44,19 @@ calibre-web-automated.container   # unit principal
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp calibre-web-automated.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/calibre-web-automated/calibre-web-automated.container
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/calibre-web-automated/{config,ingest,library}
 
-# 3. Env não-secreto — copiar o exemplo, ajustar PUID/PGID pro usuário
+# 3. Env não-secreto — baixar o exemplo, ajustar PUID/PGID pro usuário
 #    que roda o Podman (mesmo dono dos volumes acima)
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/calibre-web-automated.env
+wget -O ~/.config/containers/env/calibre-web-automated.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/calibre-web-automated/.env.example
 sed -i "s/^PUID=.*/PUID=$(id -u)/;s/^PGID=.*/PGID=$(id -g)/" \
   ~/.config/containers/env/calibre-web-automated.env
 

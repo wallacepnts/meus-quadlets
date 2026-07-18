@@ -63,18 +63,20 @@ any-sync-bundle.container   # AIO — servidor + Mongo + Redis embutidos
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd/any-sync
-cp any-sync-bundle.container ~/.config/containers/systemd/any-sync/
+wget -P ~/.config/containers/systemd/any-sync/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/any-sync-bundle/any-sync-bundle.container
 
 # 2. Diretório de dados — bind mount do Podman não cria o diretório do
 #    host sozinho (diferente do docker compose); sem isso o container
 #    entra em crash-loop com "statfs: no such file or directory"
 mkdir -p ~/.config/containers/volumes/any-sync-bundle/data
 
-# 3. Env vars do container — copiar o exemplo e editar
+# 3. Env vars do container — baixar o exemplo e editar
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/any-sync-bundle.env
+wget -O ~/.config/containers/env/any-sync-bundle.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/any-sync-bundle/.env.example
 # editar ~/.config/containers/env/any-sync-bundle.env: ANY_SYNC_BUNDLE_INIT_EXTERNAL_ADDRS
 
 # 4. Subir

@@ -39,15 +39,17 @@ config/
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp tsdproxy.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/tsdproxy/tsdproxy.container
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start.
 #    O tsdproxy não gera um config padrão sozinho, então config/tsdproxy.yaml
 #    também precisa vir de algum lugar antes do primeiro start.
 mkdir -p ~/.config/containers/volumes/tsdproxy/{data,config}
-cp config/tsdproxy.yaml ~/.config/containers/volumes/tsdproxy/config/
+wget -O ~/.config/containers/volumes/tsdproxy/config/tsdproxy.yaml \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/tsdproxy/config/tsdproxy.yaml
 
 # 3. Secret com a authkey do Tailscale
 mkdir -p ~/.config/containers/secrets/tsdproxy

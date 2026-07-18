@@ -55,16 +55,18 @@ home-assistant.container   # unit principal
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp home-assistant.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/home-assistant/home-assistant.container
 
 # 2. Diretório de dados — bind mount exige que já exista antes do start
 mkdir -p ~/.config/containers/volumes/home-assistant/config
 
-# 3. Env — copiar o exemplo
+# 3. Env — baixar o exemplo
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/home-assistant.env
+wget -O ~/.config/containers/env/home-assistant.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/home-assistant/.env.example
 
 # 4. Subir
 systemctl --user daemon-reload

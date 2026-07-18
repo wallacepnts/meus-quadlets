@@ -57,9 +57,10 @@ zerobyte.container            # unit principal
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp zerobyte.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/zerobyte/zerobyte.container
 
 # 2. Diretórios — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/zerobyte/data
@@ -79,9 +80,10 @@ openssl rand -hex 32 | tr -d '\n' > ~/.config/containers/secrets/zerobyte/app-se
 chmod 600 ~/.config/containers/secrets/zerobyte/app-secret.txt
 podman secret create zerobyte-app-secret ~/.config/containers/secrets/zerobyte/app-secret.txt
 
-# 5. Env não-secreto — copiar o exemplo e editar
+# 5. Env não-secreto — baixar o exemplo e editar
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/zerobyte.env
+wget -O ~/.config/containers/env/zerobyte.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/zerobyte/.env.example
 # editar ~/.config/containers/env/zerobyte.env: BASE_URL e RESTIC_HOSTNAME
 
 # 6. Subir
@@ -132,8 +134,11 @@ restaurável. Por isso:
   responsabilidade sua manter essa ordem
 
 ```bash
-# Instalar o timer de dump (fora do Quadlet — é systemd comum)
-cp ../linkwarden/pgdump/linkwarden-pgdump.service ../linkwarden/pgdump/linkwarden-pgdump.timer ~/.config/systemd/user/
+# Instalar o timer de dump (fora do Quadlet — é systemd comum; sem
+# precisar clonar o repositório)
+wget -P ~/.config/systemd/user/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/linkwarden/pgdump/linkwarden-pgdump.service \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/linkwarden/pgdump/linkwarden-pgdump.timer
 systemctl --user daemon-reload
 systemctl --user enable --now linkwarden-pgdump.timer
 
@@ -165,11 +170,14 @@ mkdir -p ~/.config/any-sync-bundle-webhook
 openssl rand -hex 32 | tr -d '\n' > ~/.config/any-sync-bundle-webhook/token
 chmod 600 ~/.config/any-sync-bundle-webhook/token
 
-# 2. Script + unit (stdlib só, sem dependência pra instalar)
+# 2. Script + unit (stdlib só, sem dependência pra instalar; sem
+#    precisar clonar o repositório)
 mkdir -p ~/.local/bin
-cp ../any-sync-bundle/backup-webhook/any-sync-bundle-webhook.py ~/.local/bin/
+wget -O ~/.local/bin/any-sync-bundle-webhook.py \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/any-sync-bundle/backup-webhook/any-sync-bundle-webhook.py
 chmod 700 ~/.local/bin/any-sync-bundle-webhook.py
-cp ../any-sync-bundle/backup-webhook/any-sync-bundle-webhook.service ~/.config/systemd/user/
+wget -P ~/.config/systemd/user/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/any-sync-bundle/backup-webhook/any-sync-bundle-webhook.service
 systemctl --user daemon-reload
 systemctl --user enable --now any-sync-bundle-webhook.service
 

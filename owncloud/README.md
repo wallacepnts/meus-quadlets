@@ -34,9 +34,10 @@ owncloud.container   # unit principal
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp owncloud.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/owncloud/owncloud.container
 
 # 2. Diretório de dados — bind mount exige que já exista antes do start
 mkdir -p ~/.config/containers/volumes/owncloud/data
@@ -47,10 +48,11 @@ openssl rand -base64 18 | tr -d '\n' > ~/.config/containers/secrets/owncloud/adm
 chmod 600 ~/.config/containers/secrets/owncloud/admin-password.txt
 podman secret create owncloud-admin-password ~/.config/containers/secrets/owncloud/admin-password.txt
 
-# 4. Env não-secreto — copiar o exemplo e editar OWNCLOUD_DOMAIN/
+# 4. Env não-secreto — baixar o exemplo e editar OWNCLOUD_DOMAIN/
 #    OWNCLOUD_TRUSTED_DOMAINS com seu domínio da tailnet
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/owncloud.env
+wget -O ~/.config/containers/env/owncloud.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/owncloud/.env.example
 # editar ~/.config/containers/env/owncloud.env
 
 # 5. Subir

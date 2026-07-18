@@ -31,16 +31,18 @@ lubelogger.container   # unit principal
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp lubelogger.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/lubelogger/lubelogger.container
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/lubelogger/{data,keys}
 
-# 3. Env — copiar o exemplo e editar o domínio
+# 3. Env — baixar o exemplo e editar o domínio
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/lubelogger.env
+wget -O ~/.config/containers/env/lubelogger.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/lubelogger/.env.example
 # editar ~/.config/containers/env/lubelogger.env: LUBELOGGER_DOMAIN
 
 # 4. Subir

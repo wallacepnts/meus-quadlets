@@ -34,9 +34,14 @@ linkwarden.container               # aplicação
 ## Instalação do zero
 
 ```bash
-# 1. Copiar as units para uma subpasta dedicada
+# 1. Baixar as units pra uma subpasta dedicada (sem precisar clonar o
+#    repositório)
 mkdir -p ~/.config/containers/systemd/linkwarden
-cp *.container *.network ~/.config/containers/systemd/linkwarden/
+for f in linkwarden-net.network linkwarden-postgres.container \
+         linkwarden-meilisearch.container linkwarden.container; do
+  wget -P ~/.config/containers/systemd/linkwarden/ \
+    "https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/linkwarden/$f"
+done
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/linkwarden/{postgres,meili_data,data}
@@ -64,7 +69,8 @@ podman secret create linkwarden-database-url ~/.config/containers/secrets/linkwa
 #    (nó "linkwarden" na tailnet), então o padrão do exemplo é o
 #    endereço da tailnet.
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/linkwarden.env
+wget -O ~/.config/containers/env/linkwarden.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/linkwarden/.env.example
 # editar ~/.config/containers/env/linkwarden.env: NEXTAUTH_URL
 
 # 5. Subir (postgres e meilisearch sobem primeiro via Requires=)

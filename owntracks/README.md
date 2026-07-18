@@ -69,14 +69,20 @@ frontend-config.js             # config do frontend (padrão vazio)
 ## Instalação do zero
 
 ```bash
-# 1. Copiar as units
+# 1. Baixar as units (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd/owntracks
-cp *.container *.network ~/.config/containers/systemd/owntracks/
+for f in owntracks-net.network mosquitto.container \
+         owntracks-recorder.container owntracks-frontend.container; do
+  wget -P ~/.config/containers/systemd/owntracks/ \
+    "https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/owntracks/$f"
+done
 
 # 2. Diretórios — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/owntracks/{mosquitto/config,mosquitto/data,store,config}
-cp mosquitto.conf ~/.config/containers/volumes/owntracks/mosquitto/config/
-cp frontend-config.js ~/.config/containers/volumes/owntracks/frontend-config.js
+wget -O ~/.config/containers/volumes/owntracks/mosquitto/config/mosquitto.conf \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/owntracks/mosquitto.conf
+wget -O ~/.config/containers/volumes/owntracks/frontend-config.js \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/owntracks/frontend-config.js
 
 # 3. Senha MQTT — gerada uma vez, usada pelo app do celular pra
 #    autenticar no broker. Os dois segredos abaixo (arquivo passwd do
@@ -102,11 +108,12 @@ chmod 600 ~/.config/containers/secrets/owntracks/mqtt-password.txt
 podman secret create owntracks-mqtt-password ~/.config/containers/secrets/owntracks/mqtt-password.txt
 echo "Senha MQTT (configurar no app do celular): $MQTT_PW"
 
-# 4. Env não-secreto — copiar o exemplo (padrão já bate com o usuário
+# 4. Env não-secreto — baixar o exemplo (padrão já bate com o usuário
 #    criado acima; só editar se quiser um nome de usuário diferente de
 #    "owntracks", refazendo o passo 3 com esse nome)
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/owntracks-recorder.env
+wget -O ~/.config/containers/env/owntracks-recorder.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/owntracks/.env.example
 
 # 5. Subir (mosquitto sobe primeiro via Requires=; o frontend sobe
 #    depois do recorder, mesma lógica)

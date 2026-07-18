@@ -39,16 +39,18 @@ baikal.container   # unit principal
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp baikal.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/baikal/baikal.container
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/baikal/{config,data}
 
-# 3. Env não-secreto — copiar o exemplo e editar com seu domínio real
+# 3. Env não-secreto — baixar o exemplo e editar com seu domínio real
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/baikal.env
+wget -O ~/.config/containers/env/baikal.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/baikal/.env.example
 # editar ~/.config/containers/env/baikal.env: BAIKAL_SERVERNAME
 
 # 4. Subir

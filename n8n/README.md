@@ -32,9 +32,10 @@ n8n.container   # unit principal
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp n8n.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/n8n/n8n.container
 
 # 2. Diretório de dados — bind mount exige que já exista antes do start
 mkdir -p ~/.config/containers/volumes/n8n/data
@@ -47,9 +48,10 @@ openssl rand -hex 32 | tr -d '\n' > ~/.config/containers/secrets/n8n/encryption-
 chmod 600 ~/.config/containers/secrets/n8n/encryption-key.txt
 podman secret create n8n-encryption-key ~/.config/containers/secrets/n8n/encryption-key.txt
 
-# 4. Env não-secreto — copiar o exemplo
+# 4. Env não-secreto — baixar o exemplo
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/n8n.env
+wget -O ~/.config/containers/env/n8n.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/n8n/.env.example
 
 # 5. Subir
 systemctl --user daemon-reload

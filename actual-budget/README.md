@@ -16,18 +16,20 @@ actual.container   # unit principal
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp actual.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/actual-budget/actual.container
 
 # 2. Diretório de dados — bind mount exige que já exista antes do start.
 #    O próprio Actual cria server-files/ e user-files/ dentro dele.
 mkdir -p ~/.config/containers/volumes/actual/data
 
-# 3. Env — copiar o exemplo (TZ obrigatório, resto é opcional — ver
+# 3. Env — baixar o exemplo (TZ obrigatório, resto é opcional — ver
 #    https://actualbudget.org/docs/config/)
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/actual.env
+wget -O ~/.config/containers/env/actual.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/actual-budget/.env.example
 
 # 4. Subir
 systemctl --user daemon-reload

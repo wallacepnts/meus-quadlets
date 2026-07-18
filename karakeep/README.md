@@ -41,9 +41,14 @@ karakeep.container              # aplicação
 ## Instalação do zero
 
 ```bash
-# 1. Copiar as units para uma subpasta dedicada
+# 1. Baixar as units pra uma subpasta dedicada (sem precisar clonar o
+#    repositório)
 mkdir -p ~/.config/containers/systemd/karakeep
-cp *.container *.network ~/.config/containers/systemd/karakeep/
+for f in karakeep-net.network karakeep-chrome.container \
+         karakeep-meilisearch.container karakeep.container; do
+  wget -P ~/.config/containers/systemd/karakeep/ \
+    "https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/karakeep/$f"
+done
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/karakeep/{data,meilisearch}
@@ -59,10 +64,11 @@ chmod 600 ~/.config/containers/secrets/karakeep/*.txt
 podman secret create karakeep-nextauth-secret ~/.config/containers/secrets/karakeep/nextauth-secret.txt
 podman secret create karakeep-meili-key ~/.config/containers/secrets/karakeep/meili-master-key.txt
 
-# 4. Env não-secreto — copiar o exemplo e editar NEXTAUTH_URL: precisa
+# 4. Env não-secreto — baixar o exemplo e editar NEXTAUTH_URL: precisa
 #    bater exatamente com o endereço usado no navegador
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/karakeep.env
+wget -O ~/.config/containers/env/karakeep.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/karakeep/.env.example
 # editar ~/.config/containers/env/karakeep.env: NEXTAUTH_URL
 
 # 5. Subir (chrome e meilisearch sobem primeiro via Requires=)

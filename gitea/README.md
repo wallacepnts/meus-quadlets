@@ -33,9 +33,10 @@ gitea.container   # unit principal
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp gitea.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/gitea/gitea.container
 
 # 2. Diretório de dados — bind mount exige que já exista antes do start
 mkdir -p ~/.config/containers/volumes/gitea/data
@@ -52,11 +53,12 @@ chmod 600 ~/.config/containers/secrets/gitea/*.txt
 podman secret create gitea-secret-key ~/.config/containers/secrets/gitea/secret-key.txt
 podman secret create gitea-internal-token ~/.config/containers/secrets/gitea/internal-token.txt
 
-# 4. Env não-secreto — copiar o exemplo (pré-preenche o assistente de
+# 4. Env não-secreto — baixar o exemplo (pré-preenche o assistente de
 #    instalação: DB e domínio já vêm certos, só falta criar a conta admin
 #    na UI)
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/gitea.env
+wget -O ~/.config/containers/env/gitea.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/gitea/.env.example
 # editar ~/.config/containers/env/gitea.env: GITEA__server__DOMAIN e
 # GITEA__server__ROOT_URL
 

@@ -32,27 +32,31 @@ config/
 ## Instalação do zero
 
 ```bash
-# 1. Copiar a unit
+# 1. Baixar a unit (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd
-cp homepage.container ~/.config/containers/systemd/
+wget -P ~/.config/containers/systemd/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/homepage/homepage.container
 
 # 2. Config — precisa existir antes do start; se a pasta estiver vazia a
 #    própria Homepage gera o resto na primeira vez (bookmarks.yaml etc.)
 mkdir -p ~/.config/containers/volumes/homepage/config
-cp config/docker.yaml config/settings.yaml ~/.config/containers/volumes/homepage/config/
+wget -P ~/.config/containers/volumes/homepage/config/ \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/homepage/config/docker.yaml \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/homepage/config/settings.yaml
 
 # 2b. Ícones customizados (opcional) — só precisa existir se for usar,
 #     ver seção "Marcando um serviço" abaixo
 mkdir -p ~/.config/containers/volumes/homepage/icons
 
-# 3. Env — copiar o exemplo. HOMEPAGE_ALLOWED_HOSTS é obrigatório
+# 3. Env — baixar o exemplo. HOMEPAGE_ALLOWED_HOSTS é obrigatório
 #    (allowlist de Host header, formato host:porta; aceita vários
 #    separados por vírgula). O .container já vem com labels tsdproxy (nó
 #    "homepage" na tailnet), então incluir o hostname MagicDNS aqui
 #    também, senão a Homepage rejeita as requisições vindas do tsdproxy
 #    com "Host not allowed".
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/homepage.env
+wget -O ~/.config/containers/env/homepage.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/homepage/.env.example
 # editar ~/.config/containers/env/homepage.env: HOMEPAGE_ALLOWED_HOSTS
 
 # 4. Socket do Podman

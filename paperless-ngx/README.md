@@ -50,9 +50,15 @@ paperless-ngx.container            # aplicação
 ## Instalação do zero
 
 ```bash
-# 1. Copiar as units para uma subpasta dedicada
+# 1. Baixar as units pra uma subpasta dedicada (sem precisar clonar o
+#    repositório)
 mkdir -p ~/.config/containers/systemd/paperless-ngx
-cp *.container *.network ~/.config/containers/systemd/paperless-ngx/
+for f in paperless-ngx-net.network paperless-ngx-broker.container \
+         paperless-ngx-gotenberg.container paperless-ngx-tika.container \
+         paperless-ngx.container; do
+  wget -P ~/.config/containers/systemd/paperless-ngx/ \
+    "https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/paperless-ngx/$f"
+done
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
 mkdir -p ~/.config/containers/volumes/paperless-ngx/{broker,data,media,export,consume}
@@ -63,10 +69,11 @@ openssl rand -base64 64 | tr -d '\n' > ~/.config/containers/secrets/paperless-ng
 chmod 600 ~/.config/containers/secrets/paperless-ngx/secret-key.txt
 podman secret create paperless-ngx-secret-key ~/.config/containers/secrets/paperless-ngx/secret-key.txt
 
-# 4. Env não-secreto — copiar o exemplo, ajustar USERMAP_UID/GID pro
+# 4. Env não-secreto — baixar o exemplo, ajustar USERMAP_UID/GID pro
 #    usuário que roda o Podman (mesmo dono dos volumes acima)
 mkdir -p ~/.config/containers/env
-cp .env.example ~/.config/containers/env/paperless-ngx.env
+wget -O ~/.config/containers/env/paperless-ngx.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/paperless-ngx/.env.example
 sed -i "s/^USERMAP_UID=.*/USERMAP_UID=$(id -u)/;s/^USERMAP_GID=.*/USERMAP_GID=$(id -g)/" \
   ~/.config/containers/env/paperless-ngx.env
 
