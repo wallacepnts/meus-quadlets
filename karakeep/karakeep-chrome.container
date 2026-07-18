@@ -1,0 +1,28 @@
+[Unit]
+Description=Karakeep Chrome (navegador headless pro crawler)
+
+[Container]
+Image=gcr.io/zenika-hub/alpine-chrome:124
+ContainerName=karakeep-chrome
+Network=karakeep-net.network
+NetworkAlias=chrome
+
+# Sem volume — stateless, cada restart é uma sessão nova de navegador.
+Exec=--no-sandbox --disable-gpu --disable-dev-shm-usage --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222 --hide-scrollbars --disable-blink-features=AutomationControlled --window-size=1440,900
+
+# Alpine tem wget via busybox — checa o endpoint HTTP do Chrome DevTools
+# Protocol (confirma que o Chrome respondeu de verdade, não só que a
+# porta está aberta).
+HealthCmd=CMD-SHELL wget -q -O- http://127.0.0.1:9222/json/version > /dev/null || exit 1
+HealthInterval=15s
+HealthTimeout=5s
+HealthRetries=6
+HealthStartPeriod=15s
+Notify=healthy
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

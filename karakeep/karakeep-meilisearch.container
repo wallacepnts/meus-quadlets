@@ -1,0 +1,29 @@
+[Unit]
+Description=Karakeep Meilisearch
+
+[Container]
+# Tag presa na versão recomendada pelo compose oficial do Karakeep — não
+# trocar sem checar compatibilidade primeiro.
+Image=docker.io/getmeili/meilisearch:v1.41.0
+ContainerName=karakeep-meilisearch
+Network=karakeep-net.network
+NetworkAlias=meilisearch
+
+Environment=MEILI_NO_ANALYTICS=true
+# Secret criado via: podman secret create karakeep-meili-key ~/.config/containers/secrets/karakeep/meili-master-key.txt
+Secret=karakeep-meili-key,type=env,target=MEILI_MASTER_KEY
+Volume=%h/.config/containers/volumes/karakeep/meilisearch:/meili_data:Z
+
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:7700/health || exit 1
+HealthInterval=5s
+HealthTimeout=5s
+HealthRetries=12
+HealthStartPeriod=10s
+Notify=healthy
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

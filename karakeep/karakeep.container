@@ -1,0 +1,57 @@
+[Unit]
+Description=Karakeep
+After=karakeep-chrome.service karakeep-meilisearch.service
+Requires=karakeep-chrome.service karakeep-meilisearch.service
+
+[Container]
+Image=ghcr.io/karakeep-app/karakeep:0.32.0
+ContainerName=karakeep
+Network=karakeep-net.network
+PublishPort=8092:3000
+
+Volume=%h/.config/containers/volumes/karakeep/data:/data:Z
+EnvironmentFile=%h/.config/containers/env/karakeep.env
+
+# Topologia fixa deste stack (nomes resolvidos via NetworkAlias dos
+# containers ao lado) — não é pra usuário editar, ver .env.example pro
+# que é de fato configurável.
+Environment=MEILI_ADDR=http://meilisearch:7700
+Environment=BROWSER_WEB_URL=http://chrome:9222
+Environment=DATA_DIR=/data
+
+# Secrets criados via:
+#   podman secret create karakeep-nextauth-secret ~/.config/containers/secrets/karakeep/nextauth-secret.txt
+#   podman secret create karakeep-meili-key ~/.config/containers/secrets/karakeep/meili-master-key.txt
+# (o mesmo karakeep-meili-key usado no karakeep-meilisearch.container)
+Secret=karakeep-nextauth-secret,type=env,target=NEXTAUTH_SECRET
+Secret=karakeep-meili-key,type=env,target=MEILI_MASTER_KEY
+
+# Mesmo comando do HEALTHCHECK embutido na imagem — regra 14 do README
+# raiz (127.0.0.1 em vez de localhost, regra 13).
+HealthCmd=CMD-SHELL wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=karakeep
+Label=tsdproxy.port.web=443/https:3000/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Karakeep
+Label=homepage.icon=karakeep.svg
+Label=homepage.href=https://karakeep.<seu-tailnet>.ts.net
+Label=homepage.description="Gerenciador de bookmarks com busca full-text e arquivamento automático de página"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
