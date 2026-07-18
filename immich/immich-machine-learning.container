@@ -1,0 +1,35 @@
+[Unit]
+Description=Immich Machine Learning (reconhecimento facial, busca smart)
+
+[Container]
+Image=ghcr.io/immich-app/immich-machine-learning:v3.0.3
+ContainerName=immich-machine-learning
+Network=immich-net.network
+# NetworkAlias=immich-machine-learning — hostname que o Immich já usa por
+# padrão pra falar com o serviço de ML (config salva no banco no primeiro
+# start, não é só env var — ver README).
+NetworkAlias=immich-machine-learning
+
+UserNS=keep-id
+Volume=%h/.config/containers/volumes/immich/ml-cache:/cache:Z
+Volume=%h/.config/containers/volumes/immich/ml-dotcache:/.cache:Z
+Volume=%h/.config/containers/volumes/immich/ml-config:/.config:Z
+EnvironmentFile=%h/.config/containers/env/immich.env
+
+NoNewPrivileges=true
+PodmanArgs=--cap-drop=NET_RAW
+
+# Mesmo comando do healthcheck embutido na imagem.
+HealthCmd=CMD-SHELL python3 healthcheck.py || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=5
+HealthStartPeriod=60s
+Notify=healthy
+
+[Service]
+Restart=always
+TimeoutStartSec=150
+
+[Install]
+WantedBy=default.target

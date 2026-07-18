@@ -16,6 +16,7 @@ novo adicionado aqui.
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/gitea.svg" width="48" height="48" alt=""> | [Gitea](./gitea) | `1.27.0` | Servidor Git leve e completo — repositórios, issues, pull requests e CI numa interface só ([README](./gitea/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/home-assistant.svg" width="48" height="48" alt=""> | [Home Assistant](./home-assistant) | `2026.7.2` | Hub central de automação residencial, integra dispositivos de qualquer fabricante num painel só ([README](./home-assistant/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/homepage.png" width="48" height="48" alt=""> | [homepage](./homepage) | `latest` (auto-update) | Dashboard que descobre e organiza os outros containers sozinho via labels, sem editar config a cada serviço novo ([README](./homepage/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/immich.svg" width="48" height="48" alt=""> | [Immich](./immich) | `v3.0.3` | Backup e organização de fotos/vídeos, com reconhecimento facial e busca smart ([README](./immich/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/karakeep.svg" width="48" height="48" alt=""> | [Karakeep](./karakeep) | `0.32.0` | Gerenciador de bookmarks com busca full-text e arquivamento automático do conteúdo de cada página salva ([README](./karakeep/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png" width="48" height="48" alt=""> | [Linkwarden](./linkwarden) | `v2.15.1` | Gerenciador de links que arquiva uma cópia de cada página (texto, captura, PDF), pra não perder o conteúdo se o site sair do ar ([README](./linkwarden/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/lubelogger.png" width="48" height="48" alt=""> | [LubeLogger](./lubelogger) | `v1.7.0` | Registro de manutenção veicular — trocas de óleo, revisões, gastos e lembretes, por veículo ([README](./lubelogger/README.md)) |
@@ -554,6 +555,9 @@ cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
 - **Karakeep** — mesmo raciocínio do linkwarden: Meilisearch/Chrome em
   versões testadas pelo compose oficial, e o SQLite embutido é dado real
   do usuário (bookmarks, páginas arquivadas).
+- **Immich** — fotos/vídeos e o índice de reconhecimento facial são dado
+  real e irrecuperável do usuário; migrations de banco entre versões
+  maiores não são incomuns, healthcheck "ok" não cobre isso.
 - **vaultwarden** — a imagem tem `wget`/`curl` (daria pra habilitar com
   rollback de verdade), mas é um cofre de senhas: revisão manual antes de
   atualizar é o padrão aqui de propósito, não uma limitação técnica.

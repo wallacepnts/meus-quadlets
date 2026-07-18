@@ -1,0 +1,36 @@
+[Unit]
+Description=Immich Redis
+
+[Container]
+# Tag+digest exatos do compose oficial "rootless" do Immich — não trocar
+# sem checar a combinação testada pelo projeto.
+Image=docker.io/valkey/valkey:9@sha256:4963247afc4cd33c7d3b2d2816b9f7f8eeebab148d29056c2ca4d7cbc966f2d9
+ContainerName=immich-redis
+Network=immich-net.network
+# NetworkAlias=redis — hostname fixo esperado pelo Immich em
+# REDIS_HOSTNAME (default "redis", ver README).
+NetworkAlias=redis
+
+# Compose oficial ("rootless" variant) roda como uid/gid fixos, sem
+# usermod interno — UserNS=keep-id mapeia pro mesmo uid de quem roda o
+# Podman (mesmo motivo do Jellyfin/Seerr no ../media-stack/).
+UserNS=keep-id
+Volume=%h/.config/containers/volumes/immich/redis:/data:Z
+
+NoNewPrivileges=true
+PodmanArgs=--cap-drop=NET_RAW
+
+# Mesmo comando do healthcheck do compose oficial.
+HealthCmd=CMD-SHELL redis-cli ping || exit 1
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=12
+HealthStartPeriod=15s
+Notify=healthy
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

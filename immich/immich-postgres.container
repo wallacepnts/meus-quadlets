@@ -1,0 +1,42 @@
+[Unit]
+Description=Immich PostgreSQL (com VectorChord/pgvecto.rs)
+
+[Container]
+# Imagem própria do Immich, não Postgres genérico — tem as extensões de
+# vetor (VectorChord/pgvecto.rs) que a busca por similaridade usa. Tag+
+# digest exatos do compose oficial, não trocar sem checar compatibilidade.
+Image=ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+ContainerName=immich-postgres
+Network=immich-net.network
+# NetworkAlias=database — hostname fixo esperado pelo Immich em
+# DB_HOSTNAME (default "database", ver README).
+NetworkAlias=database
+
+UserNS=keep-id
+Volume=%h/.config/containers/volumes/immich/postgres:/var/lib/postgresql/data:Z
+ShmSize=128mb
+
+Environment=POSTGRES_USER=postgres
+Environment=POSTGRES_DB=immich
+Environment=POSTGRES_INITDB_ARGS=--data-checksums
+# Secret criado via: podman secret create immich-db-password ~/.config/containers/secrets/immich/db-password.txt
+# Mesma senha usada em DB_PASSWORD no immich.container.
+Secret=immich-db-password,type=env,target=POSTGRES_PASSWORD
+
+NoNewPrivileges=true
+PodmanArgs=--cap-drop=NET_RAW
+
+# Mesmo comando do healthcheck embutido na imagem.
+HealthCmd=CMD-SHELL healthcheck.sh || exit 1
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=12
+HealthStartPeriod=30s
+Notify=healthy
+
+[Service]
+Restart=always
+TimeoutStartSec=90
+
+[Install]
+WantedBy=default.target

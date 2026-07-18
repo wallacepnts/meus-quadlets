@@ -144,6 +144,47 @@ restart seguinte, já com o socket acessível
 (`systemctl --user restart tsdproxy`). Se não resolver, apagar
 `~/.config/containers/volumes/tsdproxy/data/default/` e reiniciar.
 
+## Nós somem sozinhos da tailnet (auth key ephemeral)
+
+Por padrão, apagar um container **não** remove o nó dele do admin console
+do Tailscale (ver "Duas pegadinhas específicas" no
+[README raiz](../README.md#apagar-tudo-destrutivo--dados-segredos-config))
+— fica órfão até alguém remover manualmente. Dá pra automatizar isso
+gerando a authkey como **ephemeral**: um nó registrado com uma chave
+ephemeral some sozinho da tailnet uns 30–60 min depois de ficar offline,
+sem intervenção manual.
+
+**Onde isso é decidido**: só na authkey em si, gerada com a opção
+**Ephemeral** marcada em
+https://login.tailscale.com/admin/settings/keys — não é uma label nem
+config do tsdproxy. Testado por um usuário e confirmado pelo mantenedor:
+a label `tsdproxy.ephemeral=true` **não** ativa isso
+([discussão #71](https://github.com/almeidapaulopt/tsdproxy/discussions/71)).
+
+```bash
+# 1. Gerar a authkey nova em https://login.tailscale.com/admin/settings/keys
+#    com "Reusable" E "Ephemeral" marcados (Reusable já era obrigatório —
+#    uma chave só registra todos os serviços proxiados por este tsdproxy)
+
+# 2. Trocar o secret
+podman secret rm authkey
+echo -n "NOVA_AUTHKEY" > ~/.config/containers/secrets/tsdproxy/authkey.txt
+podman secret create authkey ~/.config/containers/secrets/tsdproxy/authkey.txt
+
+# 3. Reiniciar tsdproxy (e any-sync-bundle, que gera nó próprio direto,
+#    sem passar pelo tsdproxy)
+systemctl --user restart tsdproxy any-sync-bundle
+```
+
+**Duas ressalvas importantes**:
+- Só vale pra nós **registrados depois da troca** — a chave usada no
+  registro decide a ephemeralidade daquele nó, não é retroativo. Os nós
+  já existentes continuam exatamente como estão até serem re-registrados
+  (logout + novo login com a chave nova).
+- Não limpa os órfãos duplicados que já existem hoje (`dash`/`dash-1` e
+  parecidos) — esses precisam de remoção manual uma vez, como já
+  documentado.
+
 ## Implantando em outro servidor
 
 **Não copiar** `volumes/tsdproxy/data/` — guarda o estado/identidade

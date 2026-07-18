@@ -1,0 +1,60 @@
+[Unit]
+Description=Immich
+After=immich-redis.service immich-postgres.service
+Requires=immich-redis.service immich-postgres.service
+
+[Container]
+Image=ghcr.io/immich-app/immich-server:v3.0.3
+ContainerName=immich
+Network=immich-net.network
+PublishPort=2283:2283
+
+# Fotos/vídeos de verdade — o volume que importa (ver Backup no README).
+Volume=%h/.config/containers/volumes/immich/upload:/data:Z
+# Sincroniza fuso horário com o host (usado em metadados/timestamps).
+Volume=/etc/localtime:/etc/localtime:ro
+EnvironmentFile=%h/.config/containers/env/immich.env
+
+# Topologia fixa deste stack (nomes resolvidos via NetworkAlias dos
+# containers ao lado, "database"/"redis" são os defaults do próprio
+# Immich) — não é pra usuário editar, ver .env.example.
+Environment=DB_USERNAME=postgres
+Environment=DB_DATABASE_NAME=immich
+
+# Secret criado via: podman secret create immich-db-password ~/.config/containers/secrets/immich/db-password.txt
+# (o mesmo usado no immich-postgres.container)
+Secret=immich-db-password,type=env,target=DB_PASSWORD
+
+UserNS=keep-id
+NoNewPrivileges=true
+PodmanArgs=--cap-drop=NET_RAW
+
+# Mesmo comando do healthcheck embutido na imagem (script "npm run
+# healthcheck", chama /api/server/ping internamente).
+HealthCmd=CMD-SHELL npm run healthcheck || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=5
+HealthStartPeriod=90s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=immich
+Label=tsdproxy.port.web=443/https:2283/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Immich
+Label=homepage.icon=immich.svg
+Label=homepage.href=https://immich.<seu-tailnet>.ts.net
+Label=homepage.description="Backup e organização de fotos/vídeos, com reconhecimento facial e busca smart"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=150
+
+[Install]
+WantedBy=default.target
