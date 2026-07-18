@@ -1,0 +1,56 @@
+[Unit]
+Description=Syncthing
+
+[Container]
+Image=docker.io/syncthing/syncthing:2.1.2
+ContainerName=syncthing
+# Rede bridge padrão deste repositório, não host (o guia oficial
+# recomenda host pra descoberta LAN por broadcast funcionar) — mesma
+# troca consciente já aplicada ao Home Assistant/Jellyfin: perde
+# descoberta automática de peers na LAN, mantém isolamento de rede
+# padrão. Descoberta global (pela internet, via servidor de discovery do
+# próprio Syncthing) funciona normal; conexão direta com peers na LAN
+# ainda funciona se o endereço for configurado manualmente.
+PublishPort=8384:8384
+PublishPort=22000:22000
+PublishPort=22000:22000/udp
+PublishPort=21027:21027/udp
+
+Volume=%h/.config/containers/volumes/syncthing/data:/var/syncthing:Z
+EnvironmentFile=%h/.config/containers/env/syncthing.env
+
+# Escuta em 0.0.0.0 pra PublishPort funcionar (default da imagem sem essa
+# variável é 0.0.0.0 mesmo, mas fixado aqui pra não depender do default
+# — ver GUI Security no README oficial).
+Environment=STGUIADDRESS=0.0.0.0:8384
+
+# Mesmo comando do healthcheck do compose oficial (127.0.0.1 em vez de
+# localhost, regra 13 do README raiz; endpoint /rest/noauth/health é de
+# propósito sem autenticação, feito pra isso).
+HealthCmd=CMD-SHELL curl -fkLsS -m 2 127.0.0.1:8384/rest/noauth/health | grep -o --color=never OK || exit 1
+HealthInterval=1m
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe a GUI na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=syncthing
+Label=tsdproxy.port.web=443/https:8384/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Syncthing
+Label=homepage.icon=syncthing.svg
+Label=homepage.href=https://syncthing.<seu-tailnet>.ts.net
+Label=homepage.description="Sincronização de arquivos P2P entre dispositivos, sem servidor central"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

@@ -27,6 +27,7 @@ novo adicionado aqui.
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owncloud.svg" width="48" height="48" alt=""> | [ownCloud](./owncloud) | `10.16.3-20260709` | Sincronização e compartilhamento de arquivos em nuvem própria ([README](./owncloud/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owntracks.svg" width="48" height="48" alt=""> | [OwnTracks](./owntracks) | `1.0.1` | Rastreamento de localização pessoal via app de celular, com broker MQTT próprio e histórico de posições ([README](./owntracks/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/radicale.svg" width="48" height="48" alt=""> | [Radicale](./radicale) | `3.7.6.0` | Servidor CalDAV/CardDAV leve e minimalista ([README](./radicale/README.md)) |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/syncthing.svg" width="48" height="48" alt=""> | [Syncthing](./syncthing) | `2.1.2` | Sincronização de arquivos P2P entre dispositivos, sem servidor central ([README](./syncthing/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="48" height="48" alt=""> | [tsdproxy](./tsdproxy) | `2` | Publica containers na tailnet automaticamente, só com labels — sem configurar proxy manualmente por serviço ([README](./tsdproxy/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg" width="48" height="48" alt=""> | [Vaultwarden](./vaultwarden) | `1.36.0-alpine` | Cofre de senhas compatível com o protocolo do Bitwarden, leve o bastante pra rodar em qualquer lugar ([README](./vaultwarden/README.md)) |
 | <img src="https://cdn.jsdelivr.net/gh/getwud/wud@main/ui/public/img/icons/android-chrome-512x512.png" width="48" height="48" alt=""> | [WUD (What's Up Docker)](./wud) | `8.3.0` | Monitora as atualizações de imagem disponíveis pros containers, sem aplicar nada sozinho — só avisa ([README](./wud/README.md)) |
@@ -561,6 +562,8 @@ cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
   maiores não são incomuns, healthcheck "ok" não cobre isso.
 - **Radicale** — mesmo raciocínio do baikal: calendários/contatos são
   dado real do usuário.
+- **Syncthing** — mesmo raciocínio do ownCloud: arquivos sincronizados
+  são dado real do usuário.
 - **vaultwarden** — a imagem tem `wget`/`curl` (daria pra habilitar com
   rollback de verdade), mas é um cofre de senhas: revisão manual antes de
   atualizar é o padrão aqui de propósito, não uma limitação técnica.
