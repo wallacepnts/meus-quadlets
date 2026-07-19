@@ -1,0 +1,50 @@
+[Unit]
+Description=Open WebUI (interface de chat pra LLMs)
+After=ollama.service
+Requires=ollama.service
+
+[Container]
+Image=ghcr.io/open-webui/open-webui:v0.10.2
+ContainerName=openwebui
+# Reaproveita a rede do Ollama (ver ../ollama/) — assim os dois containers
+# se resolvem pelo nome (OLLAMA_BASE_URL=http://ollama:11434 no .env),
+# sem precisar publicar a porta do Ollama pra fora nem criar rede própria
+# só pra isso.
+Network=ollama-net.network
+PublishPort=3003:8080
+
+Volume=%h/.config/containers/volumes/openwebui/data:/app/backend/data:Z
+EnvironmentFile=%h/.config/containers/env/openwebui.env
+Secret=openwebui-secret-key,type=env,target=WEBUI_SECRET_KEY
+
+HealthCmd=CMD-SHELL curl -fsS http://127.0.0.1:8080/health || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=5
+HealthStartPeriod=120s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=openwebui
+Label=tsdproxy.port.web=443/https:8080/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name="Open WebUI"
+Label=homepage.icon=open-webui.svg
+Label=homepage.href=https://openwebui.<seu-tailnet>.ts.net
+Label=homepage.description="Interface de chat pra LLMs locais (Ollama) ou via API"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+# Primeiro start baixa o modelo de embedding padrão (sentence-transformers/
+# all-MiniLM-L6-v2) do Hugging Face — testado na prática, leva bem mais de
+# 60s; Restart=always cobre timeouts mesmo assim, mas TimeoutStartSec alto
+# evita reinícios desnecessários.
+TimeoutStartSec=180
+
+[Install]
+WantedBy=default.target
