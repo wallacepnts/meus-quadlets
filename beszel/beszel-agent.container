@@ -1,0 +1,38 @@
+[Unit]
+Description=Beszel Agent (coleta métricas deste host)
+Requires=podman.socket
+After=podman.socket
+
+[Container]
+Image=docker.io/henrygd/beszel-agent:0.18.7
+ContainerName=beszel-agent
+# Host network de propósito, não bridge (diferente do padrão deste
+# repositório) — o agent reporta o tráfego de rede real das interfaces
+# do host; numa rede bridge isolada, só enxergaria o veth interno do
+# próprio container, números sem utilidade nenhuma pra monitoramento.
+Network=host
+
+Volume=%h/.config/containers/volumes/beszel/agent-data:/var/lib/beszel-agent:Z
+Volume=%h/.config/containers/volumes/beszel/socket:/beszel_socket:Z
+# Socket compatível com a API do Docker, exposto pelo podman.socket —
+# permite o agent listar/monitorar os outros containers deste host.
+Volume=%t/podman/podman.sock:/var/run/docker.sock:ro,z
+EnvironmentFile=%h/.config/containers/env/beszel.env
+Secret=beszel-agent-key,target=/run/secrets/beszel-key
+Secret=beszel-agent-token,target=/run/secrets/beszel-token
+
+HealthCmd=CMD /agent health
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=10s
+Notify=healthy
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

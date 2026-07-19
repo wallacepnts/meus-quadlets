@@ -1,0 +1,44 @@
+[Unit]
+Description=Beszel Hub (dashboard de monitoramento)
+
+[Container]
+Image=docker.io/henrygd/beszel:0.18.7
+ContainerName=beszel
+Network=beszel-net.network
+PublishPort=8090:8090
+
+Volume=%h/.config/containers/volumes/beszel/hub-data:/beszel_data:Z
+# Socket compartilhado com o beszel-agent.container (mesmo host, ver
+# README) — em vez de conectar por TCP/token exposto na rede.
+Volume=%h/.config/containers/volumes/beszel/socket:/beszel_socket:Z
+EnvironmentFile=%h/.config/containers/env/beszel.env
+
+# Imagem é um binário estático só, sem /bin/sh — "CMD", não "CMD-SHELL"
+# (testado na prática: "CMD-SHELL" falha por não achar shell nenhum).
+HealthCmd=CMD /beszel health --url http://localhost:8090
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=10s
+Notify=healthy
+
+# tsdproxy discovery — expõe o painel na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=beszel
+Label=tsdproxy.port.web=443/https:8090/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Infra
+Label=homepage.name=Beszel
+Label=homepage.icon=beszel.svg
+Label=homepage.href=https://beszel.<seu-tailnet>.ts.net
+Label=homepage.description="Monitoramento de CPU/RAM/disco/rede e containers deste host"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
