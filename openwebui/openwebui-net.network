@@ -1,0 +1,5 @@
+[Unit]
+Description=Rede do Open WebUI + Ollama
+
+[Network]
+NetworkName=openwebui-net

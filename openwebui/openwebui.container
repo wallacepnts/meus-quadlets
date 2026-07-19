@@ -6,14 +6,12 @@ Requires=ollama.service
 [Container]
 Image=ghcr.io/open-webui/open-webui:v0.10.2
 ContainerName=openwebui
-# Reaproveita a rede do Ollama (ver ../ollama/) — assim os dois containers
-# se resolvem pelo nome (OLLAMA_BASE_URL=http://ollama:11434 no .env),
-# sem precisar publicar a porta do Ollama pra fora nem criar rede própria
-# só pra isso.
-Network=ollama-net.network
+# Mesma rede do ollama.container deste diretório — os dois containers se
+# resolvem pelo nome (OLLAMA_BASE_URL=http://ollama:11434 no .env).
+Network=openwebui-net.network
 PublishPort=3003:8080
 
-Volume=%h/.config/containers/volumes/openwebui/data:/app/backend/data:Z
+Volume=%h/.config/containers/volumes/openwebui/webui:/app/backend/data:Z
 EnvironmentFile=%h/.config/containers/env/openwebui.env
 Secret=openwebui-secret-key,type=env,target=WEBUI_SECRET_KEY
 

@@ -1,14 +1,14 @@
 [Unit]
-Description=Ollama (LLMs locais)
+Description=Ollama (LLMs locais, backend do Open WebUI)
 
 [Container]
 Image=docker.io/ollama/ollama:0.32.1
 ContainerName=ollama
-Network=ollama-net.network
+Network=openwebui-net.network
 PublishPort=11434:11434
 
 # CPU-only por padrão (sem GPU) — ver README pra ativar NVIDIA/AMD ROCm
-Volume=%h/.config/containers/volumes/ollama/data:/root/.ollama:Z
+Volume=%h/.config/containers/volumes/openwebui/ollama:/root/.ollama:Z
 
 # A imagem não tem wget/curl, só o binário ollama — "ollama list" fala
 # com o servidor local (127.0.0.1:11434 via OLLAMA_HOST padrão) e serve
@@ -30,7 +30,7 @@ Label=homepage.group=Self-Hosted
 Label=homepage.name=Ollama
 Label=homepage.icon=ollama.svg
 Label=homepage.href=https://ollama.<seu-tailnet>.ts.net
-Label=homepage.description="Servidor de LLMs locais"
+Label=homepage.description="Servidor de LLMs locais, backend do Open WebUI"
 
 Label=wud.watch=true
 

@@ -1,5 +1,0 @@
-[Unit]
-Description=Rede do Ollama
-
-[Network]
-NetworkName=ollama-net
