@@ -1,0 +1,5 @@
+[Unit]
+Description=Rede do Authentik
+
+[Network]
+NetworkName=authentik-net

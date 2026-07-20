@@ -1,0 +1,36 @@
+[Unit]
+Description=Authentik Worker (tarefas em segundo plano, outposts)
+After=authentik-postgres.service podman.socket
+Requires=authentik-postgres.service podman.socket
+
+[Container]
+Image=ghcr.io/goauthentik/server:2026.5.5
+ContainerName=authentik-worker
+Network=authentik-net.network
+Exec=worker
+# Compose oficial roda o worker como root (dentro do próprio namespace do
+# container) — ele grava em /certs e fala com o socket do Podman/Docker
+# pra gerenciar outposts.
+User=0
+
+Environment=AUTHENTIK_POSTGRESQL__HOST=postgresql
+Environment=AUTHENTIK_POSTGRESQL__NAME=authentik
+Environment=AUTHENTIK_POSTGRESQL__USER=authentik
+Secret=authentik-postgres-password,type=env,target=AUTHENTIK_POSTGRESQL__PASSWORD
+Secret=authentik-secret-key,type=env,target=AUTHENTIK_SECRET_KEY
+
+Volume=%h/.config/containers/volumes/authentik/data:/data:Z
+Volume=%h/.config/containers/volumes/authentik/certs:/certs:Z
+# Socket compatível com a API do Docker, exposto pelo podman.socket —
+# necessário só se/quando for gerenciar outposts a partir daqui (ver
+# README, "Protegendo outros apps depois").
+Volume=%t/podman/podman.sock:/var/run/docker.sock:z
+
+PodmanArgs=--shm-size=512m
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

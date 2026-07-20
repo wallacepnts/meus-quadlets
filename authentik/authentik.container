@@ -1,0 +1,51 @@
+[Unit]
+Description=Authentik (servidor de identidade / SSO)
+After=authentik-postgres.service
+Requires=authentik-postgres.service
+
+[Container]
+Image=ghcr.io/goauthentik/server:2026.5.5
+ContainerName=authentik
+Network=authentik-net.network
+Exec=server
+PublishPort=9000:9000
+
+Environment=AUTHENTIK_POSTGRESQL__HOST=postgresql
+Environment=AUTHENTIK_POSTGRESQL__NAME=authentik
+Environment=AUTHENTIK_POSTGRESQL__USER=authentik
+Secret=authentik-postgres-password,type=env,target=AUTHENTIK_POSTGRESQL__PASSWORD
+Secret=authentik-secret-key,type=env,target=AUTHENTIK_SECRET_KEY
+
+Volume=%h/.config/containers/volumes/authentik/data:/data:Z
+
+# shm_size do compose oficial — o server usa memória compartilhada
+# maior que o default do Podman (64m) pra algumas operações internas.
+PodmanArgs=--shm-size=512m
+
+HealthCmd=CMD-SHELL curl -fsS http://127.0.0.1:9000/-/health/live/ || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=5
+HealthStartPeriod=60s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=authentik
+Label=tsdproxy.port.web=443/https:9000/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Infra
+Label=homepage.name=Authentik
+Label=homepage.icon=authentik.svg
+Label=homepage.href=https://authentik.<seu-tailnet>.ts.net
+Label=homepage.description="Servidor de identidade / SSO (só o portal — sem forward-auth neste repositório, ver README)"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target
