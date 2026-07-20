@@ -41,10 +41,15 @@ frigate-net.network   # rede bridge isolada
 frigate.container       # unit principal
 ```
 
-Sem `config.yml` versionado neste repositório — testado na prática,
-a imagem sobe com os defaults dela (sem MQTT, sem câmera) mesmo sem
-nenhum arquivo de config presente. Criar o arquivo você mesmo quando
-for adicionar a primeira câmera (ver seção própria abaixo).
+Sem `config.yml` versionado neste repositório. **Atenção**: sem nenhum
+config presente, a própria imagem **gera sozinha** um
+`config/config.yaml` (extensão `.yaml`, não `.yml`) no primeiro start,
+com uma câmera de exemplo (`name_of_your_camera`, apontando pra um IP
+fake `10.0.10.10`) — testado na prática, essa câmera fica tentando
+conectar e falhando em loop nos logs (`Connection timed out` a cada
+~10-20s) até ser removida/desabilitada. O passo 6 abaixo já troca esse
+arquivo por um limpo (`cameras: {}`) antes de configurar a primeira
+câmera de verdade.
 
 ## Pré-requisitos
 
@@ -77,6 +82,17 @@ systemctl --user daemon-reload
 
 # 5. Subir
 systemctl --user start frigate
+
+# 6. Limpar a câmera de exemplo que a imagem gera sozinha no primeiro
+#    start (ver aviso acima) — sem isso, fica tentando conectar num IP
+#    fake e poluindo os logs até você configurar uma câmera de verdade
+cat > ~/.config/containers/volumes/frigate/config/config.yaml <<EOF
+mqtt:
+  enabled: False
+
+cameras: {}
+EOF
+systemctl --user restart frigate
 ```
 
 Acessar `https://<ip-do-host>:8971` (aceitar o certificado self-signed
@@ -97,7 +113,9 @@ Trocar a senha depois de logar em Configurações → Usuários.
 
 ## Adicionar a primeira câmera
 
-Criar `~/.config/containers/volumes/frigate/config/config.yml`:
+Editar `~/.config/containers/volumes/frigate/config/config.yaml`
+(criado no passo 6 da instalação — reparar na extensão `.yaml`, não
+`.yml`):
 
 ```yaml
 mqtt:
