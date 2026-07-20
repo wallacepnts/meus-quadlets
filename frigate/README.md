@@ -228,7 +228,7 @@ Precisa do **NVIDIA Container Toolkit** configurado pro Podman (gera a
 spec CDI) — mesmo pré-requisito e mesmos passos já documentados no
 [README do Ollama](../openwebui/#ativar-gpu-nvidia). Depois:
 
-1. Trocar `Image=` pra `ghcr.io/blakeblackshear/frigate:0.16.1-tensorrt`
+1. Trocar `Image=` pra `ghcr.io/blakeblackshear/frigate:0.17.2-tensorrt`
    (tag própria pra NVIDIA, diferente da imagem padrão usada aqui).
 2. Adicionar `PodmanArgs=--gpus=all` (junto do `--shm-size=` já
    existente).
@@ -247,7 +247,7 @@ systemctl --user restart frigate
 
 ## Auto-update
 
-Sem `AutoUpdate=` — tag explícita (`0.16.1`), bump manual (regra 9 do
+Sem `AutoUpdate=` — tag explícita (`0.17.2`), bump manual (regra 9 do
 README raiz). A imagem tem `curl`/healthcheck real — daria pra habilitar
 `AutoUpdate=registry` com rollback funcional, mas gravações/config de
 câmera são dado real do usuário, revisão manual antes de atualizar.

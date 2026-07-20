@@ -2,7 +2,7 @@
 Description=Frigate (NVR com detecção de objetos por IA)
 
 [Container]
-Image=ghcr.io/blakeblackshear/frigate:0.16.1
+Image=ghcr.io/blakeblackshear/frigate:0.17.2
 ContainerName=frigate
 Network=frigate-net.network
 
@@ -53,6 +53,10 @@ Label=homepage.href=https://frigate.<seu-tailnet>.ts.net
 Label=homepage.description="NVR com detecção de objetos por IA"
 
 Label=wud.watch=true
+# Upstream publica variantes com sufixo (beta, -tensorrt, -rocm, -rk,
+# -jpX) que o WUD compararia via semver como "maior" — restringe a
+# tags limpas X.Y.Z, mesma imagem/variante que usamos.
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+$
 
 [Service]
 Restart=always
