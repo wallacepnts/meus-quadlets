@@ -2,7 +2,7 @@
 Description=ownCloud
 
 [Container]
-Image=docker.io/owncloud/server:10.16.3-20260709
+Image=docker.io/owncloud/server:10.16.3-20260719
 ContainerName=owncloud
 PublishPort=8094:8080
 

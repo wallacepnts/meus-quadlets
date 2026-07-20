@@ -76,7 +76,7 @@ hostname exato usado no navegador).
 
 ## Auto-update
 
-Sem `AutoUpdate=` — tag explícita (`10.16.3-20260709`), bump manual
+Sem `AutoUpdate=` — tag explícita (`10.16.3-20260719`), bump manual
 (regra 9 do README raiz). Arquivos sincronizados são dado real do
 usuário — revisão manual antes de atualizar, mesmo raciocínio do
 linkwarden. Ainda mais relevante aqui rodando em SQLite (modo não
