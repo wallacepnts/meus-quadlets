@@ -1,0 +1,50 @@
+[Unit]
+Description=Ghost (blog/newsletter, SQLite em modo development)
+
+[Container]
+Image=docker.io/library/ghost:6.53.0-alpine
+ContainerName=ghost
+Network=ghost-net.network
+PublishPort=9094:2368
+
+# SQLite só é suportado oficialmente em modo development pelo próprio
+# projeto (produção de verdade exige MySQL) — decisão consciente,
+# mesmo trade-off já aceito pro ownCloud neste repositório (ver
+# README). NODE_ENV=development é o que habilita o driver sqlite3.
+Environment=NODE_ENV=development
+Environment=database__client=sqlite3
+Environment=database__connection__filename=/var/lib/ghost/content/data/ghost.db
+Environment=database__useNullAsDefault=true
+
+Volume=%h/.config/containers/volumes/ghost/content:/var/lib/ghost/content:Z
+EnvironmentFile=%h/.config/containers/env/ghost.env
+
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:2368/ghost/api/admin/site/ || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=ghost
+Label=tsdproxy.port.web=443/https:2368/http
+
+# homepage — exibição no dashboard (ver ../homepage/). Sem equivalente
+# em dashboard-icons — usa o fallback si- (Simple Icons, regra do
+# README do homepage).
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Ghost
+Label=homepage.icon=si-ghost
+Label=homepage.href=https://ghost.<seu-tailnet>.ts.net
+Label=homepage.description="Blog/newsletter self-hosted (SQLite, modo development)"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
