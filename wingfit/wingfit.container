@@ -1,0 +1,46 @@
+[Unit]
+Description=Wingfit (planejamento e acompanhamento de treinos)
+
+[Container]
+Image=ghcr.io/itskovacs/wingfit:5.3.1
+ContainerName=wingfit
+Network=wingfit-net.network
+PublishPort=8093:8000
+
+# SQLite embutido — um volume só. Config opcional (OIDC, expiração de
+# token, desligar cadastro) fica em storage/config.yml, editado direto
+# no volume depois do primeiro start (não vem por padrão) — ver README.
+Volume=%h/.config/containers/volumes/wingfit/storage:/app/storage:Z
+
+# Imagem sem wget/curl (Python slim) — usa o próprio python3 pra testar
+# HTTP, mesmo princípio do CMD-SHELL com ferramenta disponível na
+# imagem (regra 9 do README raiz).
+HealthCmd=CMD-SHELL python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/')" || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=wingfit
+Label=tsdproxy.port.web=443/https:8000/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Wingfit
+# Sem equivalente em dashboard-icons — ícone customizado, ver README
+# (passo de instalação copia o arquivo pra pasta de ícones do homepage).
+Label=homepage.icon=/icons/wingfit.png
+Label=homepage.href=https://wingfit.<seu-tailnet>.ts.net
+Label=homepage.description="Planejamento e acompanhamento de treinos"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
