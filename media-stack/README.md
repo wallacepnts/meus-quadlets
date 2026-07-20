@@ -105,18 +105,18 @@ normal, só não aparece sozinho na lista.
 ## Arquivos
 
 ```
-jellyfin.container
-dispatcharr.container   # modo AIO — Postgres/Redis internos, um container só
-downtify.container
-prowlarr.container
-sonarr.container
-radarr.container
-lidarr.container
-bazarr.container
-seerr.container
-deluge.container
-sabnzbd.container
-gluetun.container        # opcional — ver seção VPN abaixo
+media-stack-jellyfin.container
+media-stack-dispatcharr.container   # modo AIO — Postgres/Redis internos, um container só
+media-stack-downtify.container
+media-stack-prowlarr.container
+media-stack-sonarr.container
+media-stack-radarr.container
+media-stack-lidarr.container
+media-stack-bazarr.container
+media-stack-seerr.container
+media-stack-deluge.container
+media-stack-sabnzbd.container
+media-stack-gluetun.container        # opcional — ver seção VPN abaixo
 ```
 
 ## Pré-requisitos
@@ -127,13 +127,13 @@ gluetun.container        # opcional — ver seção VPN abaixo
 
 ```bash
 # 1. Baixar as units (sem precisar clonar o repositório; inclui
-#    gluetun.container — só importa se for usar a seção de VPN abaixo,
+#    media-stack-gluetun.container — só importa se for usar a seção de VPN abaixo,
 #    sem ativar fica parado sem nenhum custo)
-mkdir -p ~/.config/containers/systemd
+mkdir -p ~/.config/containers/systemd/media-stack
 for f in jellyfin dispatcharr downtify prowlarr sonarr radarr lidarr \
          bazarr seerr deluge sabnzbd gluetun; do
-  wget -P ~/.config/containers/systemd/ \
-    "https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/media-stack/$f.container"
+  wget -P ~/.config/containers/systemd/media-stack/ \
+    "https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/media-stack/media-stack-$f.container"
 done
 
 # 2. Raiz de mídia — a ÚNICA decisão de path desta stack inteira, via uma
@@ -177,7 +177,8 @@ systemctl --user daemon-reload
 # 6. Subir (sem o Gluetun — ver seção própria pra ativar VPN). Sem
 #    Requires= entre serviços aqui — Dispatcharr é um container só,
 #    Postgres/Redis sobem dentro dele mesmo.
-systemctl --user start jellyfin dispatcharr downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user start media-stack-jellyfin media-stack-dispatcharr media-stack-downtify media-stack-prowlarr media-stack-sonarr media-stack-radarr media-stack-lidarr media-stack-bazarr media-stack-seerr media-stack-deluge media-stack-sabnzbd
+
 ```
 
 Acessar cada um via [tsdproxy](../tsdproxy/) (tailnet, ex.:
@@ -216,10 +217,12 @@ de cada um:
    como se fosse um programa):
 
    ```bash
-   systemctl --user stop sabnzbd
+   systemctl --user stop media-stack-sabnzbd
+
    podman unshare sed -i 's/^inet_exposure = 0/inet_exposure = 4/' \
      ~/.config/containers/volumes/media-stack/sabnzbd/config/sabnzbd.ini
-   systemctl --user start sabnzbd
+   systemctl --user start media-stack-sabnzbd
+
    ```
 
    Diferente do "Hostname verification failed" (outro mecanismo do
@@ -252,9 +255,10 @@ de cada um:
 ## Transcodificação por hardware (Jellyfin)
 
 Sem isso, transcodificação usa só CPU — funciona, mas não escala bem
-pra vários streams simultâneos ou 4K. Adicionar no `jellyfin.container`
+pra vários streams simultâneos ou 4K. Adicionar no `media-stack-jellyfin.container`
 **antes** de subir (ou editar e `systemctl --user daemon-reload &&
-systemctl --user restart jellyfin` depois):
+systemctl --user restart media-stack-jellyfin` depois):
+
 
 ### Intel/AMD (`/dev/dri`, VAAPI/QSV)
 
@@ -289,7 +293,7 @@ Em host com SELinux enforcing:
 sudo setsebool -P container_use_devices 1
 ```
 
-Adicionar no `jellyfin.container`:
+Adicionar no `media-stack-jellyfin.container`:
 
 ```ini
 AddDevice=nvidia.com/gpu=all
@@ -303,7 +307,7 @@ A partir do NVIDIA Container Toolkit v1.18.0 existe um serviço
 
 ## Dispatcharr: modo AIO, Postgres e Redis embutidos
 
-`dispatcharr.container` roda em modo AIO
+`media-stack-dispatcharr.container` roda em modo AIO
 (`Environment=DISPATCHARR_ENV=aio`) — a própria imagem sobe Postgres e
 Redis internamente (via `pg_ctl`/uwsgi attach-daemon no
 `entrypoint.sh`), tudo dentro de um único `/data:Z` (banco em
@@ -349,7 +353,7 @@ crítica pro pipeline funcionar.
 ## VPN opcional no Deluge, via Gluetun
 
 Por padrão o Deluge sobe **sem VPN** — tráfego de torrent sai direto
-pelo IP do host, mesma rede que os outros serviços. `gluetun.container`
+pelo IP do host, mesma rede que os outros serviços. `media-stack-gluetun.container`
 já vem junto no repositório, parado até ser ativado; ativar depois não
 exige reinstalar nada.
 
@@ -359,31 +363,33 @@ precisam de VPN; SABnzbd também fica de fora de propósito, usenet é
 conexão direta e criptografada com o provedor, sem broadcast de IP pra
 peers como no torrent):
 
-`gluetun.container` já vem pronto pra isso (portas do Deluge publicadas
+`media-stack-gluetun.container` já vem pronto pra isso (portas do Deluge publicadas
 nele, healthcheck, `--privileged` — ver justificativa abaixo). Só falta:
 
 ```bash
 # 1. Credenciais do provedor de VPN — baixar o exemplo e editar (ver
 #    lista de provedores suportados:
 #    https://github.com/qdm12/gluetun-wiki/tree/main/setup/providers)
-wget -O ~/.config/containers/env/gluetun.env \
-  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/media-stack/gluetun.env.example
-# editar ~/.config/containers/env/gluetun.env: VPN_SERVICE_PROVIDER,
+wget -O ~/.config/containers/env/media-stack-gluetun.env \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/media-stack/media-stack-gluetun.env.example
+# editar ~/.config/containers/env/media-stack-gluetun.env: VPN_SERVICE_PROVIDER,
 # WIREGUARD_PRIVATE_KEY, WIREGUARD_ADDRESSES, SERVER_COUNTRIES
-chmod 600 ~/.config/containers/env/gluetun.env
+chmod 600 ~/.config/containers/env/media-stack-gluetun.env
 
-# 2. Editar deluge.container: trocar as três linhas de PublishPort= por
+# 2. Editar media-stack-deluge.container: trocar as três linhas de PublishPort= por
 #    Network=container:gluetun, e adicionar em [Unit]:
-#      After=gluetun.service
-#      Requires=gluetun.service
+#      After=media-stack-gluetun.service
+#      Requires=media-stack-gluetun.service
 #    (container que entra via "container:" não declara PublishPort=
 #    próprio nem Network=<nome>.network — a porta já está publicada no
-#    gluetun.container, é por isso que os labels tsdproxy.* de descoberta
-#    também já estão lá, não no deluge.container)
+#    media-stack-gluetun.container, é por isso que os labels tsdproxy.* de descoberta
+#    também já estão lá, não no media-stack-deluge.container)
 
 systemctl --user daemon-reload
-systemctl --user stop deluge
-systemctl --user start gluetun deluge
+systemctl --user stop media-stack-deluge
+
+systemctl --user start media-stack-gluetun media-stack-deluge
+
 ```
 
 `Network=container:gluetun` faz o Deluge compartilhar a stack de rede
@@ -394,7 +400,7 @@ prática já funciona como um kill switch: sem VPN, sem Deluge, sem
 vazamento de IP.
 
 **Por que `PodmanArgs=--privileged` no Gluetun** (já vem assim no
-`gluetun.container` deste repo) — testado na prática: só
+`media-stack-gluetun.container` deste repo) — testado na prática: só
 `AddCapability=NET_ADMIN` (sem privileged) barra no setup do firewall
 interno do próprio Gluetun, com erro de `iptables`/`conntrack` —
 rootless não consegue mexer no netfilter real do host mesmo com a
@@ -403,7 +409,7 @@ capability concedida, só dentro do próprio namespace remapeado. Com
 root real do host, diferente de rootful Podman/Docker) o firewall
 interno sobe normal. Se preferir não usar `--privileged` de jeito
 nenhum, dá pra desligar o firewall interno do Gluetun (`FIREWALL=off`
-no `gluetun.env`) — funciona sem `--privileged`, mas perde o kill
+no `media-stack-gluetun.env`) — funciona sem `--privileged`, mas perde o kill
 switch próprio dele (ainda sobra o "kill switch de fato" do
 `Network=container:` descrito acima, então o risco residual é menor do
 que parece).
@@ -416,7 +422,7 @@ podman exec gluetun wget -qO- https://ipinfo.io/ip
 ## Auto-update
 
 Nenhum dos serviços tem `AutoUpdate=` — tags explícitas, bump manual
-(regra 9 do README raiz; `gluetun.container` e `dispatcharr.container`
+(regra 9 do README raiz; `media-stack-gluetun.container` e `media-stack-dispatcharr.container`
 deste repo são exceção consciente, ficam em `:latest` porque os
 respectivos projetos não publicam releases versionadas de forma
 estável — reavaliar se isso mudar).
@@ -443,9 +449,11 @@ e o projeto ainda está em desenvolvimento ativo, a atualização continua
 manual mesmo com essa visibilidade:
 
 ```bash
-systemctl --user stop dispatcharr
+systemctl --user stop media-stack-dispatcharr
+
 podman pull ghcr.io/dispatcharr/dispatcharr:latest
-systemctl --user start dispatcharr
+systemctl --user start media-stack-dispatcharr
+
 ```
 
 **Fazer backup antes de atualizar** (seção abaixo) — em modo AIO, uma
@@ -455,10 +463,12 @@ a rede de segurança de containers isolados que o modo modular tinha.
 ## Backup & Recuperação
 
 ```bash
-systemctl --user stop jellyfin dispatcharr downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user stop media-stack-jellyfin media-stack-dispatcharr media-stack-downtify media-stack-prowlarr media-stack-sonarr media-stack-radarr media-stack-lidarr media-stack-bazarr media-stack-seerr media-stack-deluge media-stack-sabnzbd
+
 tar -czf media-stack-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
   -C ~/.config/containers/volumes media-stack
-systemctl --user start jellyfin dispatcharr downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user start media-stack-jellyfin media-stack-dispatcharr media-stack-downtify media-stack-prowlarr media-stack-sonarr media-stack-radarr media-stack-lidarr media-stack-bazarr media-stack-seerr media-stack-deluge media-stack-sabnzbd
+
 ```
 
 Só as pastas `config/`/`cache/` de cada serviço (API keys, configuração,
@@ -466,7 +476,7 @@ estado de download/indexer, biblioteca/histórico do Jellyfin) — a mídia
 em si e os downloads brutos ficam fora, fora de
 `~/.config/containers/volumes/`, gerenciados separadamente por quem
 instalou. Se estiver usando o Gluetun,
-`~/.config/containers/env/gluetun.env` (credenciais de VPN) também
+`~/.config/containers/env/media-stack-gluetun.env` (credenciais de VPN) também
 precisa de backup separado — sem ele, só recriar do zero com o provedor.
 
 No Dispatcharr (modo AIO), `volumes/media-stack/dispatcharr/data`
@@ -496,7 +506,8 @@ baixando de novo se precisar.
 ## Comandos úteis
 
 ```bash
-systemctl --user status jellyfin dispatcharr downtify prowlarr sonarr radarr lidarr bazarr seerr deluge sabnzbd
+systemctl --user status media-stack-jellyfin media-stack-dispatcharr media-stack-downtify media-stack-prowlarr media-stack-sonarr media-stack-radarr media-stack-lidarr media-stack-bazarr media-stack-seerr media-stack-deluge media-stack-sabnzbd
+
 podman logs -f sonarr   # trocar pelo serviço que quiser
 podman exec dispatcharr su - dispatch -c "psql -h /var/run/postgresql -U dispatch -d dispatcharr -c 'SELECT 1;'"
 ```

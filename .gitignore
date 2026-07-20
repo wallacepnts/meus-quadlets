@@ -1,0 +1,26 @@
+# Secrets — nunca versionar (README raiz, regra 2).
+# Os arquivos-fonte de secret e os secrets do Podman ficam SÓ no host.
+secrets/
+**/secrets/
+
+# Env reais — só o exemplo (.env.example) vai pro repo.
+*.env
+!*.env.example
+.env
+
+# Dados de runtime dos containers — moram no host, nunca no repo.
+volumes/
+**/volumes/
+
+# Backups gerados localmente (padrão dos READMEs de serviço).
+*.tar.gz
+*-backup-*.tar
+
+# Lixo de editor / SO.
+*.swp
+*~
+.DS_Store
+
+# Arquivos locais de instrução ao Claude Code — não publicar no GitHub.
+CLAUDE.md
+_template/

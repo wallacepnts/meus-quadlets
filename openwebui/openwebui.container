@@ -1,12 +1,12 @@
 [Unit]
 Description=Open WebUI (interface de chat pra LLMs)
-After=ollama.service
-Requires=ollama.service
+After=openwebui-ollama.service
+Requires=openwebui-ollama.service
 
 [Container]
 Image=ghcr.io/open-webui/open-webui:v0.10.2
 ContainerName=openwebui
-# Mesma rede do ollama.container deste diretório — os dois containers se
+# Mesma rede do openwebui-ollama.container deste diretório — os dois containers se
 # resolvem pelo nome (OLLAMA_BASE_URL=http://ollama:11434 no .env).
 Network=openwebui-net.network
 PublishPort=3003:8080

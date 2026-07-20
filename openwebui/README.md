@@ -13,7 +13,7 @@ abaixo).
 
 | Tag | O que é | Por que (não) usar aqui |
 | --- | --- | --- |
-| **`:main`** (usada aqui) | Só o Open WebUI, fala com um Ollama externo via `OLLAMA_BASE_URL` | Combina com o `ollama.container` deste diretório — dois containers, cada um com seu próprio ciclo de vida/update/log |
+| **`:main`** (usada aqui) | Só o Open WebUI, fala com um Ollama externo via `OLLAMA_BASE_URL` | Combina com o `openwebui-ollama.container` deste diretório — dois containers, cada um com seu próprio ciclo de vida/update/log |
 | `:ollama` | Open WebUI **+ Ollama embutido no mesmo container** | O compose oficial do projeto (linkado acima) já não usa essa variante — prefere dois serviços separados, mesma escolha feita aqui. Um container só dificulta atualizar/reiniciar um sem o outro, e mistura os logs dos dois |
 | `:cuda` | Mesma base do `:main`, com CUDA Toolkit embutido pra acelerar por GPU as tarefas *internas* do próprio Open WebUI (embedding local, Whisper de voz-pra-texto, reranking) — **não tem relação com a GPU do Ollama** | Este host está CPU-only por decisão (sem `nvidia-container-toolkit`/CDI configurado — ver "Ativar GPU NVIDIA" abaixo). Se a GPU for ativada, essa tag passa a valer a pena pras tarefas de embedding/voz — trocar `Image=` no `openwebui.container` pra `ghcr.io/open-webui/open-webui:v0.10.2-cuda` e adicionar `PodmanArgs=--gpus=all` |
 | `:dev` | Build da branch principal, sem tag de release | Fora de cogitação pra uso doméstico estável (regra 9 do README raiz) |
@@ -25,10 +25,10 @@ Dois containers na mesma rede (`openwebui-net.network`):
 - `ollama` — o servidor de LLMs em si, API HTTP na porta `11434`
   (publicada no host também, pra uso direto via `podman exec ollama
   ollama run <modelo>` ou API sem passar pelo Open WebUI).
-- `openwebui` — a interface web, `Requires=`/`After=ollama.service` no
-  `[Unit]` garante que o Ollama já esteja no ar antes dele tentar
-  falar com `http://ollama:11434` (nome resolvido via DNS interno do
-  Podman, os dois na mesma rede).
+- `openwebui` — a interface web, `Requires=`/`After=openwebui-ollama.service`
+  no `[Unit]` garante que o Ollama já esteja no ar antes dele tentar
+  falar com `http://ollama:11434` (nome do container, resolvido via DNS
+  interno do Podman — não muda com o nome do arquivo/unit).
 
 **CPU-only por padrão** — sem GPU, roda em qualquer host, mais lento
 pra modelos grandes. Ver "Ativar GPU NVIDIA"/"Ativar GPU AMD (ROCm)"
@@ -48,9 +48,9 @@ que deixa em branco).
 ## Arquivos
 
 ```
-openwebui-net.network   # rede bridge compartilhada pelos dois
-ollama.container        # backend — servidor de LLMs
-openwebui.container     # interface web
+openwebui-net.network     # rede bridge compartilhada pelos dois
+openwebui-ollama.container # backend — servidor de LLMs
+openwebui.container       # interface web
 ```
 
 ## Pré-requisitos
@@ -61,10 +61,10 @@ openwebui.container     # interface web
 
 ```bash
 # 1. Baixar as units (sem precisar clonar o repositório)
-mkdir -p ~/.config/containers/systemd
-wget -P ~/.config/containers/systemd/ \
+mkdir -p ~/.config/containers/systemd/openwebui
+wget -P ~/.config/containers/systemd/openwebui/ \
   https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/openwebui/openwebui-net.network \
-  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/openwebui/ollama.container \
+  https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/openwebui/openwebui-ollama.container \
   https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/openwebui/openwebui.container
 
 # 2. Diretórios de dados — bind mount exige que já existam antes do start
@@ -128,7 +128,7 @@ sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
 nvidia-ctk cdi list
 ```
 
-Depois, adicionar ao **`ollama.container`** (seção `[Container]`) —
+Depois, adicionar ao **`openwebui-ollama.container`** (seção `[Container]`) —
 acelera o próprio Ollama, o principal consumidor de GPU do par:
 
 ```ini
@@ -142,7 +142,7 @@ mesmo `PodmanArgs=--gpus=all`.
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user restart ollama openwebui
+systemctl --user restart openwebui-ollama openwebui
 podman exec ollama ollama run llama3.2 --verbose   # confere "eval rate" bem mais alto
 ```
 
@@ -152,7 +152,7 @@ expor o dispositivo.
 
 ## Ativar GPU AMD (ROCm)
 
-Troca de imagem no **`ollama.container`** pra
+Troca de imagem no **`openwebui-ollama.container`** pra
 `docker.io/ollama/ollama:0.32.1-rocm` (mesma versão base, variante
 ROCm) e expõe os dispositivos do kernel direto (sem CDI, mais simples
 que o caminho NVIDIA):
@@ -165,7 +165,7 @@ AddDevice=/dev/dri
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user restart ollama
+systemctl --user restart openwebui-ollama
 ```
 
 Requer o driver ROCm instalado no host (kernel module `amdgpu` +
@@ -183,10 +183,10 @@ dos dois, mas mantido manual como padrão do repositório.
 ## Backup & Recuperação
 
 ```bash
-systemctl --user stop openwebui ollama
+systemctl --user stop openwebui openwebui-ollama
 tar -czf openwebui-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
   -C ~/.config/containers/volumes openwebui
-systemctl --user start ollama openwebui
+systemctl --user start openwebui-ollama openwebui
 ```
 
 Modelos baixados (`openwebui/ollama/`) costumam ser grandes (vários GB
@@ -196,7 +196,7 @@ cada) — considerar excluir da tarball de backup de rotina e só rebaixar
 ## Comandos úteis
 
 ```bash
-systemctl --user status ollama openwebui
+systemctl --user status openwebui-ollama openwebui
 podman logs -f ollama
 podman logs -f openwebui
 podman exec ollama ollama list

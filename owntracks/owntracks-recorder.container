@@ -1,7 +1,7 @@
 [Unit]
 Description=OwnTracks Recorder
-After=mosquitto.service
-Requires=mosquitto.service
+After=owntracks-mosquitto.service
+Requires=owntracks-mosquitto.service
 
 [Container]
 # Testado na prática: o ot-recorder não tolera o broker indisponível no

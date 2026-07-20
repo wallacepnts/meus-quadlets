@@ -54,7 +54,7 @@ primeira tentativa mesmo assim.
 
 ```
 owntracks-net.network          # rede dedicada
-mosquitto.container            # broker MQTT
+owntracks-mosquitto.container  # broker MQTT
 owntracks-recorder.container   # aplicação (backend + viewer básico)
 owntracks-frontend.container   # UI Vue.js separada
 mosquitto.conf                 # config do broker (auth habilitada)
@@ -71,7 +71,7 @@ frontend-config.js             # config do frontend (padrão vazio)
 ```bash
 # 1. Baixar as units (sem precisar clonar o repositório)
 mkdir -p ~/.config/containers/systemd/owntracks
-for f in owntracks-net.network mosquitto.container \
+for f in owntracks-net.network owntracks-mosquitto.container \
          owntracks-recorder.container owntracks-frontend.container; do
   wget -P ~/.config/containers/systemd/owntracks/ \
     "https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/owntracks/$f"
@@ -153,7 +153,7 @@ testado na prática — proxy TCP puro (`tsdproxy.port.*`, mesmo mecanismo
 do [any-sync-bundle](../any-sync-bundle/)) trava permanentemente em
 "Starting"/`NeedsLogin` no tsdproxy 2.3.4, nunca chega a `Running` (o
 any-sync-bundle mostra o mesmo sintoma nos logs — health check falhando
-em loop — não é specific deste app). `mosquitto.container` não declara
+em loop — não é specific deste app). `owntracks-mosquitto.container` não declara
 labels do tsdproxy por causa disso. Como `PublishPort=1883:1883` já
 expõe a porta em **todas** as interfaces do host — incluindo a própria
 interface da tailnet, não só localhost —, o hostname do host funciona
@@ -228,7 +228,7 @@ bancos/caches no resto do repositório).
 ## Backup & Recuperação
 
 ```bash
-systemctl --user stop owntracks-frontend owntracks-recorder mosquitto
+systemctl --user stop owntracks-frontend owntracks-recorder owntracks-mosquitto
 tar -czf owntracks-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
   -C ~/.config/containers/volumes owntracks
 systemctl --user start owntracks-frontend
@@ -246,7 +246,7 @@ reconfigurar a senha.
 ## Comandos úteis
 
 ```bash
-systemctl --user status owntracks-frontend owntracks-recorder mosquitto
+systemctl --user status owntracks-frontend owntracks-recorder owntracks-mosquitto
 podman logs -f owntracks-recorder
 podman logs -f owntracks-frontend
 podman logs -f mosquitto

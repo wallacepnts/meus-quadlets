@@ -11,8 +11,8 @@ novo adicionado aqui.
 | --- | --- | --- | --- |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/actual-budget.svg" width="48" height="48" alt=""> | [Actual Budget](./actual-budget) | `latest` (auto-update) | Rápido e focado em privacidade pra gerenciar finanças pessoais, usando a metodologia de Orçamento de Envelope |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/adguard-home.svg" width="48" height="48" alt=""> | [AdGuard Home](./adguardhome) | `v0.107.78` | Servidor DNS recursivo com bloqueio de anúncios e rastreadores pra toda a rede |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/audiobookshelf.svg" width="48" height="48" alt=""> | [Audiobookshelf](./audiobookshelf) | `2.35.1` | Servidor de audiolivros e podcasts, com progresso sincronizado entre dispositivos |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/anytype.svg" width="48" height="48" alt=""> | [any-sync-bundle](./any-sync-bundle) | `1.4.3-2026-04-21` | Backend do protocolo Any-Sync, que sincroniza os dados do Anytype entre dispositivos sem depender da nuvem da empresa |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/audiobookshelf.svg" width="48" height="48" alt=""> | [Audiobookshelf](./audiobookshelf) | `2.35.1` | Servidor de audiolivros e podcasts, com progresso sincronizado entre dispositivos |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/baikal.svg" width="48" height="48" alt=""> | [Baikal](./baikal) | `0.10.1-nginx-php8.2` | Servidor CalDAV/CardDAV leve, sincroniza calendários e contatos entre vários dispositivos e clientes |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/beszel.svg" width="48" height="48" alt=""> | [Beszel](./beszel) | `0.18.7` | Dashboard leve de monitoramento de recursos (CPU/RAM/disco/rede/containers) deste host |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/calibre-web.svg" width="48" height="48" alt=""> | [Calibre-Web-Automated](./calibre-web-automated) | `v4.0.6` | Biblioteca de ebooks com conversão, metadados e capas automáticas via Calibre, com leitura direto no navegador |
@@ -28,9 +28,9 @@ novo adicionado aqui.
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/netbootxyz.svg" width="48" height="48" alt=""> | [netboot.xyz](./netbootxyz) | `0.7.6-nbxyz23` | Menu de boot pela rede (PXE) pra instalar ou testar distros e ferramentas sem gravar pendrive |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/nginx.svg" width="48" height="48" alt=""> | [nginx](./nginx) | `1.30.4-alpine` | Servidor de arquivos estáticos |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/open-webui.svg" width="48" height="48" alt=""> | [Open WebUI](./openwebui) | `v0.10.2` (Open WebUI) + `0.32.1` (Ollama) | Interface de chat web + servidor de LLMs locais, CPU-only por padrão (opções de GPU NVIDIA/AMD documentadas) |
-| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/paperless-ngx.svg" width="48" height="48" alt=""> | [Paperless-ngx](./paperless-ngx) | `2.20.15` | Digitaliza, faz OCR e indexa documentos automaticamente, com busca full-text pra nunca mais procurar papel |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owncloud.svg" width="48" height="48" alt=""> | [ownCloud](./owncloud) | `10.16.3-20260709` | Sincronização e compartilhamento de arquivos em nuvem própria |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/owntracks.svg" width="48" height="48" alt=""> | [OwnTracks](./owntracks) | `1.0.1` | Rastreamento de localização pessoal via app de celular, com broker MQTT próprio e histórico de posições |
+| <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/paperless-ngx.svg" width="48" height="48" alt=""> | [Paperless-ngx](./paperless-ngx) | `2.20.15` | Digitaliza, faz OCR e indexa documentos automaticamente, com busca full-text pra nunca mais procurar papel |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/radicale.svg" width="48" height="48" alt=""> | [Radicale](./radicale) | `3.7.6.0` | Servidor CalDAV/CardDAV leve e minimalista |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/syncthing.svg" width="48" height="48" alt=""> | [Syncthing](./syncthing) | `2.1.2` | Sincronização de arquivos P2P entre dispositivos, sem servidor central |
 | <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/tailscale.svg" width="48" height="48" alt=""> | [tsdproxy](./tsdproxy) | `2` | Publica containers na tailnet automaticamente, só com labels — sem configurar proxy manualmente por serviço |
@@ -52,7 +52,8 @@ automaticamente.
 ```
 ~/.config/containers/
 ├── systemd/
-│   └── <app>/
+│   ├── <app-simples>.container        # 1 arquivo quadlet só: solto (regra abaixo)
+│   └── <app-com-varios>/              # 2+ arquivos quadlet: subpasta
 │       ├── <app>-net.network
 │       └── <app>.container
 ├── secrets/
@@ -71,8 +72,26 @@ mkdir -p ~/.config/containers/{systemd,secrets,env,volumes}
 ```
 
 Os arquivos `.container`/`.network` de cada serviço ficam na raiz da
-própria pasta do app (ex.: `baikal/baikal.container`), prontos pra copiar
-direto para `~/.config/containers/systemd/<app>/`.
+própria pasta do app no repositório (ex.: `baikal/baikal.container`).
+
+**Solto vs. subpasta em `systemd/`** — o critério é a quantidade de
+arquivos Quadlet (`.container`/`.network`) do serviço:
+
+- **Um arquivo só** (`<app>.container`, sem `.network` nem outro
+  container) — fica solto direto em `~/.config/containers/systemd/`.
+  Maioria dos serviços deste repositório (ex.: baikal, vaultwarden,
+  tsdproxy, gitea).
+- **Dois ou mais arquivos** (`.network` + `.container`, ou múltiplos
+  `.container` de uma stack) — ganham subpasta dedicada,
+  `~/.config/containers/systemd/<app>/`, só pra agrupar os arquivos
+  relacionados (o Quadlet nomeia a unit pelo *basename* de qualquer
+  jeito, regra 1 — a subpasta é só organização, não muda nome de unit
+  nem comportamento). Ex.: adguardhome, audiobookshelf, beszel,
+  immich, karakeep, linkwarden, media-stack, nginx, openwebui,
+  owntracks, paperless-ngx.
+
+Cada README de serviço já traz os comandos `wget`/`mkdir` certos pro seu
+caso — só seguir o que está lá.
 
 ## Convenções
 
@@ -427,7 +446,10 @@ podman ps --filter "name=<app>"            # confirma healthy de verdade
 
 ```bash
 systemctl --user stop <app> [<dependencias>]
-rm ~/.config/containers/systemd/<app>.container   # e .network/.volume se tiver
+# Serviço solto (1 arquivo):
+rm ~/.config/containers/systemd/<app>.container
+# Serviço em subpasta (2+ arquivos — ver "Estrutura padrão"):
+rm -r ~/.config/containers/systemd/<app>/
 systemctl --user daemon-reload
 systemctl --user reset-failed   # limpa estado de falha residual, se tiver
 ```
@@ -447,7 +469,10 @@ rm -rf ~/.config/containers/volumes/<app>/
 # 3. Env
 rm -f ~/.config/containers/env/<app>.env
 
-# 4. Secrets, se o serviço usava (vaultwarden, linkwarden, tsdproxy)
+# 4. Secrets, se o serviço usava (a maioria hoje: beszel, gitea, immich,
+#    karakeep, linkwarden, n8n, openwebui, owncloud, owntracks,
+#    paperless-ngx, tsdproxy, vaultwarden, zerobyte — checar o README do
+#    serviço se não tiver certeza)
 podman secret rm <app>-nome-do-secret
 rm -rf ~/.config/containers/secrets/<app>/
 ```
@@ -488,8 +513,11 @@ Ele roda 1x/dia, checando todo container com o label
 - Existe uma tag flutuante que faça sentido? Numa tag exata (`1.2.3`) o
   digest nunca muda, `AutoUpdate=` fica sem efeito nenhum. Checar se o
   projeto oferece algo tipo major.minor preso (ex.: `8.0`) antes de virar
-  logo pra `:latest` — mas desconfiar mesmo assim (ver o incidente do
-  Mongo, regra 9).
+  logo pra `:latest` — mas desconfiar mesmo assim (ver o caso real do
+  MongoDB embutido no [any-sync-bundle](./any-sync-bundle/#variantes):
+  a versão vem fixa dentro da própria imagem, sem opção de pinar
+  separado, e uma tag nova trouxe um MongoDB que morre com
+  "illegal instruction" em kernel 6.19+ sem aviso nenhum).
 - O dado ali é sensível/crítico o bastante pra preferir revisão manual
   antes de cada bump? (cofre de senhas, backend com estado real —
   provavelmente não vale a pena.)
@@ -599,6 +627,16 @@ cada serviço (seção "Auto-update" ou "Atualizando as imagens"):
 - **tsdproxy** — sem motivo técnico específico, só não foi avaliado/ligado
   ainda (já usa uma tag de major flutuante, `:2`, mas sem `AutoUpdate=`
   isso não dispara sozinho).
+- **AdGuard Home** — mesmo raciocínio do ownCloud/Radicale: DNS é
+  infraestrutura crítica pra rede inteira, se cair ninguém resolve nome
+  nenhum; revisão manual antes de trocar de versão, apesar de ter
+  `HealthCmd` real.
+- **Audiobookshelf** — mesmo raciocínio do baikal: progresso de
+  leitura/biblioteca é dado real do usuário.
+- **Beszel**, **nginx**, **Ollama/Open WebUI** — todos com `HealthCmd`
+  real (daria pra habilitar `AutoUpdate=registry` com rollback
+  funcional), mas ainda não avaliados/ligados por padrão, mesmo
+  raciocínio do tsdproxy.
 
 ## Migrando de outro servidor
 
@@ -610,8 +648,8 @@ este host.
 
 Parar o serviço e gerar o backup como já documentado na seção Backup de
 cada README — `tar` de `volumes/<app>/` — incluindo também
-`~/.config/containers/secrets/<app>/` se o serviço usar secrets
-(linkwarden, vaultwarden, tsdproxy): sem eles os dados restaurados não
+`~/.config/containers/secrets/<app>/` se o serviço usar secrets (ver
+lista na seção "Apagar tudo" acima): sem eles os dados restaurados não
 autenticam/decodificam.
 
 ### 2. Transferir
@@ -631,10 +669,12 @@ conteúdo), só então `systemctl --user start`.
 
 - **Identidade criptográfica**: any-sync-bundle e tsdproxy geram
   identidade própria no primeiro run (`peerId`/`peerKey`; estado
-  `tsnet`). Trazer esses dados faz o servidor novo *ser* a continuação do
-  antigo (mesmo nó, clientes existentes reconhecem). Não trazer gera uma
-  instância nova e independente — o oposto do que "Implantando em outro
-  servidor" de cada serviço recomenda pra instalação do zero.
+  `tsnet`); o [Beszel](./beszel/) é o mesmo caso (`hub-data/id_ed25519`,
+  a chave que autentica todo agent registrado nesse hub). Trazer esses
+  dados faz o servidor novo *ser* a continuação do antigo (mesmo nó,
+  clientes/agents existentes reconhecem). Não trazer gera uma instância
+  nova e independente — o oposto do que "Implantando em outro servidor"
+  de cada serviço recomenda pra instalação do zero.
 - **Endereços gravados nos dados**: `externalAddr` (any-sync-bundle),
   `DOMAIN` (vaultwarden), `NEXTAUTH_URL`/cookies (linkwarden) referenciam
   o hostname do servidor antigo — ajustar pro endereço da tailnet deste

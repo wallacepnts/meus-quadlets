@@ -41,8 +41,8 @@ Sem `.env.example` — nada aqui depende de variável de ambiente.
 
 ```bash
 # 1. Baixar as units (sem precisar clonar o repositório)
-mkdir -p ~/.config/containers/systemd
-wget -P ~/.config/containers/systemd/ \
+mkdir -p ~/.config/containers/systemd/nginx
+wget -P ~/.config/containers/systemd/nginx/ \
   https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/nginx/nginx-net.network \
   https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/nginx/nginx.container
 

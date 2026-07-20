@@ -56,8 +56,8 @@ beszel-agent.container    # agent — coleta métricas deste host
 
 ```bash
 # 1. Baixar as units (sem precisar clonar o repositório)
-mkdir -p ~/.config/containers/systemd
-wget -P ~/.config/containers/systemd/ \
+mkdir -p ~/.config/containers/systemd/beszel
+wget -P ~/.config/containers/systemd/beszel/ \
   https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/beszel/beszel-net.network \
   https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/beszel/beszel.container \
   https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/beszel/beszel-agent.container

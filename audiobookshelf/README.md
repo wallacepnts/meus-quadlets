@@ -38,8 +38,8 @@ audiobookshelf.container     # unit principal
 
 ```bash
 # 1. Baixar as units (sem precisar clonar o repositório)
-mkdir -p ~/.config/containers/systemd
-wget -P ~/.config/containers/systemd/ \
+mkdir -p ~/.config/containers/systemd/audiobookshelf
+wget -P ~/.config/containers/systemd/audiobookshelf/ \
   https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/audiobookshelf/audiobookshelf-net.network \
   https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/audiobookshelf/audiobookshelf.container
 

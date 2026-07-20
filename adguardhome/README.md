@@ -53,8 +53,8 @@ abaixo).
 
 ```bash
 # 1. Baixar as units (sem precisar clonar o repositório)
-mkdir -p ~/.config/containers/systemd
-wget -P ~/.config/containers/systemd/ \
+mkdir -p ~/.config/containers/systemd/adguardhome
+wget -P ~/.config/containers/systemd/adguardhome/ \
   https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/adguardhome/adguardhome-net.network \
   https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/adguardhome/adguardhome.container
 

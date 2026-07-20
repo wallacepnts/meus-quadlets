@@ -15,7 +15,7 @@ EnvironmentFile=%h/.config/containers/env/beszel.env
 
 # Imagem é um binário estático só, sem /bin/sh — "CMD", não "CMD-SHELL"
 # (testado na prática: "CMD-SHELL" falha por não achar shell nenhum).
-HealthCmd=CMD /beszel health --url http://localhost:8090
+HealthCmd=CMD /beszel health --url http://127.0.0.1:8090
 HealthInterval=30s
 HealthTimeout=5s
 HealthRetries=3
