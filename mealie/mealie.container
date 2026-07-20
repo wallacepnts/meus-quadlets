@@ -1,0 +1,41 @@
+[Unit]
+Description=Mealie (gerenciador de receitas e lista de compras)
+
+[Container]
+Image=ghcr.io/mealie-recipes/mealie:v3.20.1
+ContainerName=mealie
+Network=mealie-net.network
+PublishPort=9091:9000
+
+# SQLite embutido (recomendado pelo próprio projeto até ~20 usuários,
+# ver README) — um volume só.
+Volume=%h/.config/containers/volumes/mealie/data:/app/data:Z
+EnvironmentFile=%h/.config/containers/env/mealie.env
+
+HealthCmd=CMD-SHELL curl -fsS http://127.0.0.1:9000/api/app/about || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=mealie
+Label=tsdproxy.port.web=443/https:9000/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Mealie
+Label=homepage.icon=mealie.svg
+Label=homepage.href=https://mealie.<seu-tailnet>.ts.net
+Label=homepage.description="Gerenciador de receitas, planejamento de refeições e lista de compras"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

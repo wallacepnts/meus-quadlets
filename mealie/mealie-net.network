@@ -1,0 +1,5 @@
+[Unit]
+Description=Rede do Mealie
+
+[Network]
+NetworkName=mealie-net
