@@ -113,7 +113,61 @@ systemctl --user start monica
 
 Acessar `http://<ip-do-host>:9092` (ou via [tsdproxy](../tsdproxy/) em
 `https://monica.<seu-tailnet>.ts.net`) e criar a conta no primeiro
-acesso (`/register`).
+acesso (`/register`). **Sem conta padrão nessa imagem** (diferente do
+[Mealie](../mealie/)) — o cadastro é o único jeito de entrar.
+
+**Confirmação de e-mail obrigatória** — com `MAIL_MAILER=log` (padrão
+deste `.env.example`), o e-mail de confirmação não é enviado de
+verdade, fica escrito nos logs do container:
+
+```bash
+podman logs monica 2>&1 | grep -A5 "verify\|reset-password"
+```
+
+O link de confirmação aparece ali (`.../email/verify/<id>/<hash>?...`)
+— abrir ele completa o cadastro. Mesmo caminho serve pra recuperação de
+senha depois. Configurar SMTP de verdade (seção abaixo) evita precisar
+caçar link no log toda vez.
+
+## Configurar SMTP de verdade (opcional)
+
+Trocar no `monica.env`:
+
+```ini
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.exemplo.com
+MAIL_PORT=587
+MAIL_ENCRYPTION=tls
+MAIL_USERNAME=seu-usuario
+MAIL_FROM_ADDRESS=monica@exemplo.com
+MAIL_FROM_NAME=Monica
+```
+
+A senha do SMTP **não** vai no `.env` — como secret, injetada via
+`MAIL_PASSWORD_FILE` (suportado nativamente pelo `entrypoint.sh` da
+imagem, mesma convenção do `APP_KEY_FILE` documentada acima, mas aqui
+funciona porque não estamos usando o atalho `type=env` — se preferir
+`type=env,target=MAIL_PASSWORD` direto, também funciona, mais simples):
+
+```bash
+mkdir -p ~/.config/containers/secrets/monica
+echo -n "senha-do-smtp" > ~/.config/containers/secrets/monica/mail-password.txt
+chmod 600 ~/.config/containers/secrets/monica/mail-password.txt
+podman secret create monica-mail-password \
+  ~/.config/containers/secrets/monica/mail-password.txt
+```
+
+No `monica.container`, adicionar junto do `Secret=monica-app-key,...`
+já existente:
+
+```ini
+Secret=monica-mail-password,type=env,target=MAIL_PASSWORD
+```
+
+```bash
+systemctl --user daemon-reload
+systemctl --user restart monica
+```
 
 ## Auto-update
 
