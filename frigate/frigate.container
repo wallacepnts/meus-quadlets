@@ -1,0 +1,62 @@
+[Unit]
+Description=Frigate (NVR com detecção de objetos por IA)
+
+[Container]
+Image=ghcr.io/blakeblackshear/frigate:0.16.1
+ContainerName=frigate
+Network=frigate-net.network
+
+# Porta autenticada (API/UI) — a única publicada de propósito. Fala
+# HTTPS internamente (nginx com certificado self-signed embutido na
+# própria imagem, testado na prática: HTTP puro nessa porta devolve
+# "400 The plain HTTP request was sent to HTTPS port"), por isso o
+# HealthCmd e o label do tsdproxy abaixo usam https, não http, pro lado
+# interno. Portas de restream (8554 RTSP, 8555 WebRTC) ficam de fora até
+# ter câmera configurada usando esses recursos — ver README.
+PublishPort=8971:8971
+
+# Sem --privileged: só necessário pra Coral/GPU (nenhum dos dois em uso
+# aqui, CPU-only por decisão — ver README pra ativar GPU depois).
+Volume=%h/.config/containers/volumes/frigate/config:/config:Z
+# Caminho de gravação decidido pelo usuário, via variável de ambiente do
+# systemd (não um EnvironmentFile= comum — regra 19 do README raiz).
+# Definir FRIGATE_MEDIA_DIR em ~/.config/environment.d/frigate.conf
+# antes do primeiro start (ver README).
+Volume=${FRIGATE_MEDIA_DIR}:/media/frigate:Z
+# /tmp/cache: segmentos temporários de gravação — tmpfs de propósito,
+# evita desgaste de disco com escrita constante.
+Tmpfs=/tmp/cache:size=1g
+
+# Sem câmera nenhuma ainda (0 streams) — 128m cobre só o overhead base
+# do Frigate. Fórmula oficial por câmera adicionada, e como recalcular,
+# no README.
+PodmanArgs=--shm-size=128m
+
+HealthCmd=CMD-SHELL curl -fsSk https://127.0.0.1:8971/ || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/). Lado interno
+# em https (ver comentário do PublishPort acima).
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=frigate
+Label=tsdproxy.port.web=443/https:8971/https
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Frigate
+Label=homepage.icon=frigate.svg
+Label=homepage.href=https://frigate.<seu-tailnet>.ts.net
+Label=homepage.description="NVR com detecção de objetos por IA"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
