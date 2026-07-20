@@ -1,0 +1,41 @@
+[Unit]
+Description=Memos (notas rápidas, self-hosted)
+
+[Container]
+Image=docker.io/neosmemo/memos:0.29.1
+ContainerName=memos
+Network=memos-net.network
+PublishPort=5230:5230
+
+# SQLite embutido — um volume só, guarda o banco inteiro.
+Volume=%h/.config/containers/volumes/memos/data:/var/opt/memos:Z
+EnvironmentFile=%h/.config/containers/env/memos.env
+
+# Endpoint próprio de health da imagem (testado na prática).
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:5230/healthz || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=15s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=memos
+Label=tsdproxy.port.web=443/https:5230/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Memos
+Label=homepage.icon=memos.svg
+Label=homepage.href=https://memos.<seu-tailnet>.ts.net
+Label=homepage.description="Notas rápidas, self-hosted e markdown-nativo"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
