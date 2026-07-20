@@ -27,9 +27,24 @@ voltar a ficar acessível), trocar `Image=` e reavaliar essa seção.
 
 ## Arquitetura
 
-Container único. **SQLite**, não MySQL/MariaDB (only a v4, antiga, exige
+Container único. **SQLite**, não MySQL/MariaDB (só a v4, antiga, exige
 banco externo) — mais simples, dado real do usuário de qualquer forma
 não justifica um Postgres/MySQL à parte aqui.
+
+**`APP_URL` precisa ser o domínio real, não o placeholder do
+`.env.example`** — testado na prática: deixar `<seu-tailnet>` literal
+não quebra o container (sobe "saudável" normal), mas a UI não carrega
+no navegador via tsdproxy — toda URL de asset (JS/CSS) e rota interna é
+gerada como `http://`, mesmo a página sendo servida em `https://` (o
+tsdproxy termina TLS antes de chegar no container), e o navegador
+bloqueia isso como "mixed content" silenciosamente. Editar o
+`APP_URL` pro domínio real antes do primeiro start evita o problema.
+
+**A variável certa é `APP_TRUSTED_PROXIES`, não `TRUSTED_PROXIES`** —
+essa segunda parece óbvia mas não existe nessa imagem (é
+`config/trustedproxy.php` → `env('APP_TRUSTED_PROXIES')`); sem ela
+configurada, o Laravel não confia no cabeçalho `X-Forwarded-Proto` do
+tsdproxy e acaba gerando as URLs erradas mesmo com `APP_URL` certo.
 
 **Banco redirecionado pra dentro do volume persistido** — por padrão a
 imagem grava o SQLite em `database/database.sqlite`, **fora** de
@@ -75,7 +90,8 @@ wget -P ~/.config/containers/systemd/monica/ \
 # 2. Diretório de dados — bind mount exige que já exista antes do start
 mkdir -p ~/.config/containers/volumes/monica/storage
 
-# 3. Env não-secreto
+# 3. Env não-secreto — baixar o exemplo e EDITAR o APP_URL (trocar
+#    "<seu-tailnet>" pelo domínio real, ver abaixo) antes de subir
 mkdir -p ~/.config/containers/env
 wget -O ~/.config/containers/env/monica.env \
   https://raw.githubusercontent.com/wallacepnts/meus-quadlets/main/monica/.env.example
