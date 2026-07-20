@@ -41,6 +41,9 @@ Label=homepage.href=https://ghost.<seu-tailnet>.ts.net
 Label=homepage.description="Blog/newsletter self-hosted (SQLite, modo development)"
 
 Label=wud.watch=true
+# Mesmo caso do FreshRSS: upstream publica a mesma versão sem o sufixo
+# "-alpine" — restringe a candidatos da mesma família alpine.
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+-alpine$
 
 [Service]
 Restart=always

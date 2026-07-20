@@ -47,6 +47,10 @@ Label=homepage.href=https://adguardhome.<seu-tailnet>.ts.net
 Label=homepage.description="Bloqueio de anúncios e rastreadores via DNS pra toda a rede"
 
 Label=wud.watch=true
+# Upstream publica builds beta junto (ex.: v0.108.0-b.89) que o semver
+# do WUD trata como "maior" que a última estável — restringe a tags
+# v-prefixadas limpas, sem sufixo de pre-release.
+Label=wud.tag.include=^v[0-9]+.[0-9]+.[0-9]+$
 
 [Service]
 Restart=always

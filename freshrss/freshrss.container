@@ -32,6 +32,10 @@ Label=homepage.href=https://freshrss.<seu-tailnet>.ts.net
 Label=homepage.description="Agregador de feeds RSS/Atom self-hosted"
 
 Label=wud.watch=true
+# Upstream também publica a mesma versão sem o sufixo "-alpine" (ex.:
+# 1.29.1, sem variante) — o WUD trata isso como "maior" via semver,
+# falso positivo. Restringe a candidatos da mesma família alpine.
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+-alpine$
 
 [Service]
 Restart=always

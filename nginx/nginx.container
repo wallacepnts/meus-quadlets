@@ -34,6 +34,12 @@ Label=homepage.href=https://nginx.<seu-tailnet>.ts.net
 Label=homepage.description="Servidor de arquivos estáticos"
 
 Label=wud.watch=true
+# nginx publica duas branches em paralelo, minor ímpar = mainline
+# (dev), par = stable — ambas com tags -alpine numeradas, então só
+# restringir ao sufixo "-alpine" não basta (1.31.x-alpine também bate).
+# Preso à minor 1.30 (stable atual) — trocar aqui quando o próprio
+# projeto anunciar a próxima stable, não seguir mainline automático.
+Label=wud.tag.include=^1.30.[0-9]+-alpine$
 
 [Service]
 Restart=always

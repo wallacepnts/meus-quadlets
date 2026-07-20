@@ -35,6 +35,9 @@ Label=homepage.href=https://node-red.<seu-tailnet>.ts.net
 Label=homepage.description="Automação de fluxos via editor visual de nós"
 
 Label=wud.watch=true
+# Mesmo caso do FreshRSS/Ghost: upstream publica a mesma versão sem o
+# sufixo "-minimal" — restringe a candidatos da mesma variante.
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+-minimal$
 
 [Service]
 Restart=always

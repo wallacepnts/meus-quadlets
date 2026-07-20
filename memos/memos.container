@@ -32,6 +32,9 @@ Label=homepage.href=https://memos.<seu-tailnet>.ts.net
 Label=homepage.description="Notas rápidas, self-hosted e markdown-nativo"
 
 Label=wud.watch=true
+# Upstream publica release candidates (ex.: 0.30.0-rc.2) que o WUD
+# trataria como "maior" via semver — restringe a tags estáveis X.Y.Z.
+Label=wud.tag.include=^[0-9]+.[0-9]+.[0-9]+$
 
 [Service]
 Restart=always
