@@ -83,7 +83,17 @@ systemctl --user daemon-reload
 # 5. Subir
 systemctl --user start frigate
 
-# 6. Limpar a câmera de exemplo que a imagem gera sozinha no primeiro
+# 6. Capturar a senha do admin ANTES do restart do próximo passo —
+#    testado na prática: essa mensagem só aparece no log UMA VEZ, no
+#    primeiro start com o banco de usuários vazio; reiniciar depois
+#    (passo 7) não recria o usuário (ele já existe, persistido no
+#    volume) então a mensagem não volta a aparecer, mesmo a conta
+#    continuando válida. Esperar ficar healthy antes de checar.
+until podman inspect frigate --format '{{.State.Health.Status}}' 2>/dev/null | grep -qE 'healthy|unhealthy'; do sleep 3; done
+podman logs frigate 2>&1 | grep -A3 "Created a default user"
+# Anotar usuário/senha mostrados acima — não vão aparecer de novo depois do restart abaixo.
+
+# 7. Limpar a câmera de exemplo que a imagem gera sozinha no primeiro
 #    start (ver aviso acima) — sem isso, fica tentando conectar num IP
 #    fake e poluindo os logs até você configurar uma câmera de verdade
 cat > ~/.config/containers/volumes/frigate/config/config.yaml <<EOF
@@ -103,13 +113,29 @@ o tsdproxy troca o self-signed pelo dele na borda da tailnet).
 ## Login (usuário gerado automaticamente)
 
 **Sem conta padrão fixa** — a imagem cria um usuário `admin` com senha
-aleatória no primeiro start, só visível no log:
+aleatória no primeiro start, só visível no log (já capturado no passo 6
+da instalação, se seguiu na ordem):
 
 ```bash
 podman logs frigate 2>&1 | grep -A3 "Created a default user"
 ```
 
 Trocar a senha depois de logar em Configurações → Usuários.
+
+**Perdeu a senha** (reiniciou antes de capturar, ou já não aparece mais
+no log — só sai uma vez, na primeira vez que o banco de usuários está
+vazio)? Apagar o usuário do banco força a imagem a recriar um novo com
+senha nova no próximo start, mesmo mecanismo do primeiro boot — testado
+na prática:
+
+```bash
+systemctl --user stop frigate
+podman unshare sqlite3 ~/.config/containers/volumes/frigate/config/frigate.db \
+  "DELETE FROM user WHERE username='admin';"
+systemctl --user start frigate
+until podman inspect frigate --format '{{.State.Health.Status}}' 2>/dev/null | grep -qE 'healthy|unhealthy'; do sleep 3; done
+podman logs frigate 2>&1 | grep -A3 "Created a default user"
+```
 
 ## Adicionar a primeira câmera
 
