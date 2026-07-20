@@ -1,0 +1,65 @@
+[Unit]
+Description=Monica (CRM pessoal)
+
+[Container]
+# SEM tag fixa de propósito — a v5 (SQLite, a usada aqui) só publica
+# essa imagem como tag flutuante, testado na prática (nenhuma tag
+# versionada do monicahq/monica puxa deste host, nem v4 nem v5 — o
+# repositório inteiro no Docker Hub parece inacessível; só esta imagem
+# no GHCR funciona, e só como :main). Exceção consciente à regra 9 do
+# README raiz — mesmo padrão do dispatcharr/gluetun no media-stack.
+# Risco aceito: pode trazer mudança quebrando o schema sem aviso, é
+# literalmente a branch de desenvolvimento de software pré-1.0.
+Image=ghcr.io/monicahq/monica-next:main
+ContainerName=monica
+Network=monica-net.network
+PublishPort=9092:80
+
+# Um volume só — storage/ guarda uploads/logs/cache, e o SQLite (via
+# DB_DATABASE abaixo) fica dentro dele também. Por padrão o SQLite fica
+# em database/database.sqlite, FORA de storage/ — o próprio
+# entrypoint.sh da imagem avisa "make sure it will be saved in a
+# persistent volume" nesse caso; sem o DB_DATABASE redirecionando pra
+# cá, o CRM inteiro se perde a cada recriação do container.
+Volume=%h/.config/containers/volumes/monica/storage:/var/www/html/storage:Z
+Environment=DB_DATABASE=/var/www/html/storage/database.sqlite
+
+EnvironmentFile=%h/.config/containers/env/monica.env
+
+# APP_KEY como secret, injetado como env var direto (type=env) — sem
+# isso fixo, a imagem gera uma chave nova a cada start (não fica salva
+# em lugar persistido), o que invalida sessões e qualquer campo
+# criptografado no banco. Testado na prática: só montar o secret como
+# arquivo (target=APP_KEY sem type=env) NÃO basta — o entrypoint.sh só
+# lê arquivo de secret via a variável "APP_KEY_FILE" apontando pra ele
+# (convenção própria da imagem), não pelo nome do arquivo montado.
+Secret=monica-app-key,type=env,target=APP_KEY
+
+HealthCmd=CMD-SHELL curl -fsS http://127.0.0.1:80/login || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=5
+HealthStartPeriod=60s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=monica
+Label=tsdproxy.port.web=443/https:80/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Monica
+Label=homepage.icon=monica.svg
+Label=homepage.href=https://monica.<seu-tailnet>.ts.net
+Label=homepage.description="CRM pessoal — relacionamentos, contatos, lembretes"
+
+# Sem wud.watch=true de propósito — tag flutuante, o WUD não teria o
+# que comparar (ver comentário acima do Image=).
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target
