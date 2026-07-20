@@ -1,0 +1,5 @@
+[Unit]
+Description=Rede do Node-RED
+
+[Network]
+NetworkName=node-red-net

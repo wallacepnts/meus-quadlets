@@ -1,0 +1,44 @@
+[Unit]
+Description=Node-RED (automação de fluxos via editor visual)
+
+[Container]
+Image=docker.io/nodered/node-red:5.0.1-minimal
+ContainerName=node-red
+Network=node-red-net.network
+PublishPort=1880:1880
+
+# Imagem roda com uid fixo "node-red" (1000), sem usermod interno —
+# testado na prática: sem UserNS=keep-id, trava logo no start com
+# "EACCES: permission denied" tentando copiar o settings.js padrão pro
+# volume. Mesmo caso do Immich (regra correspondente no README raiz).
+UserNS=keep-id
+Volume=%h/.config/containers/volumes/node-red/data:/data:Z
+EnvironmentFile=%h/.config/containers/env/node-red.env
+
+HealthCmd=CMD-SHELL wget -q --spider http://127.0.0.1:1880/ || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=node-red
+Label=tsdproxy.port.web=443/https:1880/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=Node-RED
+Label=homepage.icon=node-red.svg
+Label=homepage.href=https://node-red.<seu-tailnet>.ts.net
+Label=homepage.description="Automação de fluxos via editor visual de nós"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
