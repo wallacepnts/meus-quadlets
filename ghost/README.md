@@ -33,6 +33,15 @@ volta pro próprio container (comum atrás de proxy/tailnet, testado na
 prática), aparece um erro `ECONNREFUSED`/`IMAGE_SIZE_URL` no log.
 Cosmético, não impede o site de funcionar.
 
+**Sem acesso local por IP:porta depois de configurar a `url`** —
+testado na prática: assim que `url` aponta pro domínio real
+(tsdproxy/tailnet), o Ghost passa a redirecionar (301) **qualquer**
+requisição que não bata com essa URL, inclusive
+`http://<ip-do-host>:9094` direto — não é bug, é o comportamento
+esperado da própria aplicação (ela trata `url` como canônica).
+Acessar sempre pela URL configurada (`https://ghost.<seu-tailnet>.ts.net`),
+não pelo IP do host.
+
 ## Arquivos
 
 ```
@@ -68,10 +77,12 @@ systemctl --user daemon-reload
 systemctl --user start ghost
 ```
 
-Acessar `http://<ip-do-host>:9094/ghost/` (ou via
-[tsdproxy](../tsdproxy/) em
-`https://ghost.<seu-tailnet>.ts.net/ghost/`) e criar a conta admin no
-assistente de instalação do primeiro acesso.
+Acessar via [tsdproxy](../tsdproxy/) em
+`https://ghost.<seu-tailnet>.ts.net/ghost/` e criar a conta admin no
+assistente de instalação do primeiro acesso. **Só funciona pela URL
+configurada no passo 3** — acesso local por `http://<ip-do-host>:9094`
+direto é redirecionado pra essa URL assim que `url` aponta pro domínio
+real (ver "Sem acesso local..." acima).
 
 ## Auto-update
 
