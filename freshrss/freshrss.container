@@ -1,0 +1,41 @@
+[Unit]
+Description=FreshRSS (agregador de feeds RSS/Atom)
+
+[Container]
+Image=ghcr.io/freshrss/freshrss:1.29.1-alpine
+ContainerName=freshrss
+Network=freshrss-net.network
+PublishPort=8087:80
+
+Volume=%h/.config/containers/volumes/freshrss/data:/var/www/FreshRSS/data:Z
+EnvironmentFile=%h/.config/containers/env/freshrss.env
+
+# Binário próprio de healthcheck da imagem (cli/health.php) — sem saída,
+# só exit code.
+HealthCmd=CMD-SHELL php cli/health.php || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+Notify=healthy
+
+# tsdproxy discovery — expõe na tailnet (ver ../tsdproxy/)
+Label=tsdproxy.enable=true
+Label=tsdproxy.name=freshrss
+Label=tsdproxy.port.web=443/https:80/http
+
+# homepage — exibição no dashboard (ver ../homepage/)
+Label=homepage.group=Self-Hosted
+Label=homepage.name=FreshRSS
+Label=homepage.icon=freshrss.svg
+Label=homepage.href=https://freshrss.<seu-tailnet>.ts.net
+Label=homepage.description="Agregador de feeds RSS/Atom self-hosted"
+
+Label=wud.watch=true
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target
